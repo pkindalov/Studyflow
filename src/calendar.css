@@ -1,0 +1,31 @@
+/* Remove default borders */
+.react-calendar {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+}
+
+/* Month title */
+.react-calendar__navigation button {
+  @apply text-gray-700 font-semibold py-2 rounded-lg hover:bg-gray-100 transition;
+}
+
+/* Weekday labels */
+.react-calendar__month-view__weekdays {
+  @apply text-gray-400 text-sm;
+}
+
+/* Days */
+.react-calendar__tile {
+  @apply text-gray-700 rounded-lg p-2 hover:bg-gray-100 transition;
+}
+
+/* Selected day */
+.react-calendar__tile--active {
+  @apply bg-pink-500 text-white hover:bg-pink-600;
+}
+
+/* Today */
+.react-calendar__tile--now {
+  @apply bg-pink-100 text-pink-700 font-semibold;
+}
