@@ -8,14 +8,28 @@ function App() {
   const [tasks, setTasks] = useState({});
 
   const taskInputRef = useRef(null);
+  const dateKey = selectedDate.toISOString().split("T")[0];
 
   const addTask = function (text) {
-    const dateKey = selectedDate.toISOString().split("T")[0];
-
     setTasks((prev) => ({
       ...prev,
-      [dateKey]: [...(prev[dateKey] || []), text],
+      [dateKey]: [...(prev[dateKey] || []), { text, done: false }],
     }));
+  };
+
+  const toggleTask = function (index) {
+    setTasks((prev) => {
+      const currentTasks = prev[dateKey] || [];
+
+      const updatedTasks = currentTasks.map((task, i) =>
+        i === index ? { ...task, done: !task.done } : task,
+      );
+
+      return {
+        ...prev,
+        [dateKey]: updatedTasks,
+      };
+    });
   };
 
   const handleAddingTask = function () {
@@ -60,16 +74,27 @@ function App() {
           </button>
         </div>
         <ul className="space-y-2">
-          {(tasks[selectedDate.toISOString().split("T")[0]] || []).map(
-            (task, i) => (
-              <li
-                key={i}
-                className="bg-white shadow-sm p-3 rounded-lg border border-gray-100"
+          {(tasks[dateKey] || []).map((task, i) => (
+            <li
+              key={i}
+              className="bg-white shadow-sm p-3 rounded-lg border border-gray-100 flex items-center gap-3 transition"
+            >
+              <input
+                type="checkbox"
+                checked={task.done}
+                onChange={() => toggleTask(i)}
+                className="w-4 h-4 accent-pink-500 cursor-pointer"
+              />
+
+              <span
+                className={`flex-1 ${
+                  task.done ? "line-through text-gray-400" : "text-gray-700"
+                } transition`}
               >
-                {task}
-              </li>
-            ),
-          )}
+                {task.text}
+              </span>
+            </li>
+          ))}
         </ul>
       </div>
     </div>
