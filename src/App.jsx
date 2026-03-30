@@ -16,6 +16,14 @@ function App() {
     }));
   };
 
+  const handleAddingTask = function () {
+    const input = document.getElementById("taskInput");
+    if (input.value.trim()) {
+      addTask(input.value.trim());
+      input.value = "";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left sidebar */}
@@ -43,13 +51,7 @@ function App() {
             className="border rounded-lg px-3 py-2 flex-1"
           />
           <button
-            onClick={() => {
-              const input = document.getElementById("taskInput");
-              if (input.value.trim()) {
-                addTask(input.value.trim());
-                input.value = "";
-              }
-            }}
+            onClick={handleAddingTask}
             className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition"
           >
             Add
