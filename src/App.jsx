@@ -32,6 +32,18 @@ function App() {
     });
   };
 
+  const deleteTask = function (index) {
+    setTasks((prev) => {
+      const currentTasks = prev[dateKey] || [];
+      const updatedTasks = currentTasks.filter((_, i) => i !== index);
+
+      return {
+        ...prev,
+        [dateKey]: updatedTasks,
+      };
+    });
+  };
+
   const handleAddingTask = function () {
     const input = taskInputRef.current;
     if (input && input.value.trim()) {
@@ -93,6 +105,12 @@ function App() {
               >
                 {task.text}
               </span>
+              <button
+                onClick={() => deleteTask(i)}
+                className="text-gray-400 hover:text-pink-500 transition text-lg leading-none"
+              >
+                X
+              </button>
             </li>
           ))}
         </ul>
