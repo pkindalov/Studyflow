@@ -1,11 +1,13 @@
 import "./calendar.css";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tasks, setTasks] = useState({});
+
+  const taskInputRef = useRef(null);
 
   const addTask = function (text) {
     const dateKey = selectedDate.toISOString().split("T")[0];
@@ -17,8 +19,8 @@ function App() {
   };
 
   const handleAddingTask = function () {
-    const input = document.getElementById("taskInput");
-    if (input.value.trim()) {
+    const input = taskInputRef.current;
+    if (input && input.value.trim()) {
       addTask(input.value.trim());
       input.value = "";
     }
@@ -46,9 +48,9 @@ function App() {
         <div className="flex gap-2 mb-4">
           <input
             type="text"
-            id="taskInput"
             placeholder="New task..."
             className="border rounded-lg px-3 py-2 flex-1"
+            ref={taskInputRef}
           />
           <button
             onClick={handleAddingTask}
