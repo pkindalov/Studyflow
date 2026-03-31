@@ -1,14 +1,31 @@
 import "./calendar.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tasks, setTasks] = useState({});
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load tasks from localStorage on first render
+  useEffect(() => {
+    const saved = localStorage.getItem("studyflow_tasks");
+    if (saved) setTasks(JSON.parse(saved));
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded)
+      localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
+  }, [tasks, isLoaded]);
+
+  const formatDateKey = function (date) {
+    return date.toLocaleDateString("en-CA");
+  };
 
   const taskInputRef = useRef(null);
-  const dateKey = selectedDate.toISOString().split("T")[0];
+  const dateKey = formatDateKey(selectedDate);
 
   const addTask = function (text) {
     setTasks((prev) => ({
