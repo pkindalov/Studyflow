@@ -76,6 +76,19 @@ function App() {
     }
   };
 
+  const hasTasks = function (date) {
+    const tasksDate = formatDateKey(date);
+    return tasks[tasksDate] && tasks[tasksDate].length > 0;
+  };
+
+  const markDateWithTasks = function (date, view) {
+    return view === "month" && hasTasks(date) ? (
+      <div className="flex justify-center mt-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div>
+      </div>
+    ) : null;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left sidebar */}
@@ -86,6 +99,7 @@ function App() {
           onChange={setSelectedDate}
           value={selectedDate}
           className="rounded-lg shadow-sm"
+          tileContent={({ date, view }) => markDateWithTasks(date, view)}
         />
       </div>
 
