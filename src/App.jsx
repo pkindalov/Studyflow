@@ -1,4 +1,5 @@
 import "./calendar.css";
+import "./animations.css";
 import { useEffect, useRef, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -50,15 +51,21 @@ function App() {
   };
 
   const deleteTask = function (index) {
-    setTasks((prev) => {
-      const currentTasks = prev[dateKey] || [];
-      const updatedTasks = currentTasks.filter((_, i) => i !== index);
+    const element = document.getElementById(`task-${index}`);
+    if (element) {
+      element.classList.add("fade-out");
+      setTimeout(() => {
+        setTasks((prev) => {
+          const currentTasks = prev[dateKey] || [];
+          const updatedTasks = currentTasks.filter((_, i) => i !== index);
 
-      return {
-        ...prev,
-        [dateKey]: updatedTasks,
-      };
-    });
+          return {
+            ...prev,
+            [dateKey]: updatedTasks,
+          };
+        });
+      }, 180);
+    }
   };
 
   const handleAddingTask = function () {
@@ -105,8 +112,9 @@ function App() {
         <ul className="space-y-2">
           {(tasks[dateKey] || []).map((task, i) => (
             <li
+              id={`task-${i}`}
               key={i}
-              className="bg-white shadow-sm p-3 rounded-lg border border-gray-100 flex items-center gap-3 transition"
+              className="fade-slide-in bg-white shadow-sm p-3 rounded-lg border border-gray-100 flex items-center gap-3 transition hover:shadow-lg hover:border-pink-100"
             >
               <input
                 type="checkbox"
