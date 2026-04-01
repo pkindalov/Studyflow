@@ -28,6 +28,13 @@ function App() {
   const taskInputRef = useRef(null);
   const dateKey = formatDateKey(selectedDate);
 
+  const tasksForDay = tasks[dateKey] || [];
+  const totalTasks = tasksForDay.length;
+  const completedTasks = tasksForDay.filter((t) => t.done).length;
+  const remainingTasks = totalTasks - completedTasks;
+  const progress =
+    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
   const addTask = function (text) {
     setTasks((prev) => ({
       ...prev,
@@ -126,6 +133,30 @@ function App() {
             Add
           </button>
         </div>
+
+        <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Daily Summary
+            </h2>
+            <span className="text-sm text-gray-500">{progress}% done</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
+            <div
+              className="h-full bg-pink-500 transition-all"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+
+          <div className="text-sm text-gray-600 flex gap-4">
+            <span>Total: {totalTasks}</span>
+            <span>Completed: {completedTasks}</span>
+            <span>Remaining: {remainingTasks}</span>
+          </div>
+        </div>
+
         <ul className="space-y-2">
           {(tasks[dateKey] || []).map((task) => (
             <li
