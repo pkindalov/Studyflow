@@ -189,6 +189,12 @@ function App() {
           </div>
         </div>
 
+        {tasks[dateKey].length > 0 && (
+          <p className="text-xs text-gray-400 mb-2">
+            Double‑click a task to edit it, or use the pencil icon.
+          </p>
+        )}
+
         <ul className="space-y-2">
           {(tasks[dateKey] || []).map((task) => (
             <li
@@ -225,12 +231,23 @@ function App() {
                   {task.text}
                 </span>
               )}
-              <button
-                onClick={() => deleteTask(task.id)}
-                className="text-gray-400 hover:text-pink-500 transition text-lg leading-none"
-              >
-                X
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => startEditing(task)}
+                  className="text-gray-400 hover:text-blue-500 transition text-lg leading-none"
+                  title="Edit task"
+                >
+                  ✎
+                </button>
+
+                <button
+                  onClick={() => deleteTask(task.id)}
+                  className="text-gray-400 hover:text-pink-500 transition text-lg leading-none"
+                  title="Delete task"
+                >
+                  ✕
+                </button>
+              </div>
             </li>
           ))}
         </ul>
