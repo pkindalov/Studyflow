@@ -31,16 +31,19 @@ function App() {
   const addTask = function (text) {
     setTasks((prev) => ({
       ...prev,
-      [dateKey]: [...(prev[dateKey] || []), { text, done: false }],
+      [dateKey]: [
+        ...(prev[dateKey] || []),
+        { id: crypto.randomUUID(), text, done: false },
+      ],
     }));
   };
 
-  const toggleTask = function (index) {
+  const toggleTask = function (id) {
     setTasks((prev) => {
       const currentTasks = prev[dateKey] || [];
 
-      const updatedTasks = currentTasks.map((task, i) =>
-        i === index ? { ...task, done: !task.done } : task,
+      const updatedTasks = currentTasks.map((task) =>
+        task.id === id ? { ...task, done: !task.done } : task,
       );
 
       return {
@@ -50,14 +53,14 @@ function App() {
     });
   };
 
-  const deleteTask = function (index) {
-    const element = document.getElementById(`task-${index}`);
+  const deleteTask = function (id) {
+    const element = document.getElementById(`task-${id}`);
     if (element) {
       element.classList.add("fade-out");
       setTimeout(() => {
         setTasks((prev) => {
           const currentTasks = prev[dateKey] || [];
-          const updatedTasks = currentTasks.filter((_, i) => i !== index);
+          const updatedTasks = currentTasks.filter((task) => task.id !== id);
 
           return {
             ...prev,
@@ -124,16 +127,16 @@ function App() {
           </button>
         </div>
         <ul className="space-y-2">
-          {(tasks[dateKey] || []).map((task, i) => (
+          {(tasks[dateKey] || []).map((task) => (
             <li
-              id={`task-${i}`}
-              key={i}
+              id={`task-${task.id}`}
+              key={task.id}
               className="fade-slide-in bg-white shadow-sm p-3 rounded-lg border border-gray-100 flex items-center gap-3 transition hover:shadow-lg hover:border-pink-100"
             >
               <input
                 type="checkbox"
                 checked={task.done}
-                onChange={() => toggleTask(i)}
+                onChange={() => toggleTask(task.id)}
                 className="w-4 h-4 accent-pink-500 cursor-pointer"
               />
 
@@ -145,7 +148,7 @@ function App() {
                 {task.text}
               </span>
               <button
-                onClick={() => deleteTask(i)}
+                onClick={() => deleteTask(task.id)}
                 className="text-gray-400 hover:text-pink-500 transition text-lg leading-none"
               >
                 X
