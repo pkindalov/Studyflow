@@ -8,6 +8,8 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tasks, setTasks] = useState({});
   const [isLoaded, setIsLoaded] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState("");
 
   // Load tasks from localStorage on first render
   useEffect(() => {
@@ -99,6 +101,36 @@ function App() {
     ) : null;
   };
 
+  const startEditing = function (task) {
+    setEditingId(task.id);
+    setEditingText(task.text);
+  };
+
+  const saveEditing = function () {
+    if (!editingId) return;
+
+    setTasks((prev) => {
+      const currentTasks = prev[dateKey] || [];
+
+      const updatedTasks = currentTasks.map((task) =>
+        task.id === editingId ? { ...task, text: editingText } : task,
+      );
+
+      return {
+        ...prev,
+        [dateKey]: updatedTasks,
+      };
+    });
+
+    setEditingId(null);
+    setEditingText("");
+  };
+
+  const cancelEditing = function () {
+    setEditingId(null);
+    setEditingText("");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left sidebar */}
@@ -171,13 +203,28 @@ function App() {
                 className="w-4 h-4 accent-pink-500 cursor-pointer"
               />
 
-              <span
-                className={`flex-1 ${
-                  task.done ? "line-through text-gray-400" : "text-gray-700"
-                } transition`}
-              >
-                {task.text}
-              </span>
+              {editingId === task.id ? (
+                <input
+                  autoFocus
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onBlur={saveEditing}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveEditing();
+                    if (e.key === "Escape") cancelEditing();
+                  }}
+                  className="flex-1 border rounded px-2 py-1 text-gray-700"
+                />
+              ) : (
+                <span
+                  onDoubleClick={() => startEditing(task)}
+                  className={`flex-1 ${
+                    task.done ? "line-through text-gray-400" : "text-gray-700"
+                  } cursor-text`}
+                >
+                  {task.text}
+                </span>
+              )}
               <button
                 onClick={() => deleteTask(task.id)}
                 className="text-gray-400 hover:text-pink-500 transition text-lg leading-none"
