@@ -8,79 +8,104 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tasks, setTasks] = useState({});
   const [isLoaded, setIsLoaded] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editingText, setEditingText] = useState("");
 
-  // Load tasks from localStorage on first render
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskImage, setNewTaskImage] = useState("");
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editTaskId, setEditTaskId] = useState(null);
+  const [editTaskText, setEditTaskText] = useState("");
+  const [editTaskImage, setEditTaskImage] = useState("");
+
+  const taskInputRef = useRef(null);
+
+  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("studyflow_tasks");
     if (saved) setTasks(JSON.parse(saved));
     setIsLoaded(true);
   }, []);
 
+  // Save to localStorage
   useEffect(() => {
-    if (isLoaded)
+    if (isLoaded) {
       localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
+    }
   }, [tasks, isLoaded]);
 
-  const formatDateKey = function (date) {
+  const formatDateKey = (date) => {
     return date.toLocaleDateString("en-CA");
   };
 
-  const taskInputRef = useRef(null);
   const dateKey = formatDateKey(selectedDate);
-
   const tasksForDay = tasks[dateKey] || [];
+
   const totalTasks = tasksForDay.length;
   const completedTasks = tasksForDay.filter((t) => t.done).length;
   const remainingTasks = totalTasks - completedTasks;
+
   const progress =
     totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
-  const addTask = function (text) {
+  const addTask = (text, imageUrl = "") => {
     setTasks((prev) => ({
       ...prev,
       [dateKey]: [
         ...(prev[dateKey] || []),
-        { id: crypto.randomUUID(), text, done: false },
+        {
+          id: crypto.randomUUID(),
+          text,
+          done: false,
+          imageUrl,
+        },
       ],
     }));
   };
 
-  const toggleTask = function (id) {
+  const toggleTask = (id) => {
     setTasks((prev) => {
-      const currentTasks = prev[dateKey] || [];
-
-      const updatedTasks = currentTasks.map((task) =>
+      const updated = (prev[dateKey] || []).map((task) =>
         task.id === id ? { ...task, done: !task.done } : task,
       );
 
-      return {
-        ...prev,
-        [dateKey]: updatedTasks,
-      };
+      return { ...prev, [dateKey]: updated };
     });
   };
 
-  const deleteTask = function (id) {
-    const element = document.getElementById(`task-${id}`);
-    if (element) {
-      element.classList.add("fade-out");
-      setTimeout(() => {
-        setTasks((prev) => {
-          const currentTasks = prev[dateKey] || [];
-          const updatedTasks = currentTasks.filter((task) => task.id !== id);
+  const deleteTask = (id) => {
+    setTasks((prev) => {
+      const updated = (prev[dateKey] || []).filter((task) => task.id !== id);
 
-          return {
-            ...prev,
-            [dateKey]: updatedTasks,
-          };
-        });
-      }, 180);
-    }
+      return { ...prev, [dateKey]: updated };
+    });
   };
 
-  const handleAddingTask = function () {
+  const openEditModal = (task) => {
+    setEditTaskId(task.id);
+    setEditTaskText(task.text);
+    setEditTaskImage(task.imageUrl || "");
+    setIsEditModalOpen(true);
+  };
+
+  const saveEditedTask = () => {
+    setTasks((prev) => {
+      const updated = (prev[dateKey] || []).map((task) =>
+        task.id === editTaskId
+          ? { ...task, text: editTaskText, imageUrl: editTaskImage }
+          : task,
+      );
+
+      return { ...prev, [dateKey]: updated };
+    });
+
+    setIsEditModalOpen(false);
+    setEditTaskId(null);
+    setEditTaskText("");
+    setEditTaskImage("");
+  };
+
+  const handleAddingTask = () => {
     const input = taskInputRef.current;
     if (input && input.value.trim()) {
       addTask(input.value.trim());
@@ -88,12 +113,12 @@ function App() {
     }
   };
 
-  const hasTasks = function (date) {
-    const tasksDate = formatDateKey(date);
-    return tasks[tasksDate] && tasks[tasksDate].length > 0;
+  const hasTasks = (date) => {
+    const key = formatDateKey(date);
+    return tasks[key] && tasks[key].length > 0;
   };
 
-  const markDateWithTasks = function (date, view) {
+  const markDateWithTasks = (date, view) => {
     return view === "month" && hasTasks(date) ? (
       <div className="flex justify-center mt-1">
         <div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div>
@@ -101,39 +126,9 @@ function App() {
     ) : null;
   };
 
-  const startEditing = function (task) {
-    setEditingId(task.id);
-    setEditingText(task.text);
-  };
-
-  const saveEditing = function () {
-    if (!editingId) return;
-
-    setTasks((prev) => {
-      const currentTasks = prev[dateKey] || [];
-
-      const updatedTasks = currentTasks.map((task) =>
-        task.id === editingId ? { ...task, text: editingText } : task,
-      );
-
-      return {
-        ...prev,
-        [dateKey]: updatedTasks,
-      };
-    });
-
-    setEditingId(null);
-    setEditingText("");
-  };
-
-  const cancelEditing = function () {
-    setEditingId(null);
-    setEditingText("");
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Left sidebar */}
+      {/* Sidebar */}
       <div className="w-64 bg-white shadow-md p-4">
         <h2 className="text-xl font-semibold mb-4">Calendar</h2>
 
@@ -145,13 +140,16 @@ function App() {
         />
       </div>
 
-      {/* Right content */}
+      {/* Main */}
       <div className="flex-1 p-6">
         <h1 className="text-2xl font-bold mb-4">Daily Plan</h1>
-        <p className="text-gray-600">
+
+        <p className="text-gray-600 mb-4">
           Selected Date: {selectedDate.toLocaleDateString()}
         </p>
-        <div className="flex gap-2 mb-4">
+
+        {/* Quick add */}
+        {/* <div className="flex gap-2 mb-4">
           <input
             type="text"
             placeholder="New task..."
@@ -164,17 +162,25 @@ function App() {
           >
             Add
           </button>
-        </div>
+        </div> */}
 
+        {/* Summary */}
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition"
+            >
+              Add Task
+            </button>
+
             <h2 className="text-lg font-semibold text-gray-800">
               Daily Summary
             </h2>
+
             <span className="text-sm text-gray-500">{progress}% done</span>
           </div>
 
-          {/* Progress bar */}
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
             <div
               className="h-full bg-pink-500 transition-all"
@@ -189,69 +195,120 @@ function App() {
           </div>
         </div>
 
-        {tasks[dateKey] && tasks[dateKey].length > 0 && (
-          <p className="text-xs text-gray-400 mb-2">
-            Double‑click a task to edit it, or use the pencil icon.
-          </p>
-        )}
-
+        {/* Tasks */}
         <ul className="space-y-2">
-          {(tasks[dateKey] || []).map((task) => (
+          {tasksForDay.map((task) => (
             <li
-              id={`task-${task.id}`}
               key={task.id}
-              className="fade-slide-in bg-white shadow-sm p-3 rounded-lg border border-gray-100 flex items-center gap-3 transition hover:shadow-lg hover:border-pink-100"
+              className="fade-slide-in bg-white shadow-md rounded-xl border border-gray-100 overflow-hidden transition hover:shadow-lg"
             >
-              <input
-                type="checkbox"
-                checked={task.done}
-                onChange={() => toggleTask(task.id)}
-                className="w-4 h-4 accent-pink-500 cursor-pointer"
-              />
+              <div className="w-full h-40 overflow-hidden bg-pink-100 flex items-center justify-center">
+                {task.imageUrl ? (
+                  <img
+                    src={task.imageUrl}
+                    alt=""
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-4xl">📌</span>
+                )}
+              </div>
 
-              {editingId === task.id ? (
+              <div className="p-4 flex items-start gap-3">
                 <input
-                  autoFocus
-                  value={editingText}
-                  onChange={(e) => setEditingText(e.target.value)}
-                  onBlur={saveEditing}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveEditing();
-                    if (e.key === "Escape") cancelEditing();
-                  }}
-                  className="flex-1 border rounded px-2 py-1 text-gray-700"
+                  type="checkbox"
+                  checked={task.done}
+                  onChange={() => toggleTask(task.id)}
+                  className="mt-1 accent-pink-500"
                 />
-              ) : (
-                <span
-                  onDoubleClick={() => startEditing(task)}
-                  className={`flex-1 ${
-                    task.done ? "line-through text-gray-400" : "text-gray-700"
-                  } cursor-text`}
-                >
-                  {task.text}
-                </span>
-              )}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => startEditing(task)}
-                  className="text-gray-400 hover:text-blue-500 transition text-lg leading-none"
-                  title="Edit task"
-                >
-                  ✎
-                </button>
 
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="text-gray-400 hover:text-pink-500 transition text-lg leading-none"
-                  title="Delete task"
-                >
-                  ✕
-                </button>
+                <div className="flex-1">
+                  <span
+                    onDoubleClick={() => openEditModal(task)}
+                    className={`block cursor-pointer ${
+                      task.done ? "line-through text-gray-400" : "text-gray-700"
+                    }`}
+                  >
+                    {task.text}
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <button onClick={() => openEditModal(task)}>✎</button>
+                  <button onClick={() => deleteTask(task.id)}>✕</button>
+                </div>
               </div>
             </li>
           ))}
         </ul>
       </div>
+
+      {/* Add Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md">
+            <h2 className="text-xl mb-4">Add Task</h2>
+
+            <input
+              value={newTaskText}
+              onChange={(e) => setNewTaskText(e.target.value)}
+              placeholder="Task..."
+              className="w-full border mb-2 p-2"
+            />
+
+            <input
+              value={newTaskImage}
+              onChange={(e) => setNewTaskImage(e.target.value)}
+              placeholder="Image URL"
+              className="w-full border mb-4 p-2"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+
+              <button
+                onClick={() => {
+                  if (newTaskText.trim()) {
+                    addTask(newTaskText, newTaskImage);
+                    setIsModalOpen(false);
+                    setNewTaskText("");
+                    setNewTaskImage("");
+                  }
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md">
+            <h2 className="text-xl mb-4">Edit Task</h2>
+
+            <input
+              value={editTaskText}
+              onChange={(e) => setEditTaskText(e.target.value)}
+              className="w-full border mb-2 p-2"
+            />
+
+            <input
+              value={editTaskImage}
+              onChange={(e) => setEditTaskImage(e.target.value)}
+              className="w-full border mb-4 p-2"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+
+              <button onClick={saveEditedTask}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
