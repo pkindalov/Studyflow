@@ -1,6 +1,6 @@
 import "./calendar.css";
 import "./animations.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -20,25 +20,19 @@ function App() {
 
   const [isGridView, setIsGridView] = useState(false);
 
-  const taskInputRef = useRef(null);
-
-  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("studyflow_tasks");
     if (saved) setTasks(JSON.parse(saved));
     setIsLoaded(true);
   }, []);
 
-  // Save to localStorage
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
     }
   }, [tasks, isLoaded]);
 
-  const formatDateKey = (date) => {
-    return date.toLocaleDateString("en-CA");
-  };
+  const formatDateKey = (date) => date.toLocaleDateString("en-CA");
 
   const dateKey = formatDateKey(selectedDate);
   const tasksForDay = tasks[dateKey] || [];
@@ -70,7 +64,6 @@ function App() {
       const updated = (prev[dateKey] || []).map((task) =>
         task.id === id ? { ...task, done: !task.done } : task,
       );
-
       return { ...prev, [dateKey]: updated };
     });
   };
@@ -78,7 +71,6 @@ function App() {
   const deleteTask = (id) => {
     setTasks((prev) => {
       const updated = (prev[dateKey] || []).filter((task) => task.id !== id);
-
       return { ...prev, [dateKey]: updated };
     });
   };
@@ -97,7 +89,6 @@ function App() {
           ? { ...task, text: editTaskText, imageUrl: editTaskImage }
           : task,
       );
-
       return { ...prev, [dateKey]: updated };
     });
 
@@ -105,14 +96,6 @@ function App() {
     setEditTaskId(null);
     setEditTaskText("");
     setEditTaskImage("");
-  };
-
-  const handleAddingTask = () => {
-    const input = taskInputRef.current;
-    if (input && input.value.trim()) {
-      addTask(input.value.trim());
-      input.value = "";
-    }
   };
 
   const hasTasks = (date) => {
@@ -123,160 +106,168 @@ function App() {
   const markDateWithTasks = (date, view) => {
     return view === "month" && hasTasks(date) ? (
       <div className="flex justify-center mt-1">
-        <div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div>
+        <div className="w-1.5 h-1.5 rounded-full bg-gray-900"></div>
       </div>
     ) : null;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md p-4">
-        <h2 className="text-xl font-semibold mb-4">Calendar</h2>
+      <div className="w-72 bg-white border-r border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-6">Calendar</h2>
 
         <Calendar
           onChange={setSelectedDate}
           value={selectedDate}
-          className="rounded-lg shadow-sm"
+          className="rounded-lg border border-gray-200 p-2"
           tileContent={({ date, view }) => markDateWithTasks(date, view)}
         />
       </div>
 
       {/* Main */}
-      <div className="flex-1 p-6">
-        <h1 className="text-2xl font-bold mb-4">Daily Plan </h1>
-        <button
-          onClick={() => setIsGridView((prev) => !prev)}
-          className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
-        >
-          {isGridView ? "📋 List" : "🔲 Grid"}
-        </button>
+      <div className="flex-1 p-8">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-900">
+                Daily Plan
+              </h1>
+              <p className="text-gray-500 text-sm">
+                {selectedDate.toLocaleDateString()}
+              </p>
+            </div>
 
-        <p className="text-gray-600 mb-4">
-          Selected Date: {selectedDate.toLocaleDateString()}
-        </p>
-
-        {/* Quick add */}
-        {/* <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="New task..."
-            className="border rounded-lg px-3 py-2 flex-1"
-            ref={taskInputRef}
-          />
-          <button
-            onClick={handleAddingTask}
-            className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition"
-          >
-            Add
-          </button>
-        </div> */}
-
-        {/* Summary */}
-        <div className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-          <div className="flex justify-between items-center mb-2">
             <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition"
+              onClick={() => setIsGridView((prev) => !prev)}
+              className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
             >
-              Add Task
+              {isGridView ? "📋 List" : "🔲 Grid"}
             </button>
-
-            <h2 className="text-lg font-semibold text-gray-800">
-              Daily Summary
-            </h2>
-
-            <span className="text-sm text-gray-500">{progress}% done</span>
           </div>
 
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
-            <div
-              className="h-full bg-pink-500 transition-all"
-              style={{ width: `${progress}%` }}
-            ></div>
+          {/* Summary */}
+          <div className="mb-6 p-5 bg-white rounded-2xl border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black transition"
+              >
+                + Add Task
+              </button>
+
+              <span className="text-sm text-gray-500">
+                {progress}% completed
+              </span>
+            </div>
+
+            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+              <div
+                className="h-full bg-gray-900 transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <div className="text-sm text-gray-600 flex gap-4">
+              <span>Total: {totalTasks}</span>
+              <span>Done: {completedTasks}</span>
+              <span>Left: {remainingTasks}</span>
+            </div>
           </div>
 
-          <div className="text-sm text-gray-600 flex gap-4">
-            <span>Total: {totalTasks}</span>
-            <span>Completed: {completedTasks}</span>
-            <span>Remaining: {remainingTasks}</span>
-          </div>
-        </div>
+          {/* Tasks */}
+          <ul
+            className={
+              isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "space-y-3"
+            }
+          >
+            {tasksForDay.map((task) => (
+              <li
+                key={task.id}
+                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition"
+              >
+                <div className="w-full h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {task.imageUrl ? (
+                    <img
+                      src={task.imageUrl}
+                      alt=""
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-3xl">📌</span>
+                  )}
+                </div>
 
-        {/* Tasks */}
-        <ul
-          className={
-            isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "space-y-2"
-          }
-        >
-          {tasksForDay.map((task) => (
-            <li
-              key={task.id}
-              className="fade-slide-in bg-white shadow-md rounded-xl border border-gray-100 overflow-hidden transition hover:shadow-lg"
-            >
-              <div className="w-full h-32 overflow-hidden bg-pink-100 flex items-center justify-center">
-                {task.imageUrl ? (
-                  <img
-                    src={task.imageUrl}
-                    alt=""
-                    className="max-h-full max-w-full object-contain"
+                <div className="p-4 flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={task.done}
+                    onChange={() => toggleTask(task.id)}
+                    className="mt-1 accent-gray-900"
                   />
-                ) : (
-                  <span className="text-4xl">📌</span>
-                )}
-              </div>
 
-              <div className="p-4 flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={task.done}
-                  onChange={() => toggleTask(task.id)}
-                  className="mt-1 accent-pink-500"
-                />
+                  <div className="flex-1">
+                    <span
+                      onDoubleClick={() => openEditModal(task)}
+                      className={`text-sm cursor-pointer ${
+                        task.done
+                          ? "line-through text-gray-400"
+                          : "text-gray-800"
+                      }`}
+                    >
+                      {task.text}
+                    </span>
+                  </div>
 
-                <div className="flex-1">
-                  <span
-                    onDoubleClick={() => openEditModal(task)}
-                    className={`block cursor-pointer ${
-                      task.done ? "line-through text-gray-400" : "text-gray-700"
-                    }`}
-                  >
-                    {task.text}
-                  </span>
+                  <div className="flex gap-2 text-gray-400">
+                    <button
+                      onClick={() => openEditModal(task)}
+                      className="hover:text-gray-700"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="hover:text-gray-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
-
-                <div className="flex gap-2">
-                  <button onClick={() => openEditModal(task)}>✎</button>
-                  <button onClick={() => deleteTask(task.id)}>✕</button>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* Add Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md">
-            <h2 className="text-xl mb-4">Add Task</h2>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-md border border-gray-200">
+            <h2 className="text-lg font-semibold mb-4">New Task</h2>
 
             <input
               value={newTaskText}
               onChange={(e) => setNewTaskText(e.target.value)}
-              placeholder="Task..."
-              className="w-full border mb-2 p-2"
+              placeholder="Task description..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
 
             <input
               value={newTaskImage}
               onChange={(e) => setNewTaskImage(e.target.value)}
-              placeholder="Image URL"
-              className="w-full border mb-4 p-2"
+              placeholder="Image URL (optional)"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
 
             <div className="flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
 
               <button
                 onClick={() => {
@@ -287,6 +278,7 @@ function App() {
                     setNewTaskImage("");
                   }
                 }}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black"
               >
                 Save
               </button>
@@ -297,26 +289,36 @@ function App() {
 
       {/* Edit Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-[90%] max-w-md">
-            <h2 className="text-xl mb-4">Edit Task</h2>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-md border border-gray-200">
+            <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
 
             <input
               value={editTaskText}
               onChange={(e) => setEditTaskText(e.target.value)}
-              className="w-full border mb-2 p-2"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
 
             <input
               value={editTaskImage}
               onChange={(e) => setEditTaskImage(e.target.value)}
-              className="w-full border mb-4 p-2"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
 
             <div className="flex justify-end gap-2">
-              <button onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-4 py-2 border rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
 
-              <button onClick={saveEditedTask}>Save</button>
+              <button
+                onClick={saveEditedTask}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black"
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
