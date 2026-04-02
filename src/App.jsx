@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import TaskCard from "./components/TaskCard";
+import TaskList from "./components/TaskList";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -178,21 +179,13 @@ function App() {
           </div>
 
           {/* Tasks */}
-          <ul
-            className={
-              isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "space-y-3"
-            }
-          >
-            {tasksForDay.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onToggle={toggleTask}
-                onDelete={deleteTask}
-                onEdit={openEditModal}
-              />
-            ))}
-          </ul>
+          <TaskList
+            tasks={tasksForDay}
+            isGridView={isGridView}
+            onToggle={toggleTask}
+            onDelete={deleteTask}
+            onEdit={openEditModal}
+          />
         </div>
       </div>
 
