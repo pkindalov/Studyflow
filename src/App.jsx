@@ -189,7 +189,7 @@ function App() {
           </div>
         </div>
 
-        {tasks[dateKey].length > 0 && (
+        {tasks[dateKey] && tasks[dateKey].length > 0 && (
           <p className="text-xs text-gray-400 mb-2">
             Double‑click a task to edit it, or use the pencil icon.
           </p>
