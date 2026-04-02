@@ -18,6 +18,8 @@ function App() {
   const [editTaskText, setEditTaskText] = useState("");
   const [editTaskImage, setEditTaskImage] = useState("");
 
+  const [isGridView, setIsGridView] = useState(false);
+
   const taskInputRef = useRef(null);
 
   // Load from localStorage
@@ -142,7 +144,13 @@ function App() {
 
       {/* Main */}
       <div className="flex-1 p-6">
-        <h1 className="text-2xl font-bold mb-4">Daily Plan</h1>
+        <h1 className="text-2xl font-bold mb-4">Daily Plan </h1>
+        <button
+          onClick={() => setIsGridView((prev) => !prev)}
+          className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+        >
+          {isGridView ? "📋 List" : "🔲 Grid"}
+        </button>
 
         <p className="text-gray-600 mb-4">
           Selected Date: {selectedDate.toLocaleDateString()}
@@ -196,13 +204,17 @@ function App() {
         </div>
 
         {/* Tasks */}
-        <ul className="space-y-2">
+        <ul
+          className={
+            isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "space-y-2"
+          }
+        >
           {tasksForDay.map((task) => (
             <li
               key={task.id}
               className="fade-slide-in bg-white shadow-md rounded-xl border border-gray-100 overflow-hidden transition hover:shadow-lg"
             >
-              <div className="w-full h-40 overflow-hidden bg-pink-100 flex items-center justify-center">
+              <div className="w-full h-32 overflow-hidden bg-pink-100 flex items-center justify-center">
                 {task.imageUrl ? (
                   <img
                     src={task.imageUrl}
