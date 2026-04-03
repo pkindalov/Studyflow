@@ -72,9 +72,9 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col md:flex-row">
       {/* Sidebar */}
-      <div className="w-80 bg-white/70 backdrop-blur-xl border-r border-gray-200 p-6 shadow-sm">
+      <div className="w-full md:w-80 bg-white/70 backdrop-blur-xl border-b md:border-b-0 md:border-r border-gray-200 p-4 md:p-6 shadow-sm">
         <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-4">
           Calendar
         </h2>
@@ -90,12 +90,12 @@ function App() {
       </div>
 
       {/* Main */}
-      <div className="flex-1 p-10">
+      <div className="flex-1 p-4 md:p-10">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-4xl font-semibold text-gray-900 tracking-tight">
+              <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 tracking-tight">
                 Daily Plan
               </h1>
               <p className="text-gray-500 text-sm mt-1">
@@ -103,22 +103,20 @@ function App() {
               </p>
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setIsGridView((prev) => !prev)}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm"
-              >
-                {isGridView ? "📋 List" : "🔲 Grid"}
-              </button>
-            </div>
+            <button
+              onClick={() => setIsGridView((prev) => !prev)}
+              className="w-full md:w-auto px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm"
+            >
+              {isGridView ? "📋 List" : "🔲 Grid"}
+            </button>
           </div>
 
           {/* Summary */}
-          <div className="mb-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="flex justify-between items-center mb-5">
+          <div className="mb-6 p-5 md:p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-gray-900 text-white px-5 py-2 rounded-xl hover:bg-black transition shadow-sm"
+                className="w-full md:w-auto bg-gray-900 text-white px-5 py-2 rounded-xl hover:bg-black transition shadow-sm"
               >
                 + Add Task
               </button>
@@ -135,7 +133,7 @@ function App() {
               />
             </div>
 
-            <div className="flex gap-6 text-sm text-gray-600">
+            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
               <span>📊 {totalTasks} total</span>
               <span>✅ {completedTasks}</span>
               <span>⏳ {remainingTasks}</span>
