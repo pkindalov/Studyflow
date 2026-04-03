@@ -1,15 +1,14 @@
 import "./calendar.css";
 import "./animations.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
+import { useTasks } from "./hooks/useTasks";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [tasks, setTasks] = useState({});
-  const [isLoaded, setIsLoaded] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
@@ -22,21 +21,11 @@ function App() {
 
   const [isGridView, setIsGridView] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("studyflow_tasks");
-    if (saved) setTasks(JSON.parse(saved));
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
-    }
-  }, [tasks, isLoaded]);
+  const { tasks, addTask, toggleTask, deleteTask, editTask } = useTasks();
 
   const formatDateKey = (date) => date.toLocaleDateString("en-CA");
-
   const dateKey = formatDateKey(selectedDate);
+
   const tasksForDay = tasks[dateKey] || [];
 
   const totalTasks = tasksForDay.length;
@@ -46,35 +35,20 @@ function App() {
   const progress =
     totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
-  const addTask = (text, imageUrl = "") => {
-    setTasks((prev) => ({
-      ...prev,
-      [dateKey]: [
-        ...(prev[dateKey] || []),
-        {
-          id: crypto.randomUUID(),
-          text,
-          done: false,
-          imageUrl,
-        },
-      ],
-    }));
+  const handleAddTask = (text, image) => {
+    addTask(dateKey, text, image);
   };
 
-  const toggleTask = (id) => {
-    setTasks((prev) => {
-      const updated = (prev[dateKey] || []).map((task) =>
-        task.id === id ? { ...task, done: !task.done } : task,
-      );
-      return { ...prev, [dateKey]: updated };
-    });
+  const handleToggle = (id) => {
+    toggleTask(dateKey, id);
   };
 
-  const deleteTask = (id) => {
-    setTasks((prev) => {
-      const updated = (prev[dateKey] || []).filter((task) => task.id !== id);
-      return { ...prev, [dateKey]: updated };
-    });
+  const handleDelete = (id) => {
+    deleteTask(dateKey, id);
+  };
+
+  const handleEdit = (id, text, image) => {
+    editTask(dateKey, id, text, image);
   };
 
   const openEditModal = (task) => {
@@ -82,22 +56,6 @@ function App() {
     setEditTaskText(task.text);
     setEditTaskImage(task.imageUrl || "");
     setIsEditModalOpen(true);
-  };
-
-  const saveEditedTask = () => {
-    setTasks((prev) => {
-      const updated = (prev[dateKey] || []).map((task) =>
-        task.id === editTaskId
-          ? { ...task, text: editTaskText, imageUrl: editTaskImage }
-          : task,
-      );
-      return { ...prev, [dateKey]: updated };
-    });
-
-    setIsEditModalOpen(false);
-    setEditTaskId(null);
-    setEditTaskText("");
-    setEditTaskImage("");
   };
 
   const hasTasks = (date) => {
@@ -182,8 +140,8 @@ function App() {
           <TaskList
             tasks={tasksForDay}
             isGridView={isGridView}
-            onToggle={toggleTask}
-            onDelete={deleteTask}
+            onToggle={handleToggle}
+            onDelete={handleDelete}
             onEdit={openEditModal}
           />
         </div>
@@ -199,7 +157,7 @@ function App() {
         }}
         onSave={() => {
           if (newTaskText.trim()) {
-            addTask(newTaskText, newTaskImage);
+            handleAddTask(newTaskText, newTaskImage);
             setIsModalOpen(false);
             setNewTaskText("");
             setNewTaskImage("");
@@ -216,7 +174,13 @@ function App() {
       <TaskModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={saveEditedTask}
+        onSave={() => {
+          handleEdit(editTaskId, editTaskText, editTaskImage);
+          setIsEditModalOpen(false);
+          setEditTaskId(null);
+          setEditTaskText("");
+          setEditTaskImage("");
+        }}
         text={editTaskText}
         setText={setEditTaskText}
         image={editTaskImage}
