@@ -3,8 +3,8 @@ import "./animations.css";
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import TaskCard from "./components/TaskCard";
 import TaskList from "./components/TaskList";
+import TaskModal from "./components/TaskModal";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -190,87 +190,39 @@ function App() {
       </div>
 
       {/* Add Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-md border border-gray-200">
-            <h2 className="text-lg font-semibold mb-4">New Task</h2>
-
-            <input
-              value={newTaskText}
-              onChange={(e) => setNewTaskText(e.target.value)}
-              placeholder="Task description..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-
-            <input
-              value={newTaskImage}
-              onChange={(e) => setNewTaskImage(e.target.value)}
-              placeholder="Image URL (optional)"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={() => {
-                  if (newTaskText.trim()) {
-                    addTask(newTaskText, newTaskImage);
-                    setIsModalOpen(false);
-                    setNewTaskText("");
-                    setNewTaskImage("");
-                  }
-                }}
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TaskModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setNewTaskText("");
+          setNewTaskImage("");
+        }}
+        onSave={() => {
+          if (newTaskText.trim()) {
+            addTask(newTaskText, newTaskImage);
+            setIsModalOpen(false);
+            setNewTaskText("");
+            setNewTaskImage("");
+          }
+        }}
+        text={newTaskText}
+        setText={setNewTaskText}
+        image={newTaskImage}
+        setImage={setNewTaskImage}
+        title="New Task"
+      />
 
       {/* Edit Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-2xl w-[90%] max-w-md border border-gray-200">
-            <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
-
-            <input
-              value={editTaskText}
-              onChange={(e) => setEditTaskText(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-
-            <input
-              value={editTaskImage}
-              onChange={(e) => setEditTaskImage(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={saveEditedTask}
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TaskModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={saveEditedTask}
+        text={editTaskText}
+        setText={setEditTaskText}
+        image={editTaskImage}
+        setImage={setEditTaskImage}
+        title="Edit Task"
+      />
     </div>
   );
 }
