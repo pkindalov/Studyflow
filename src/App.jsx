@@ -72,67 +72,73 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex">
       {/* Sidebar */}
-      <div className="w-72 bg-white border-r border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6">Calendar</h2>
+      <div className="w-80 bg-white/70 backdrop-blur-xl border-r border-gray-200 p-6 shadow-sm">
+        <h2 className="text-sm uppercase tracking-wide text-gray-500 mb-4">
+          Calendar
+        </h2>
 
-        <Calendar
-          onChange={setSelectedDate}
-          value={selectedDate}
-          className="rounded-lg border border-gray-200 p-2"
-          tileContent={({ date, view }) => markDateWithTasks(date, view)}
-        />
+        <div className="bg-white rounded-2xl p-3 shadow-sm">
+          <Calendar
+            onChange={setSelectedDate}
+            value={selectedDate}
+            className="react-calendar-clean"
+            tileContent={({ date, view }) => markDateWithTasks(date, view)}
+          />
+        </div>
       </div>
 
       {/* Main */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-10">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-10">
             <div>
-              <h1 className="text-3xl font-semibold text-gray-900">
+              <h1 className="text-4xl font-semibold text-gray-900 tracking-tight">
                 Daily Plan
               </h1>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-sm mt-1">
                 {selectedDate.toLocaleDateString()}
               </p>
             </div>
 
-            <button
-              onClick={() => setIsGridView((prev) => !prev)}
-              className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
-            >
-              {isGridView ? "📋 List" : "🔲 Grid"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsGridView((prev) => !prev)}
+                className="px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm"
+              >
+                {isGridView ? "📋 List" : "🔲 Grid"}
+              </button>
+            </div>
           </div>
 
           {/* Summary */}
-          <div className="mb-6 p-5 bg-white rounded-2xl border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
+          <div className="mb-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="flex justify-between items-center mb-5">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black transition"
+                className="bg-gray-900 text-white px-5 py-2 rounded-xl hover:bg-black transition shadow-sm"
               >
                 + Add Task
               </button>
 
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 font-medium">
                 {progress}% completed
               </span>
             </div>
 
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-3">
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
               <div
                 className="h-full bg-gray-900 transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
 
-            <div className="text-sm text-gray-600 flex gap-4">
-              <span>Total: {totalTasks}</span>
-              <span>Done: {completedTasks}</span>
-              <span>Left: {remainingTasks}</span>
+            <div className="flex gap-6 text-sm text-gray-600">
+              <span>📊 {totalTasks} total</span>
+              <span>✅ {completedTasks}</span>
+              <span>⏳ {remainingTasks}</span>
             </div>
           </div>
 

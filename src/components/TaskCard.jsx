@@ -1,6 +1,6 @@
 function TaskCard({ task, onToggle, onDelete, onEdit }) {
   return (
-    <li className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 transition">
+    <li className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition">
       <div className="w-full h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
         {task.imageUrl ? (
           <img
