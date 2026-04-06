@@ -8,6 +8,7 @@ import TaskModal from "./components/TaskModal";
 import CalendarSidebar from "./components/CalendarSidebar";
 import SummaryCard from "./components/SummaryCard";
 import { useTasks } from "./hooks/useTasks";
+import { markDateWithTasks } from "./utils/calendar";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -60,18 +61,7 @@ function App() {
     setIsEditModalOpen(true);
   };
 
-  const hasTasks = (date) => {
-    const key = formatDateKey(date);
-    return tasks[key] && tasks[key].length > 0;
-  };
-
-  const markDateWithTasks = (date, view) => {
-    return view === "month" && hasTasks(date) ? (
-      <div className="flex justify-center mt-1">
-        <div className="w-1.5 h-1.5 rounded-full bg-gray-900"></div>
-      </div>
-    ) : null;
-  };
+  const markDateWithTasksFn = markDateWithTasks(tasks, formatDateKey);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col md:flex-row">
@@ -79,7 +69,7 @@ function App() {
       <CalendarSidebar
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        markDateWithTasks={markDateWithTasks}
+        markDateWithTasks={markDateWithTasksFn}
       />
 
       {/* Main */}
