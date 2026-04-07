@@ -1,32 +1,99 @@
 function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
+  // Calculate stroke offset for circular progress
+  const radius = 58;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
   return (
-    <div className="mb-6 p-5 md:p-6 bg-white rounded-2xl shadow-sm border border-gray-200">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
-        <button
-          onClick={onAddClick}
-          className="w-full md:w-auto bg-gray-900 text-white px-5 py-2 rounded-xl hover:bg-black transition shadow-sm"
-        >
-          + Add Task
-        </button>
-
-        <span className="text-sm text-gray-500 font-medium">
-          {progress}% completed
-        </span>
+    <section className="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_rgba(42,52,57,0.06)] relative overflow-hidden group">
+      {/* Subtle background decoration */}
+      <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary-container/20 rounded-full blur-3xl transition-transform duration-1000 group-hover:scale-110"></div>
+      <div className="flex items-center justify-between relative z-10">
+        <div className="flex flex-col gap-6">
+          <div>
+            <h3 className="text-headline-sm font-headline font-semibold text-on-surface mb-1">
+              Focus Progress
+            </h3>
+            <p className="text-body-lg text-on-surface-variant">
+              You're making great progress today.
+            </p>
+          </div>
+          <div className="flex gap-10">
+            <div className="flex flex-col">
+              <span className="text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
+                Total
+              </span>
+              <span className="text-3xl font-headline font-bold text-on-surface">
+                {total}
+              </span>
+            </div>
+            <div className="flex flex-col border-l border-outline-variant/20 pl-10">
+              <span className="text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
+                Completed
+              </span>
+              <span className="text-3xl font-headline font-bold text-secondary">
+                {completed.toString().padStart(2, "0")}
+              </span>
+            </div>
+            <div className="flex flex-col border-l border-outline-variant/20 pl-10">
+              <span className="text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
+                Remaining
+              </span>
+              <span className="text-3xl font-headline font-bold text-primary">
+                {remaining.toString().padStart(2, "0")}
+              </span>
+            </div>
+          </div>
+        </div>
+        {/* Circular Progress Indicator */}
+        <div className="relative w-32 h-32 flex items-center justify-center">
+          <svg
+            className="w-full h-full transform -rotate-90"
+            width="128"
+            height="128"
+          >
+            <circle
+              className="text-surface-container-highest"
+              cx="64"
+              cy="64"
+              fill="transparent"
+              r={radius}
+              stroke="currentColor"
+              strokeWidth="8"
+            />
+            <circle
+              className="text-primary"
+              cx="64"
+              cy="64"
+              fill="transparent"
+              r={radius}
+              stroke="currentColor"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              strokeWidth="8"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-2xl font-headline font-bold text-on-surface">
+              {progress}%
+            </span>
+            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">
+              Done
+            </span>
+          </div>
+        </div>
       </div>
-
-      <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
-        <div
-          className="h-full bg-gray-900 transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-        <span>📊 {total} total</span>
-        <span>✅ {completed}</span>
-        <span>⏳ {remaining}</span>
-      </div>
-    </div>
+      {/* Floating Add Task Button (optional, can be removed if not needed) */}
+      {/*
+      <button
+        onClick={onAddClick}
+        className="absolute top-8 right-8 bg-primary text-on-primary rounded-xl px-4 py-2 font-semibold flex items-center gap-2 shadow-sm hover:opacity-90 transition-all"
+      >
+        <span className="material-symbols-outlined text-sm">add</span>
+        <span>Add Task</span>
+      </button>
+      */}
+    </section>
   );
 }
 

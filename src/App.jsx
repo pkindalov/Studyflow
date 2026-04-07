@@ -7,6 +7,7 @@ import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
 import CalendarSidebar from "./components/CalendarSidebar";
 import SummaryCard from "./components/SummaryCard";
+import RightSidebar from "./components/RightSidebar";
 import { useTasks } from "./hooks/useTasks";
 import { markDateWithTasks } from "./utils/calendar";
 
@@ -64,55 +65,78 @@ function App() {
   const markDateWithTasksFn = markDateWithTasks(tasks, formatDateKey);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col md:flex-row">
-      {/* Sidebar */}
+    <div className="font-body text-on-surface antialiased min-h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+      {/* Sidebar (fixed) */}
       <CalendarSidebar
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         markDateWithTasks={markDateWithTasksFn}
+        onAddClick={() => setIsModalOpen(true)}
       />
 
-      {/* Main */}
-      <div className="flex-1 p-4 md:p-10">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 tracking-tight">
+      {/* Main Content Canvas */}
+      <main className="ml-72 p-12 max-w-[1200px] mx-auto min-h-screen">
+        {/* Header Section */}
+        <header className="flex flex-col gap-6 mb-12">
+          <div className="flex justify-between items-end">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-display-lg font-headline font-extrabold text-on-surface tracking-[-0.02em] text-5xl">
                 Daily Plan
               </h1>
-              <p className="text-gray-500 text-sm mt-1">
+              <p className="text-on-surface-variant font-medium text-lg">
                 {selectedDate.toLocaleDateString()}
               </p>
             </div>
-
-            <button
-              onClick={() => setIsGridView((prev) => !prev)}
-              className="w-full md:w-auto px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 shadow-sm"
-            >
-              {isGridView ? "📋 List" : "🔲 Grid"}
-            </button>
+            <div className="flex bg-surface-container-low p-1 rounded-xl shadow-inner">
+              <button
+                className="px-4 py-2 bg-surface-bright rounded-lg shadow-sm text-on-surface flex items-center gap-2"
+                onClick={() => setIsGridView(false)}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  grid_view
+                </span>
+                <span className="text-sm font-semibold">Grid</span>
+              </button>
+              <button
+                className="px-4 py-2 text-on-surface-variant flex items-center gap-2 hover:bg-surface-container-high rounded-lg transition-all"
+                onClick={() => setIsGridView(true)}
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  format_list_bulleted
+                </span>
+                <span className="text-sm font-semibold">List</span>
+              </button>
+            </div>
           </div>
-
-          {/* Summary */}
-          <SummaryCard
-            total={totalTasks}
-            completed={completedTasks}
-            remaining={remainingTasks}
-            progress={progress}
-            onAddClick={() => setIsModalOpen(true)}
-          />
-
-          {/* Tasks */}
-          <TaskList
-            tasks={tasksForDay}
-            isGridView={isGridView}
-            onToggle={handleToggle}
-            onDelete={handleDelete}
-            onEdit={openEditModal}
-          />
+        </header>
+        <div className="grid grid-cols-12 gap-8">
+          {/* Summary Area (Left 8 cols) */}
+          <div className="col-span-8 flex flex-col gap-8">
+            <SummaryCard
+              total={totalTasks}
+              completed={completedTasks}
+              remaining={remainingTasks}
+              progress={progress}
+              onAddClick={() => setIsModalOpen(true)}
+            />
+            <TaskList
+              tasks={tasksForDay}
+              isGridView={isGridView}
+              onToggle={handleToggle}
+              onDelete={handleDelete}
+              onEdit={openEditModal}
+            />
+          </div>
+          {/* Right Sidebar (Calendar, Inspiration, Projects) */}
+          <div className="col-span-4 flex flex-col gap-8">
+            <RightSidebar
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              markDateWithTasks={markDateWithTasksFn}
+            />
+          </div>
         </div>
-      </div>
+      </main>
 
       {/* Add Modal */}
       <TaskModal
@@ -154,6 +178,15 @@ function App() {
         setImage={setEditTaskImage}
         title="Edit Task"
       />
+
+      {/* Floating Action Button */}
+      <button
+        className="fixed bottom-12 right-12 w-20 h-20 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50"
+        onClick={() => setIsModalOpen(true)}
+        aria-label="Add Task"
+      >
+        <span className="material-symbols-outlined text-4xl">add</span>
+      </button>
     </div>
   );
 }
