@@ -176,16 +176,16 @@ function App() {
 
   // Main render
   return (
-    <div className="min-h-screen bg-[#0c0c1a] p-4 pt-6">
+    <div className="min-h-screen bg-[#0c0c1a] p-4 sm:p-6 pt-6">
       {/* Notification */}
       {notification && (
-        <div className="fixed top-6 left-1/2 z-50 bg-primary text-on-primary px-6 py-3 rounded-xl shadow-lg font-semibold animate-fade-in whitespace-nowrap">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
           {notification}
         </div>
       )}
-      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         {/* Left Sidebar */}
-        <div className="col-span-3">
+        <div className="lg:col-span-3">
           <CalendarSidebar
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
@@ -194,7 +194,7 @@ function App() {
           />
         </div>
         {/* Main Content */}
-        <div className="col-span-6 flex flex-col gap-8">
+        <div className="lg:col-span-6 flex flex-col gap-6">
           <SummaryCard
             total={totalTasks}
             completed={completedTasks}
@@ -215,9 +215,9 @@ function App() {
           />
           {/* Generate Schedule Button */}
           {tasksForDay.length > 0 && (
-            <div className="flex gap-4 justify-end mt-4">
+            <div className="flex gap-4 justify-end mt-2">
               <button
-                className="px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow hover:opacity-90 transition-all flex items-center gap-2"
+                className="flex-1 sm:flex-none px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow hover:opacity-90 transition-all flex items-center justify-center gap-2"
                 onClick={generateSchedule}
               >
                 <span className="material-symbols-outlined">play_circle</span>
@@ -259,16 +259,16 @@ function App() {
                   ))}
                 </ul>
               </div>
-              <div className="flex gap-3 justify-end mt-4">
+              <div className="flex gap-3 justify-end mt-4 flex-wrap">
                 <button
-                  className="px-5 py-2.5 bg-secondary/15 text-secondary border border-secondary/30 rounded-xl font-semibold hover:bg-secondary/25 transition-all flex items-center gap-2 text-sm"
+                  className="flex-1 sm:flex-none px-5 py-2.5 bg-secondary/15 text-secondary border border-secondary/30 rounded-xl font-semibold hover:bg-secondary/25 transition-all flex items-center justify-center gap-2 text-sm"
                   onClick={saveSchedule}
                 >
                   <span className="material-symbols-outlined text-base">save</span>
                   Save Schedule
                 </button>
                 <button
-                  className="px-5 py-2.5 bg-error/10 text-error border border-error/20 rounded-xl font-semibold hover:bg-error/20 transition-all flex items-center gap-2 text-sm"
+                  className="flex-1 sm:flex-none px-5 py-2.5 bg-error/10 text-error border border-error/20 rounded-xl font-semibold hover:bg-error/20 transition-all flex items-center justify-center gap-2 text-sm"
                   onClick={deleteSchedule}
                 >
                   <span className="material-symbols-outlined text-base">delete</span>
@@ -279,7 +279,7 @@ function App() {
           )}
         </div>
         {/* Right Sidebar */}
-        <div className="col-span-3 flex flex-col gap-8">
+        <div className="lg:col-span-3 flex flex-col gap-4 lg:gap-6">
           <RightSidebar
             totalStudyTime={totalStudyTime}
             setTotalStudyTime={setTotalStudyTime}

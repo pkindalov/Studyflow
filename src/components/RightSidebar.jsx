@@ -5,9 +5,9 @@ function RightSidebar({
   setPriorityPercent,
 }) {
   return (
-    <>
+    <div className="flex flex-col gap-4 lg:gap-5">
       {/* Total Study Time Card */}
-      <section className="bg-surface-container rounded-2xl p-5 border border-outline-variant/50 flex flex-col gap-2">
+      <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-2">
         <div className="flex items-center gap-2 mb-2">
           <span className="material-symbols-outlined text-xl text-primary">
             schedule
@@ -30,7 +30,7 @@ function RightSidebar({
         </div>
       </section>
       {/* Priority Percent Setting */}
-      <section className="bg-surface-container rounded-2xl p-5 border border-outline-variant/50 flex flex-col gap-2">
+      <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-2">
         <div className="flex items-center gap-2 mb-2">
           <span className="material-symbols-outlined text-xl text-secondary">
             star
@@ -114,7 +114,7 @@ function RightSidebar({
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 

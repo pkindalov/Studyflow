@@ -62,17 +62,17 @@ function TaskCard({ task, onToggle, onDelete, onEdit }) {
           </div>
         ) : null}
       </div>
-      <div className="flex gap-2 text-gray-400">
+      <div className="flex gap-1 text-on-surface-variant flex-shrink-0">
         <button
           onClick={() => onEdit(task)}
-          className="hover:text-primary"
+          className="p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
           aria-label="Edit task"
         >
           <span className="material-symbols-outlined text-base">edit</span>
         </button>
         <button
           onClick={() => onDelete(task.id)}
-          className="hover:text-error"
+          className="p-1.5 rounded-lg hover:text-error hover:bg-error/10 transition-colors"
           aria-label="Delete task"
         >
           <span className="material-symbols-outlined text-base">delete</span>
