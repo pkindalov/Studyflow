@@ -3,6 +3,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import TaskList from "./components/TaskList";
 import TaskModal from "./components/TaskModal";
+import TimerModal from "./components/TimerModal";
 import CalendarSidebar from "./components/CalendarSidebar";
 import SummaryCard from "./components/SummaryCard";
 import RightSidebar from "./components/RightSidebar";
@@ -43,6 +44,11 @@ function App() {
   // Schedule state
   const [schedule, setSchedule] = useState(null);
 
+  // Timer state
+  const [timerTask, setTimerTask] = useState(null);
+  const [runningTaskId, setRunningTaskId] = useState(null);
+  const [scheduleTimers, setScheduleTimers] = useState({});
+
   // Load saved schedule from localStorage on date change
   React.useEffect(() => {
     const saved = localStorage.getItem(`schedule_${dateKey}`);
@@ -51,7 +57,66 @@ function App() {
     } else {
       setSchedule(null);
     }
+    // Load saved timer progress for this date
+    const savedTimers = localStorage.getItem(`schedule_timers_${dateKey}`);
+    setScheduleTimers(savedTimers ? JSON.parse(savedTimers) : {});
+    // Stop any running timer when switching dates
+    setRunningTaskId(null);
+    setTimerTask(null);
   }, [dateKey]);
+
+  // Auto-save timer progress to localStorage whenever it changes
+  React.useEffect(() => {
+    localStorage.setItem(
+      `schedule_timers_${dateKey}`,
+      JSON.stringify(scheduleTimers),
+    );
+  }, [scheduleTimers, dateKey]);
+
+  // Countdown interval — ticks every second while a task is running
+  React.useEffect(() => {
+    if (!runningTaskId || !schedule) return;
+    const task = schedule.find((t) => t.id === runningTaskId);
+    if (!task) return;
+    const totalSeconds = task.scheduledMinutes * 60;
+    const interval = setInterval(() => {
+      setScheduleTimers((prev) => {
+        const elapsed = prev[runningTaskId] || 0;
+        if (elapsed >= totalSeconds) return prev;
+        const next = elapsed + 1;
+        if (next >= totalSeconds) {
+          setTimeout(() => setRunningTaskId(null), 10);
+        }
+        return { ...prev, [runningTaskId]: next };
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [runningTaskId, schedule]);
+
+  function openTimer(task) {
+    setTimerTask(task);
+    const elapsed = scheduleTimers[task.id] || 0;
+    if (elapsed < task.scheduledMinutes * 60) {
+      setRunningTaskId(task.id);
+    }
+  }
+
+  function closeTimer() {
+    setRunningTaskId(null);
+    setTimerTask(null);
+  }
+
+  function toggleTimer() {
+    if (!timerTask) return;
+    if (runningTaskId === timerTask.id) {
+      setRunningTaskId(null);
+    } else {
+      const elapsed = scheduleTimers[timerTask.id] || 0;
+      if (elapsed < timerTask.scheduledMinutes * 60) {
+        setRunningTaskId(timerTask.id);
+      }
+    }
+  }
 
   const { tasks, addTask, toggleTask, deleteTask, editTask } = useTasks();
 
@@ -236,27 +301,75 @@ function App() {
                   Today's Schedule
                 </h3>
                 <ul className="flex flex-col gap-3">
-                  {schedule.map((task, idx) => (
-                    <li
-                      key={task.id}
-                      className="flex items-center gap-4 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50"
-                    >
-                      <span
-                        className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`}
-                      ></span>
-                      <span className="flex-1 font-medium text-on-surface text-sm">
-                        {task.text}
-                      </span>
-                      <span className="text-xs text-on-surface-variant font-mono">
-                        {task.scheduledMinutes} min
-                      </span>
-                      {task.priority && (
-                        <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">
-                          Priority
+                  {schedule.map((task) => {
+                    const elapsed = scheduleTimers[task.id] || 0;
+                    const total = task.scheduledMinutes * 60;
+                    const isRunning = runningTaskId === task.id;
+                    const isFinished = total > 0 && elapsed >= total;
+                    const hasProgress = elapsed > 0 && !isFinished;
+                    return (
+                      <li
+                        key={task.id}
+                        className="relative flex items-center gap-4 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 overflow-hidden"
+                      >
+                        {/* Progress underline */}
+                        {(hasProgress || isFinished) && (
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
+                            <div
+                              className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
+                              style={{
+                                width: `${Math.min(100, (elapsed / total) * 100)}%`,
+                              }}
+                            />
+                          </div>
+                        )}
+                        <span
+                          className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`}
+                        />
+                        <span className="flex-1 font-medium text-on-surface text-sm">
+                          {task.text}
                         </span>
-                      )}
-                    </li>
-                  ))}
+                        <span className="text-xs text-on-surface-variant font-mono">
+                          {task.scheduledMinutes} min
+                        </span>
+                        {task.priority && (
+                          <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">
+                            Priority
+                          </span>
+                        )}
+                        {/* Play button */}
+                        <button
+                          onClick={() => openTimer(task)}
+                          title={
+                            isFinished
+                              ? "Completed"
+                              : isRunning
+                                ? "Running — click to view"
+                                : hasProgress
+                                  ? "Resume timer"
+                                  : "Start timer"
+                          }
+                          className={`flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 ${
+                            isFinished
+                              ? "bg-tertiary/20 text-tertiary"
+                              : isRunning
+                                ? "bg-primary/20 text-primary animate-pulse"
+                                : hasProgress
+                                  ? "bg-secondary/20 text-secondary hover:bg-secondary/30"
+                                  : "bg-on-surface-variant/10 text-on-surface-variant hover:bg-on-surface-variant/20"
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-base">
+                            {isFinished
+                              ? "check_circle"
+                              : isRunning
+                                ? "pause_circle"
+                                : "play_circle"}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
               <div className="flex gap-3 justify-end mt-4 flex-wrap">
@@ -288,6 +401,16 @@ function App() {
           />
         </div>
       </div>
+      {/* Timer Modal */}
+      {timerTask && (
+        <TimerModal
+          task={timerTask}
+          elapsedSeconds={scheduleTimers[timerTask.id] || 0}
+          isRunning={runningTaskId === timerTask.id}
+          onPlayPause={toggleTimer}
+          onClose={closeTimer}
+        />
+      )}
       {/* Task Modal */}
       <TaskModal
         isOpen={isModalOpen || isEditModalOpen}
