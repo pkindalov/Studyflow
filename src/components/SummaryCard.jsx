@@ -4,7 +4,7 @@ function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
   return (
-    <section className="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_20px_40px_rgba(42,52,57,0.06)] relative overflow-hidden group">
+    <section className="bg-surface-container rounded-2xl p-8 border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)] relative overflow-hidden group">
       {/* Subtle background decoration */}
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary-container/20 rounded-full blur-3xl transition-transform duration-1000 group-hover:scale-110"></div>
       <div className="flex items-center justify-between relative z-10">

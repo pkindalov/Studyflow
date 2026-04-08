@@ -17,7 +17,7 @@ export function useTasks() {
       localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
   }, [tasks, isLoaded]);
 
-  const addTask = (dateKey, text, imageUrl = "") => {
+  const addTask = (dateKey, text, imageUrl = "", priority = false) => {
     setTasks((prev) => ({
       ...prev,
       [dateKey]: [
@@ -27,6 +27,7 @@ export function useTasks() {
           text,
           done: false,
           imageUrl,
+          priority: !!priority,
         },
       ],
     }));
@@ -50,12 +51,13 @@ export function useTasks() {
     });
   };
 
-  const editTask = (dateKey, id, text, imageUrl) => {
+  const editTask = (dateKey, id, text, imageUrl, priority = false) => {
     setTasks((prev) => {
       const updated = (prev[dateKey] || []).map((task) =>
-        task.id === id ? { ...task, text, imageUrl } : task,
+        task.id === id
+          ? { ...task, text, imageUrl, priority: !!priority }
+          : task,
       );
-
       return { ...prev, [dateKey]: updated };
     });
   };

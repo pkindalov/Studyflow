@@ -2,7 +2,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit }) {
   const isDone = !!task.done;
   return (
     <div
-      className={`bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_12px_rgba(42,52,57,0.02)] border border-outline-variant/10 flex items-center gap-6 hover:shadow-[0_20px_40px_rgba(42,52,57,0.06)] hover:bg-surface-bright transition-all group ${isDone ? "opacity-40" : ""}`}
+      className={`bg-surface-container p-5 rounded-xl border border-outline-variant/50 flex items-center gap-5 hover:bg-surface-container-high hover:border-outline-variant transition-all group ${isDone ? "opacity-40" : ""}`}
     >
       <button
         className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-colors ${isDone ? "border-primary bg-primary" : "border-outline-variant group-hover:border-primary"}`}

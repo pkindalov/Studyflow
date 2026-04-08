@@ -1,3 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Primary — soft indigo-violet */
+  --color-primary: #9580f5;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #2a2060;
+
+  /* Secondary — mint teal (completion/success) */
+  --color-secondary: #4fd9aa;
+  --color-on-secondary: #00281e;
+  --color-secondary-container: #0a3328;
+  --color-secondary-dim: #071c17;
+
+  /* Tertiary — warm amber (priority) */
+  --color-tertiary: #f0a540;
+
+  /* Surfaces — deep navy-black scale */
+  --color-surface: #0f0f20;
+  --color-surface-bright: #2c2c56;
+  --color-surface-container-lowest: #0c0c1a;
+  --color-surface-container-low: #131326;
+  --color-surface-container: #17172e;
+  --color-surface-container-high: #1e1e38;
+  --color-surface-container-highest: #252545;
+
+  /* Text */
+  --color-on-surface: #e4e4f2;
+  --color-on-surface-variant: #6868a0;
+
+  /* Borders */
+  --color-outline: rgba(255, 255, 255, 0.12);
+  --color-outline-variant: rgba(255, 255, 255, 0.06);
+
+  /* Error */
+  --color-error: #f87171;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0c0c1a;
+  color: var(--color-on-surface);
+  font-family: "Outfit", system-ui, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle noise texture on the page background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}

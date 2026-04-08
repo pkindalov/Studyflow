@@ -1,4 +1,5 @@
-export const markDateWithTasks = (tasks, formatDateKey) => (date, view) => {
+export const markDateWithTasks = (tasks, formatDateKey) => (props) => {
+  const { date, view } = props;
   const key = formatDateKey(date);
   return view === "month" && tasks[key]?.length > 0 ? (
     <div className="flex justify-center mt-1">
