@@ -24,7 +24,7 @@ function RightSidebar({
             step={0.25}
             value={totalStudyTime}
             onChange={(e) => setTotalStudyTime(Number(e.target.value))}
-            className="w-20 px-3 py-2 rounded-xl border border-outline-variant/50 bg-surface-container-low text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-20 px-3 py-2 rounded-xl border border-outline-variant/50 bg-surface-container-highest text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary/60 border-outline/60"
           />
           <span className="text-on-surface-variant font-medium">hours</span>
         </div>
@@ -51,7 +51,7 @@ function RightSidebar({
                 Math.max(0, Math.min(100, Number(e.target.value))),
               )
             }
-            className="w-20 px-3 py-2 rounded-xl border border-outline-variant/50 bg-surface-container-low text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-secondary/50"
+            className="w-20 px-3 py-2 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-secondary/60"
           />
           <span className="text-on-surface-variant font-medium">
             % of total time

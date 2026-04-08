@@ -46,6 +46,13 @@
   box-sizing: border-box;
 }
 
+/* Force all inputs into dark mode so browsers don't override bg/text with light defaults */
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
 body {
   background-color: #0c0c1a;
   color: var(--color-on-surface);

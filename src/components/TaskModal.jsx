@@ -30,13 +30,13 @@ function TaskModal({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Task description..."
-          className="w-full border border-outline-variant/60 bg-surface-container-low rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/50"
+          className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
         />
         <input
           value={image}
           onChange={(e) => setImage(e.target.value)}
           placeholder="Image URL (optional)"
-          className="w-full border border-outline-variant/60 bg-surface-container-low rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-on-surface placeholder:text-on-surface-variant/50"
+          className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
         />
         <div className="flex items-center gap-3 mb-2">
           <input
