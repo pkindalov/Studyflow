@@ -434,6 +434,7 @@ function App() {
           isRunning={runningTaskId === timerTask.id}
           onPlayPause={toggleTimer}
           onClose={closeTimer}
+          music={music}
         />
       )}
       {/* Task Modal */}

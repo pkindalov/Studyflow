@@ -1,6 +1,4 @@
-import React from "react";
-
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose }) {
+function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, music }) {
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
   const isFinished = remaining === 0 && totalSeconds > 0;
@@ -145,6 +143,80 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose }) {
                 ? "Paused — progress saved automatically"
                 : "Press play to start the countdown"}
         </p>
+
+        {/* Music controls */}
+        {music && (
+          <div className="w-full border-t border-outline-variant/30 pt-4 flex flex-col gap-2">
+            {/* Header + play-pause */}
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-base text-tertiary">
+                headphones
+              </span>
+              <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider flex-1">
+                Music
+              </span>
+              {music.activeTrack && (
+                <button
+                  onClick={music.togglePlay}
+                  className={`flex items-center justify-center w-7 h-7 rounded-full transition-all ${
+                    music.isPlaying
+                      ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
+                      : "bg-tertiary text-on-tertiary hover:opacity-90"
+                  }`}
+                  title={music.isPlaying ? "Pause music" : "Play music"}
+                >
+                  <span className="material-symbols-outlined text-sm">
+                    {music.isPlaying ? "pause" : "play_arrow"}
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* Track list */}
+            <div className="flex flex-col gap-1 max-h-36 overflow-y-auto">
+              {music.playlist.length === 0 && (
+                <p className="text-xs text-on-surface-variant text-center py-2">
+                  No tracks — add one in the sidebar.
+                </p>
+              )}
+              {music.playlist.map((track) => {
+                const isActive = track.id === music.activeTrackId;
+                return (
+                  <button
+                    key={track.id}
+                    onClick={() => music.selectTrack(track.id)}
+                    className={`flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left transition-all ${
+                      isActive
+                        ? "bg-tertiary/15 border border-tertiary/30"
+                        : "hover:bg-surface-container-high border border-transparent"
+                    }`}
+                  >
+                    <span
+                      className={`material-symbols-outlined text-sm flex-shrink-0 ${
+                        isActive && music.isPlaying
+                          ? "text-tertiary"
+                          : isActive
+                            ? "text-tertiary/60"
+                            : "text-on-surface-variant/30"
+                      }`}
+                    >
+                      {isActive && music.isPlaying
+                        ? "radio_button_checked"
+                        : "radio_button_unchecked"}
+                    </span>
+                    <span
+                      className={`text-xs truncate font-medium ${
+                        isActive ? "text-on-surface" : "text-on-surface-variant"
+                      }`}
+                    >
+                      {track.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
