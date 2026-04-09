@@ -1,6 +1,6 @@
 import { recurrenceLabel } from "../hooks/useRecurringTasks";
 
-function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect }) {
+function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer }) {
   const isDone = !!task.done;
   return (
     <div
@@ -78,6 +78,17 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
       </div>
 
       <div className="flex gap-1 text-on-surface-variant flex-shrink-0 items-center">
+        {/* Play timer button */}
+        {onOpenTimer && (
+          <button
+            onClick={() => onOpenTimer(task)}
+            className="p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+            aria-label="Start timer"
+            title="Start timer for this task"
+          >
+            <span className="material-symbols-outlined text-base">play_circle</span>
+          </button>
+        )}
         {/* Schedule inclusion toggle */}
         {onToggleSelect && (
           <button

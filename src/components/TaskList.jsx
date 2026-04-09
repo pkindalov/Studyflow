@@ -4,7 +4,7 @@ import Pagination from "./Pagination";
 
 const PAGE_SIZE = 8;
 
-function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect }) {
+function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer }) {
   const [page, setPage] = useState(0);
 
   useEffect(() => { setPage(0); }, [tasks.length]);
@@ -61,6 +61,7 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
                 onStopRecurring={onStopRecurring}
                 selected={showSelectionControls ? !excludedTaskIds.has(task.id) : true}
                 onToggleSelect={onToggleSelect}
+                onOpenTimer={onOpenTimer}
               />
             ))}
           </div>

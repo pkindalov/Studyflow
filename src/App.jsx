@@ -65,6 +65,10 @@ function App() {
   const [runningTaskId, setRunningTaskId] = useState(null);
   const [scheduleTimers, setScheduleTimers] = useState({});
 
+  // Quick-timer prompt for unscheduled tasks
+  const [pendingTimerTask, setPendingTimerTask] = useState(null);
+  const [pendingTimerMinutes, setPendingTimerMinutes] = useState(25);
+
   // Pomodoro state — persisted so settings survive refresh
   const [pomodoroEnabled, setPomodoroEnabled] = useState(() => {
     try { return JSON.parse(localStorage.getItem("pomodoro_enabled")) ?? false; } catch { return false; }
@@ -123,8 +127,8 @@ function App() {
 
   // Countdown interval — ticks every second while a task is running
   React.useEffect(() => {
-    if (!runningTaskId || !schedule) return;
-    const task = schedule.find((t) => t.id === runningTaskId);
+    if (!runningTaskId) return;
+    const task = (schedule && schedule.find((t) => t.id === runningTaskId)) || timerTask;
     if (!task) return;
     const totalSeconds = task.scheduledMinutes * 60;
     const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
@@ -143,7 +147,7 @@ function App() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [runningTaskId, schedule, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
+  }, [runningTaskId, schedule, timerTask, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
 
   const music = useMusicPlayer();
 
@@ -153,6 +157,15 @@ function App() {
     if (elapsed < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
       music.play();
+    }
+  }
+
+  function openTimerForTask(task) {
+    if (task.scheduledMinutes) {
+      openTimer(task);
+    } else {
+      setPendingTimerTask(task);
+      setPendingTimerMinutes(25);
     }
   }
 
@@ -433,6 +446,7 @@ function App() {
             onStopRecurring={(recurringId) => { deleteRecurring(recurringId); deleteAllByRecurringId(recurringId); }}
             excludedTaskIds={excludedTaskIds}
             onToggleSelect={toggleTaskSelection}
+            onOpenTimer={openTimerForTask}
             onEdit={(task) => {
               setEditTaskId(task.id);
               setEditTaskText(task.text);
@@ -611,6 +625,58 @@ function App() {
           setPomodoroMinutes={handleSetPomodoroMinutes}
           pomodoroResetAt={pomodoroResetAt}
         />
+      )}
+      {/* Quick-timer prompt for unscheduled tasks */}
+      {pendingTimerTask && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-xs p-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="font-headline font-bold text-on-surface text-base leading-tight line-clamp-2">
+                {pendingTimerTask.text}
+              </h3>
+              <p className="text-xs text-on-surface-variant">How many minutes do you want to work on this?</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min="1"
+                max="480"
+                value={pendingTimerMinutes}
+                onChange={(e) => setPendingTimerMinutes(Math.max(1, Math.min(480, Number(e.target.value))))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setScheduleTimers((prev) => ({ ...prev, [pendingTimerTask.id]: 0 }));
+                    openTimer({ ...pendingTimerTask, scheduledMinutes: pendingTimerMinutes });
+                    setPendingTimerTask(null);
+                  } else if (e.key === "Escape") {
+                    setPendingTimerTask(null);
+                  }
+                }}
+                autoFocus
+                className="flex-1 bg-surface-container-highest border border-outline/60 rounded-xl px-3 py-2 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <span className="text-sm text-on-surface-variant">min</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPendingTimerTask(null)}
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setScheduleTimers((prev) => ({ ...prev, [pendingTimerTask.id]: 0 }));
+                  openTimer({ ...pendingTimerTask, scheduledMinutes: pendingTimerMinutes });
+                  setPendingTimerTask(null);
+                }}
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all"
+              >
+                Start
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {/* Task Modal */}
       <TaskModal
