@@ -40,6 +40,15 @@ export function useTasks() {
     }));
   }, []);
 
+  const markTaskDone = useCallback((dateKey, id) => {
+    setTasks((prev) => ({
+      ...prev,
+      [dateKey]: (prev[dateKey] || []).map((task) =>
+        task.id === id ? { ...task, done: true } : task,
+      ),
+    }));
+  }, []);
+
   const deleteTask = useCallback((dateKey, id) => {
     setTasks((prev) => ({
       ...prev,
@@ -75,5 +84,5 @@ export function useTasks() {
     });
   }, []);
 
-  return { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring, deleteAllByRecurringId };
+  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId };
 }

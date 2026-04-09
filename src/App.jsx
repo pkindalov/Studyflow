@@ -93,7 +93,7 @@ function App() {
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
 
-  const { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring, deleteAllByRecurringId } = useTasks();
+  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } = useRecurringTasks();
   const music = useMusicPlayer();
 
@@ -143,31 +143,42 @@ function App() {
     localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
   }, [scheduleTimers, dateKey]);
 
-  // ─── Countdown interval ─────────────────────────────────────────────────────
+  // ─── Countdown interval — pure increment, no side-effects ──────────────────
   useEffect(() => {
     if (!runningTaskId) return;
     const task = (schedule && schedule.find((t) => t.id === runningTaskId)) || timerTask;
     if (!task) return;
     const totalSeconds = task.scheduledMinutes * 60;
-    const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
+    const taskId = runningTaskId;
     const interval = setInterval(() => {
       setScheduleTimers((prev) => {
-        const elapsed = prev[runningTaskId] || 0;
+        const elapsed = prev[taskId] || 0;
         if (elapsed >= totalSeconds) return prev;
-        const next = elapsed + 1;
-        if (next >= totalSeconds) {
-          setTimeout(() => {
-            setRunningTaskId(null);
-            toggleTask(dateKey, runningTaskId);
-          }, 10);
-        } else if (pomodoroSeconds > 0 && next > pomodoroResetAt && (next - pomodoroResetAt) % pomodoroSeconds === 0) {
-          setTimeout(() => setRunningTaskId(null), 10);
-        }
-        return { ...prev, [runningTaskId]: next };
+        return { ...prev, [taskId]: elapsed + 1 };
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [runningTaskId, schedule, timerTask, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt, dateKey, toggleTask]);
+  }, [runningTaskId, schedule, timerTask]);
+
+  // ─── Completion & pomodoro detection — runs after each timer tick ───────────
+  // useEffect callbacks are NOT double-invoked by StrictMode on re-renders,
+  // unlike state updater functions — so side-effects here fire exactly once.
+  useEffect(() => {
+    if (!runningTaskId) return;
+    const task = (schedule && schedule.find((t) => t.id === runningTaskId)) || timerTask;
+    if (!task) return;
+    const totalSeconds = task.scheduledMinutes * 60;
+    const elapsed = scheduleTimers[runningTaskId] || 0;
+    if (elapsed >= totalSeconds) {
+      setRunningTaskId(null);
+      markTaskDone(dateKey, runningTaskId);
+      return;
+    }
+    const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
+    if (pomodoroSeconds > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomodoroSeconds === 0) {
+      setRunningTaskId(null);
+    }
+  }, [scheduleTimers, runningTaskId, schedule, timerTask, dateKey, markTaskDone, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
 
   // ─── Recurring task auto-population ────────────────────────────────────────
   useEffect(() => {
