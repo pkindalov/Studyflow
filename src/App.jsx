@@ -10,6 +10,7 @@ import RightSidebar from "./components/RightSidebar";
 import MusicPanel from "./components/MusicPanel";
 import { useTasks } from "./hooks/useTasks";
 import { useMusicPlayer } from "./hooks/useMusicPlayer";
+import { useRecurringTasks, appliesToDate } from "./hooks/useRecurringTasks";
 import { markDateWithTasks } from "./utils/calendar";
 import "./calendar.css";
 import "./animations.css";
@@ -31,12 +32,19 @@ function App() {
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskImage, setNewTaskImage] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState(false);
+  const [newTaskRecurrence, setNewTaskRecurrence] = useState("none");
+  const [newTaskStartDate, setNewTaskStartDate] = useState("");
+  const [newTaskEndDate, setNewTaskEndDate] = useState("");
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState(null);
   const [editTaskText, setEditTaskText] = useState("");
   const [editTaskImage, setEditTaskImage] = useState("");
   const [editTaskPriority, setEditTaskPriority] = useState(false);
+  const [editTaskRecurrence, setEditTaskRecurrence] = useState("none");
+  const [editTaskStartDate, setEditTaskStartDate] = useState("");
+  const [editTaskEndDate, setEditTaskEndDate] = useState("");
+  const [editTaskIsRecurringInstance, setEditTaskIsRecurringInstance] = useState(false);
 
   const isEditing = isEditModalOpen;
 
@@ -126,7 +134,31 @@ function App() {
     }
   }
 
-  const { tasks, addTask, toggleTask, deleteTask, editTask } = useTasks();
+  const { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring } =
+    useTasks();
+  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, skipDate } =
+    useRecurringTasks();
+
+  // Auto-populate recurring tasks whenever the date or recurring templates change
+  React.useEffect(() => {
+    const existingIds = new Set(
+      (tasks[dateKey] || []).map((t) => t.recurringId).filter(Boolean),
+    );
+    recurringTasks.forEach((template) => {
+      if (existingIds.has(template.id)) return;
+      if ((template.skippedDates || []).includes(dateKey)) return;
+      if (!appliesToDate(template, dateKey)) return;
+      addTaskDirect(dateKey, {
+        id: crypto.randomUUID(),
+        text: template.text,
+        imageUrl: template.imageUrl,
+        priority: template.priority,
+        done: false,
+        recurringId: template.id,
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateKey, recurringTasks]);
 
   const tasksForDay = tasks[dateKey] || [];
 
@@ -227,25 +259,71 @@ function App() {
     }
   }
 
-  const handleAddTask = (text, image, priority) => {
-    addTask(dateKey, text, image, priority);
+  function resetAddModal() {
     setIsModalOpen(false);
     setNewTaskText("");
     setNewTaskImage("");
     setNewTaskPriority(false);
-  };
+    setNewTaskRecurrence("none");
+    setNewTaskStartDate("");
+    setNewTaskEndDate("");
+  }
 
-  const handleEditTask = (text, image, priority) => {
-    editTask(dateKey, editTaskId, text, image, priority);
+  function resetEditModal() {
     setIsEditModalOpen(false);
     setEditTaskId(null);
     setEditTaskText("");
     setEditTaskImage("");
     setEditTaskPriority(false);
+    setEditTaskRecurrence("none");
+    setEditTaskStartDate("");
+    setEditTaskEndDate("");
+    setEditTaskIsRecurringInstance(false);
+  }
+
+  const handleAddTask = () => {
+    const startDate = newTaskStartDate || dateKey;
+    if (newTaskRecurrence !== "none") {
+      addRecurring(newTaskText, newTaskImage, newTaskPriority, newTaskRecurrence, startDate, newTaskEndDate);
+    } else {
+      addTask(dateKey, newTaskText, newTaskImage, newTaskPriority);
+    }
+    resetAddModal();
   };
 
-  // Helper for marking dates with tasks (fix signature for calendar dot)
-  const markDateWithTasksFn = markDateWithTasks(tasks, formatDateKey);
+  const handleDeleteTask = (id) => {
+    const task = (tasks[dateKey] || []).find((t) => t.id === id);
+    if (task?.recurringId) {
+      skipDate(task.recurringId, dateKey);
+    }
+    deleteTask(dateKey, id);
+  };
+
+  const handleEditTask = () => {
+    // Always update the task's own fields for this day
+    editTask(dateKey, editTaskId, editTaskText, editTaskImage, editTaskPriority);
+    // Handle recurrence
+    const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
+    const startDate = editTaskStartDate || dateKey;
+    if (editTaskRecurrence !== "none") {
+      if (task?.recurringId) {
+        // Update the existing template (affects all future instances)
+        updateRecurring(task.recurringId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, startDate, editTaskEndDate);
+      } else {
+        // Convert this one-time task into a recurring task
+        const newId = addRecurring(editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, startDate, editTaskEndDate);
+        linkRecurring(dateKey, editTaskId, newId);
+      }
+    } else if (task?.recurringId) {
+      // User removed recurrence — stop the template and unlink this task instance
+      deleteRecurring(task.recurringId);
+      linkRecurring(dateKey, editTaskId, null);
+    }
+    resetEditModal();
+  };
+
+  // Helper for marking dates with tasks (includes recurring templates)
+  const markDateWithTasksFn = markDateWithTasks(tasks, formatDateKey, recurringTasks);
 
   // Main render
   return (
@@ -263,7 +341,7 @@ function App() {
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             markDateWithTasks={markDateWithTasksFn}
-            onAddClick={() => setIsModalOpen(true)}
+            onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
           />
         </div>
         {/* Main Content */}
@@ -277,12 +355,25 @@ function App() {
           <TaskList
             tasks={tasksForDay}
             onToggle={(id) => toggleTask(dateKey, id)}
-            onDelete={(id) => deleteTask(dateKey, id)}
+            onDelete={handleDeleteTask}
+            onStopRecurring={(recurringId) => deleteRecurring(recurringId)}
             onEdit={(task) => {
               setEditTaskId(task.id);
               setEditTaskText(task.text);
               setEditTaskImage(task.imageUrl || "");
               setEditTaskPriority(task.priority);
+              if (task.recurringId) {
+                const tpl = recurringTasks.find((r) => r.id === task.recurringId);
+                setEditTaskRecurrence(tpl?.recurrence || "none");
+                setEditTaskStartDate(tpl?.startDate || dateKey);
+                setEditTaskEndDate(tpl?.endDate || "");
+                setEditTaskIsRecurringInstance(true);
+              } else {
+                setEditTaskRecurrence("none");
+                setEditTaskStartDate(dateKey);
+                setEditTaskEndDate("");
+                setEditTaskIsRecurringInstance(false);
+              }
               setIsEditModalOpen(true);
             }}
           />
@@ -440,10 +531,7 @@ function App() {
       {/* Task Modal */}
       <TaskModal
         isOpen={isModalOpen || isEditModalOpen}
-        onClose={() => {
-          if (isModalOpen) setIsModalOpen(false);
-          if (isEditModalOpen) setIsEditModalOpen(false);
-        }}
+        onClose={() => { isEditing ? resetEditModal() : resetAddModal(); }}
         onSave={isEditing ? handleEditTask : handleAddTask}
         text={isEditing ? editTaskText : newTaskText}
         setText={isEditing ? setEditTaskText : setNewTaskText}
@@ -451,6 +539,13 @@ function App() {
         setImage={isEditing ? setEditTaskImage : setNewTaskImage}
         priority={isEditing ? editTaskPriority : newTaskPriority}
         setPriority={isEditing ? setEditTaskPriority : setNewTaskPriority}
+        recurrence={isEditing ? editTaskRecurrence : newTaskRecurrence}
+        setRecurrence={isEditing ? setEditTaskRecurrence : setNewTaskRecurrence}
+        startDate={isEditing ? editTaskStartDate : newTaskStartDate}
+        setStartDate={isEditing ? setEditTaskStartDate : setNewTaskStartDate}
+        endDate={isEditing ? editTaskEndDate : newTaskEndDate}
+        setEndDate={isEditing ? setEditTaskEndDate : setNewTaskEndDate}
+        isRecurringInstance={isEditing ? editTaskIsRecurringInstance : false}
         title={isEditing ? "Edit Task" : "Add New Task"}
       />
     </div>

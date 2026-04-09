@@ -33,6 +33,14 @@ export function useTasks() {
     }));
   };
 
+  // Adds a pre-formed task object (used for auto-populating recurring tasks)
+  const addTaskDirect = (dateKey, taskObj) => {
+    setTasks((prev) => ({
+      ...prev,
+      [dateKey]: [...(prev[dateKey] || []), taskObj],
+    }));
+  };
+
   const toggleTask = (dateKey, id) => {
     setTasks((prev) => {
       const updated = (prev[dateKey] || []).map((task) =>
@@ -62,11 +70,22 @@ export function useTasks() {
     });
   };
 
+  const linkRecurring = (dateKey, taskId, recurringId) => {
+    setTasks((prev) => ({
+      ...prev,
+      [dateKey]: (prev[dateKey] || []).map((t) =>
+        t.id === taskId ? { ...t, recurringId } : t,
+      ),
+    }));
+  };
+
   return {
     tasks,
     addTask,
+    addTaskDirect,
     toggleTask,
     deleteTask,
     editTask,
+    linkRecurring,
   };
 }

@@ -1,6 +1,6 @@
 import TaskCard from "./TaskCard";
 
-function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit }) {
+function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring }) {
   return (
     <section className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -30,6 +30,7 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit }) {
               onToggle={onToggle}
               onDelete={onDelete}
               onEdit={onEdit}
+              onStopRecurring={onStopRecurring}
             />
           ))}
         </div>
