@@ -12,7 +12,8 @@ function formatTime(seconds, hms) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, music }) {
+function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, music,
+  pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes }) {
   const [hmsMode, setHmsMode] = useState(false);
 
   const totalSeconds = task.scheduledMinutes * 60;
@@ -164,6 +165,71 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, mus
                 ? "Paused — progress saved automatically"
                 : "Press play to start the countdown"}
         </p>
+
+        {/* Pomodoro controls */}
+        {setPomodoroEnabled && (
+          <div className="w-full border-t border-outline-variant/30 pt-4 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-base text-error/70">timer</span>
+              <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider flex-1">
+                Pomodoro
+              </span>
+              <button
+                onClick={() => setPomodoroEnabled((v) => !v)}
+                className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${
+                  pomodoroEnabled ? "bg-error/70" : "bg-outline-variant/50"
+                }`}
+                title={pomodoroEnabled ? "Disable Pomodoro" : "Enable Pomodoro"}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    pomodoroEnabled ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {pomodoroEnabled && (
+              <>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-on-surface-variant flex-1">
+                    Break every
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={pomodoroMinutes}
+                    onChange={(e) => setPomodoroMinutes(Math.max(1, Math.min(60, Number(e.target.value))))}
+                    className="w-14 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-error/40"
+                  />
+                  <span className="text-xs text-on-surface-variant">min</span>
+                </div>
+
+                {elapsedSeconds > 0 && (() => {
+                  const pomSec = pomodoroMinutes * 60;
+                  const cycle = Math.floor(elapsedSeconds / pomSec) + 1;
+                  const timeInCycle = elapsedSeconds % pomSec;
+                  const untilBreak = pomSec - timeInCycle;
+                  return (
+                    <div className="flex items-center justify-between bg-error/8 border border-error/20 rounded-lg px-3 py-1.5">
+                      <span className="text-xs text-error/80 font-semibold">
+                        Cycle {cycle}
+                      </span>
+                      <span className="text-xs text-on-surface-variant font-mono">
+                        {isRunning
+                          ? `break in ${formatTime(untilBreak, false)}`
+                          : timeInCycle === 0
+                            ? "Take a break!"
+                            : `paused · ${formatTime(untilBreak, false)} left`}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </div>
+        )}
 
         {/* Music controls */}
         {music && (

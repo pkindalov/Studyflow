@@ -65,6 +65,16 @@ function App() {
   const [runningTaskId, setRunningTaskId] = useState(null);
   const [scheduleTimers, setScheduleTimers] = useState({});
 
+  // Pomodoro state — persisted so settings survive refresh
+  const [pomodoroEnabled, setPomodoroEnabled] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("pomodoro_enabled")) ?? false; } catch { return false; }
+  });
+  const [pomodoroMinutes, setPomodoroMinutes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? 25; } catch { return 25; }
+  });
+  React.useEffect(() => { localStorage.setItem("pomodoro_enabled", JSON.stringify(pomodoroEnabled)); }, [pomodoroEnabled]);
+  React.useEffect(() => { localStorage.setItem("pomodoro_minutes", JSON.stringify(pomodoroMinutes)); }, [pomodoroMinutes]);
+
   // Reset excluded tasks when the date changes
   React.useEffect(() => {
     setExcludedTaskIds(new Set());
@@ -109,6 +119,7 @@ function App() {
     const task = schedule.find((t) => t.id === runningTaskId);
     if (!task) return;
     const totalSeconds = task.scheduledMinutes * 60;
+    const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
     const interval = setInterval(() => {
       setScheduleTimers((prev) => {
         const elapsed = prev[runningTaskId] || 0;
@@ -116,12 +127,15 @@ function App() {
         const next = elapsed + 1;
         if (next >= totalSeconds) {
           setTimeout(() => setRunningTaskId(null), 10);
+        } else if (pomodoroSeconds > 0 && next % pomodoroSeconds === 0) {
+          // Pomodoro interval complete — auto-pause
+          setTimeout(() => setRunningTaskId(null), 10);
         }
         return { ...prev, [runningTaskId]: next };
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [runningTaskId, schedule]);
+  }, [runningTaskId, schedule, pomodoroEnabled, pomodoroMinutes]);
 
   const music = useMusicPlayer();
 
@@ -583,6 +597,10 @@ function App() {
           onPlayPause={toggleTimer}
           onClose={closeTimer}
           music={music}
+          pomodoroEnabled={pomodoroEnabled}
+          setPomodoroEnabled={setPomodoroEnabled}
+          pomodoroMinutes={pomodoroMinutes}
+          setPomodoroMinutes={setPomodoroMinutes}
         />
       )}
       {/* Task Modal */}
