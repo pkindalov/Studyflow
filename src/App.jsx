@@ -77,6 +77,8 @@ function App() {
   const [timerTask, setTimerTask] = useState(null);
   const [runningTaskId, setRunningTaskId] = useState(null);
   const [scheduleTimers, setScheduleTimers] = useState({});
+  // Maps taskId → scheduledMinutes so RightSidebar can show live progress
+  const [taskAllocations, setTaskAllocations] = useState({});
 
   // Quick-timer prompt for unscheduled tasks
   const [pendingTimerTask, setPendingTimerTask] = useState(null);
@@ -125,6 +127,7 @@ function App() {
 
   useEffect(() => {
     setExcludedTaskIds(new Set());
+    setTaskAllocations({});
   }, [dateKey]);
 
   useEffect(() => {
@@ -153,7 +156,10 @@ function App() {
         if (elapsed >= totalSeconds) return prev;
         const next = elapsed + 1;
         if (next >= totalSeconds) {
-          setTimeout(() => setRunningTaskId(null), 10);
+          setTimeout(() => {
+            setRunningTaskId(null);
+            toggleTask(dateKey, runningTaskId);
+          }, 10);
         } else if (pomodoroSeconds > 0 && next > pomodoroResetAt && (next - pomodoroResetAt) % pomodoroSeconds === 0) {
           setTimeout(() => setRunningTaskId(null), 10);
         }
@@ -161,7 +167,7 @@ function App() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [runningTaskId, schedule, timerTask, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
+  }, [runningTaskId, schedule, timerTask, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt, dateKey, toggleTask]);
 
   // ─── Recurring task auto-population ────────────────────────────────────────
   useEffect(() => {
@@ -203,6 +209,7 @@ function App() {
   // ─── Timer controls ─────────────────────────────────────────────────────────
   const openTimer = useCallback((task) => {
     setTimerTask(task);
+    setTaskAllocations((prev) => ({ ...prev, [task.id]: task.scheduledMinutes }));
     const elapsed = scheduleTimers[task.id] || 0;
     if (elapsed < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
@@ -213,11 +220,18 @@ function App() {
   const openTimerForTask = useCallback((task) => {
     if (task.scheduledMinutes) {
       openTimer(task);
+      return;
+    }
+    const elapsed = scheduleTimers[task.id] || 0;
+    const allocated = taskAllocations[task.id];
+    if (elapsed > 0 && allocated) {
+      // Resume previous session with the same allocation
+      openTimer({ ...task, scheduledMinutes: allocated });
     } else {
       setPendingTimerTask(task);
       setPendingTimerMinutes(25);
     }
-  }, [openTimer]);
+  }, [openTimer, scheduleTimers, taskAllocations]);
 
   const closeTimer = useCallback(() => {
     setRunningTaskId(null);
@@ -539,6 +553,8 @@ function App() {
             tasks={tasks}
             recurringTasks={recurringTasks}
             tasksForDay={tasksForDay}
+            scheduleTimers={scheduleTimers}
+            taskAllocations={taskAllocations}
           />
           <MusicPanel
             playlist={music.playlist}

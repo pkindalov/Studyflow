@@ -47,6 +47,8 @@ function RightSidebar({
   tasks,
   recurringTasks,
   tasksForDay,
+  scheduleTimers = {},
+  taskAllocations = {},
 }) {
   // Hooks always at the top — before any conditional logic
   const [showAll, setShowAll] = useState(false);
@@ -69,29 +71,36 @@ function RightSidebar({
     }
 
     if (tasksForDay.length > 0) {
-      const done = tasksForDay.filter((t) => t.done).length;
-      const total = tasksForDay.length;
-      const taskRows = tasksForDay.map((t, idx) => ({
-        key: t.id,
-        label: t.text,
-        progress: t.done ? 100 : 0,
-        priority: t.priority,
-        colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length],
-      }));
+      const taskRows = tasksForDay.map((t, idx) => {
+        let progress = 0;
+        if (t.done) {
+          progress = 100;
+        } else {
+          const elapsed = scheduleTimers[t.id] || 0;
+          const totalSec = (taskAllocations[t.id] || 0) * 60;
+          if (totalSec > 0) progress = Math.min(100, Math.round((elapsed / totalSec) * 100));
+        }
+        return {
+          key: t.id,
+          label: t.text,
+          progress,
+          priority: t.priority,
+          colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length],
+        };
+      });
+
+      const overallProgress = taskRows.length > 0
+        ? Math.round(taskRows.reduce((sum, r) => sum + r.progress, 0) / taskRows.length)
+        : 0;
+
       return [
-        {
-          key: "__today__",
-          label: "Today's progress",
-          progress: total > 0 ? Math.round((done / total) * 100) : 0,
-          priority: false,
-          colorClass: "bg-primary",
-        },
+        { key: "__today__", label: "Today's progress", progress: overallProgress, priority: false, colorClass: "bg-primary" },
         ...taskRows,
       ];
     }
 
     return [];
-  }, [recurringTasks, tasks, tasksForDay]);
+  }, [recurringTasks, tasks, tasksForDay, scheduleTimers, taskAllocations]);
 
   const hasAny = items.length > 0;
   const visible = items.slice(0, MAX_VISIBLE);
