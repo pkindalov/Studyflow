@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   initYTPlayer,
+  resetYTPlayer,
   ytPlay,
   ytPause,
   ytCue,
   ytVolume,
 } from "../services/youtubePlayer";
 
-const PLAYER_DIV_ID = "studyflow-yt-player";
 
 const DEFAULT_PLAYLIST = [
   {
@@ -81,15 +81,15 @@ export function useMusicPlayer() {
     localStorage.setItem("music_volume", String(volume));
   }, [volume]);
 
-  // Init the YouTube player once after the div is mounted
+  // Init the YouTube player — the service manages its own DOM element
   useEffect(() => {
-    initYTPlayer(PLAYER_DIV_ID, (e) => {
+    initYTPlayer((e) => {
       if (typeof window.YT?.PlayerState !== "undefined") {
         setIsPlaying(e.data === window.YT.PlayerState.PLAYING);
       }
     });
-    // Set volume once the player is ready (queued internally)
     ytVolume(volume);
+    return resetYTPlayer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

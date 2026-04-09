@@ -1,12 +1,26 @@
 // Singleton YouTube IFrame API manager.
-// The constructor return value doesn't have methods yet — methods are only
-// available on event.target inside onReady. We update _player there.
+// The div is created and owned here — not by React — so React remounts
+// (including StrictMode's double-invoke) don't detach the player element.
+
+const CONTAINER_ID = "studyflow-yt-player";
 
 let _player = null;
 let _ready = false;
 let _pending = [];
 let _stateCallback = null;
 let _initialized = false;
+
+function ensureContainer() {
+  let el = document.getElementById(CONTAINER_ID);
+  if (!el) {
+    el = document.createElement("div");
+    el.id = CONTAINER_ID;
+    el.style.cssText =
+      "position:fixed;top:-9999px;left:-9999px;width:2px;height:2px;pointer-events:none;";
+    document.body.appendChild(el);
+  }
+  return el;
+}
 
 function exec(fn) {
   if (_ready && _player) {
@@ -23,17 +37,16 @@ function onPlayerReady(event) {
   _pending = [];
 }
 
-export function initYTPlayer(containerId, onStateChange) {
-  if (_initialized) {
-    _stateCallback = onStateChange;
-    return;
-  }
-  _initialized = true;
+export function initYTPlayer(onStateChange) {
   _stateCallback = onStateChange;
 
+  if (_initialized) return;
+  _initialized = true;
+
+  ensureContainer();
+
   const create = () => {
-    // Do NOT assign return value — player methods aren't ready on it yet
-    new window.YT.Player(containerId, {
+    new window.YT.Player(CONTAINER_ID, {
       width: "2",
       height: "2",
       videoId: "",
@@ -68,22 +81,24 @@ export function initYTPlayer(containerId, onStateChange) {
   }
 }
 
-// Use simple string args — the object form isn't supported in all API versions
-export function ytPlay() {
-  exec((p) => p.playVideo());
+export function resetYTPlayer() {
+  if (_player) {
+    try { _player.destroy(); } catch { /* ignore */ }
+    _player = null;
+  }
+  // Remove the container so the next initYTPlayer creates a fresh one
+  const el = document.getElementById(CONTAINER_ID);
+  if (el) el.remove();
+
+  _ready = false;
+  _pending = [];
+  _stateCallback = null;
+  _initialized = false;
 }
-export function ytPause() {
-  exec((p) => p.pauseVideo());
-}
-export function ytCue(videoId) {
-  exec((p) => p.cueVideoById(videoId));
-}
-export function ytLoad(videoId) {
-  exec((p) => p.loadVideoById(videoId));
-}
-export function ytVolume(vol) {
-  exec((p) => p.setVolume(vol));
-}
-export function ytReady() {
-  return _ready;
-}
+
+export function ytPlay() { exec((p) => p.playVideo()); }
+export function ytPause() { exec((p) => p.pauseVideo()); }
+export function ytCue(videoId) { exec((p) => p.cueVideoById(videoId)); }
+export function ytLoad(videoId) { exec((p) => p.loadVideoById(videoId)); }
+export function ytVolume(vol) { exec((p) => p.setVolume(vol)); }
+export function ytReady() { return _ready; }

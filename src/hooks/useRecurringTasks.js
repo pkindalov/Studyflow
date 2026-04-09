@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const STORAGE_KEY = "studyflow_recurring";
 
@@ -9,23 +9,15 @@ export function appliesToDate(template, dateKey) {
   const start = new Date(template.startDate + "T12:00:00");
 
   switch (template.recurrence) {
-    case "daily":
-      return true;
-    case "weekly":
-      return date.getDay() === start.getDay();
-    case "monthly":
-      return date.getDate() === start.getDate();
-    case "yearly":
-      return date.getMonth() === start.getMonth() && date.getDate() === start.getDate();
-    default:
-      return false;
+    case "daily":   return true;
+    case "weekly":  return date.getDay() === start.getDay();
+    case "monthly": return date.getDate() === start.getDate();
+    case "yearly":  return date.getMonth() === start.getMonth() && date.getDate() === start.getDate();
+    default:        return false;
   }
 }
 
-const DAY_NAMES = [
-  "Sunday", "Monday", "Tuesday", "Wednesday",
-  "Thursday", "Friday", "Saturday",
-];
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function ordinal(n) {
   const s = ["th", "st", "nd", "rd"];
@@ -59,25 +51,16 @@ export function useRecurringTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recurringTasks));
   }, [recurringTasks]);
 
-  function addRecurring(text, imageUrl, priority, recurrence, startDate, endDate = "") {
+  const addRecurring = useCallback((text, imageUrl, priority, recurrence, startDate, endDate = "") => {
     const id = crypto.randomUUID();
     setRecurringTasks((prev) => [
       ...prev,
-      {
-        id,
-        text,
-        imageUrl: imageUrl || "",
-        priority: !!priority,
-        recurrence,
-        startDate,
-        endDate: endDate || "",
-        skippedDates: [],
-      },
+      { id, text, imageUrl: imageUrl || "", priority: !!priority, recurrence, startDate, endDate: endDate || "", skippedDates: [] },
     ]);
     return id;
-  }
+  }, []);
 
-  function updateRecurring(id, text, imageUrl, priority, recurrence, startDate, endDate) {
+  const updateRecurring = useCallback((id, text, imageUrl, priority, recurrence, startDate, endDate) => {
     setRecurringTasks((prev) =>
       prev.map((t) =>
         t.id === id
@@ -85,21 +68,19 @@ export function useRecurringTasks() {
           : t,
       ),
     );
-  }
+  }, []);
 
-  function deleteRecurring(id) {
+  const deleteRecurring = useCallback((id) => {
     setRecurringTasks((prev) => prev.filter((t) => t.id !== id));
-  }
+  }, []);
 
-  function skipDate(id, dateKey) {
+  const skipDate = useCallback((id, dateKey) => {
     setRecurringTasks((prev) =>
       prev.map((t) =>
-        t.id === id
-          ? { ...t, skippedDates: [...(t.skippedDates || []), dateKey] }
-          : t,
+        t.id === id ? { ...t, skippedDates: [...(t.skippedDates || []), dateKey] } : t,
       ),
     );
-  }
+  }, []);
 
   return { recurringTasks, addRecurring, updateRecurring, deleteRecurring, skipDate };
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import TaskList from "./components/TaskList";
@@ -15,19 +15,34 @@ import { markDateWithTasks } from "./utils/calendar";
 import "./calendar.css";
 import "./animations.css";
 
+// Pure helpers — no state dependency, live outside the component
+const formatDateKey = (date) => date.toLocaleDateString("en-CA");
+
+function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
+  const start = new Date((startDate) + "T12:00:00");
+  if (recurrence === "daily") {
+    const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+    return lastDay.toLocaleDateString("en-CA");
+  }
+  if (recurrence === "monthly") {
+    const d = new Date(start);
+    d.setMonth(d.getMonth() + Math.max(1, parseInt(monthsAhead) || 3));
+    return d.toLocaleDateString("en-CA");
+  }
+  if (recurrence === "yearly") {
+    const d = new Date(start);
+    d.setFullYear(d.getFullYear() + Math.max(1, parseInt(yearsAhead) || 2));
+    return d.toLocaleDateString("en-CA");
+  }
+  // custom: user-supplied end date; use "daily" as the actual recurrence
+  return customEndDate || "";
+}
+
 function App() {
   const [notification, setNotification] = useState("");
-  function showNotification(msg) {
-    setNotification(msg);
-    setTimeout(() => setNotification(""), 2500);
-  }
-  // Priority percent (how much of total time can be used by priority tasks)
-  const [priorityPercent, setPriorityPercent] = useState(40); // default 40%
+  const [priorityPercent, setPriorityPercent] = useState(40);
   const [selectedDate, setSelectedDate] = useState(new Date());
-
-  // New: total study time in hours
-  const [totalStudyTime, setTotalStudyTime] = useState(4); // default 4 hours
-
+  const [totalStudyTime, setTotalStudyTime] = useState(4);
   const [excludedTaskIds, setExcludedTaskIds] = useState(new Set());
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,8 +68,6 @@ function App() {
   const [editTaskIsRecurringInstance, setEditTaskIsRecurringInstance] = useState(false);
 
   const isEditing = isEditModalOpen;
-
-  const formatDateKey = (date) => date.toLocaleDateString("en-CA");
   const dateKey = formatDateKey(selectedDate);
 
   // Schedule state
@@ -76,57 +89,59 @@ function App() {
   const [pomodoroMinutes, setPomodoroMinutes] = useState(() => {
     try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? 25; } catch { return 25; }
   });
-  // Tracks elapsed-seconds anchor when pomodoro settings change mid-run
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
-  React.useEffect(() => { localStorage.setItem("pomodoro_enabled", JSON.stringify(pomodoroEnabled)); }, [pomodoroEnabled]);
-  React.useEffect(() => { localStorage.setItem("pomodoro_minutes", JSON.stringify(pomodoroMinutes)); }, [pomodoroMinutes]);
 
-  function handleSetPomodoroMinutes(val) {
-    const currentElapsed = timerTask ? (scheduleTimers[timerTask.id] || 0) : 0;
-    setPomodoroResetAt(currentElapsed);
-    setPomodoroMinutes(val);
-  }
+  const { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring, deleteAllByRecurringId } = useTasks();
+  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } = useRecurringTasks();
+  const music = useMusicPlayer();
 
-  // Reset excluded tasks when the date changes
-  React.useEffect(() => {
+  // ─── Derived data ───────────────────────────────────────────────────────────
+  const tasksForDay = useMemo(() => tasks[dateKey] || [], [tasks, dateKey]);
+
+  const { totalTasks, completedTasks, remainingTasks, progress } = useMemo(() => {
+    const total = tasksForDay.length;
+    const completed = tasksForDay.filter((t) => t.done).length;
+    return {
+      totalTasks: total,
+      completedTasks: completed,
+      remainingTasks: total - completed,
+      progress: total === 0 ? 0 : Math.round((completed / total) * 100),
+    };
+  }, [tasksForDay]);
+
+  const markDateWithTasksFn = useMemo(
+    () => markDateWithTasks(tasks, formatDateKey, recurringTasks),
+    [tasks, recurringTasks],
+  );
+
+  // ─── Persistence effects ────────────────────────────────────────────────────
+  useEffect(() => {
+    localStorage.setItem("pomodoro_enabled", JSON.stringify(pomodoroEnabled));
+  }, [pomodoroEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("pomodoro_minutes", JSON.stringify(pomodoroMinutes));
+  }, [pomodoroMinutes]);
+
+  useEffect(() => {
     setExcludedTaskIds(new Set());
   }, [dateKey]);
 
-  function toggleTaskSelection(id) {
-    setExcludedTaskIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  // Load saved schedule from localStorage on date change
-  React.useEffect(() => {
+  useEffect(() => {
     const saved = localStorage.getItem(`schedule_${dateKey}`);
-    if (saved) {
-      setSchedule(JSON.parse(saved));
-    } else {
-      setSchedule(null);
-    }
-    // Load saved timer progress for this date
+    setSchedule(saved ? JSON.parse(saved) : null);
     const savedTimers = localStorage.getItem(`schedule_timers_${dateKey}`);
     setScheduleTimers(savedTimers ? JSON.parse(savedTimers) : {});
-    // Stop any running timer when switching dates
     setRunningTaskId(null);
     setTimerTask(null);
   }, [dateKey]);
 
-  // Auto-save timer progress to localStorage whenever it changes
-  React.useEffect(() => {
-    localStorage.setItem(
-      `schedule_timers_${dateKey}`,
-      JSON.stringify(scheduleTimers),
-    );
+  useEffect(() => {
+    localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
   }, [scheduleTimers, dateKey]);
 
-  // Countdown interval — ticks every second while a task is running
-  React.useEffect(() => {
+  // ─── Countdown interval ─────────────────────────────────────────────────────
+  useEffect(() => {
     if (!runningTaskId) return;
     const task = (schedule && schedule.find((t) => t.id === runningTaskId)) || timerTask;
     if (!task) return;
@@ -140,7 +155,6 @@ function App() {
         if (next >= totalSeconds) {
           setTimeout(() => setRunningTaskId(null), 10);
         } else if (pomodoroSeconds > 0 && next > pomodoroResetAt && (next - pomodoroResetAt) % pomodoroSeconds === 0) {
-          // Pomodoro interval complete — auto-pause
           setTimeout(() => setRunningTaskId(null), 10);
         }
         return { ...prev, [runningTaskId]: next };
@@ -149,53 +163,8 @@ function App() {
     return () => clearInterval(interval);
   }, [runningTaskId, schedule, timerTask, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
 
-  const music = useMusicPlayer();
-
-  function openTimer(task) {
-    setTimerTask(task);
-    const elapsed = scheduleTimers[task.id] || 0;
-    if (elapsed < task.scheduledMinutes * 60) {
-      setRunningTaskId(task.id);
-      music.play();
-    }
-  }
-
-  function openTimerForTask(task) {
-    if (task.scheduledMinutes) {
-      openTimer(task);
-    } else {
-      setPendingTimerTask(task);
-      setPendingTimerMinutes(25);
-    }
-  }
-
-  function closeTimer() {
-    setRunningTaskId(null);
-    setTimerTask(null);
-    music.pause();
-  }
-
-  function toggleTimer() {
-    if (!timerTask) return;
-    if (runningTaskId === timerTask.id) {
-      setRunningTaskId(null);
-      music.pause();
-    } else {
-      const elapsed = scheduleTimers[timerTask.id] || 0;
-      if (elapsed < timerTask.scheduledMinutes * 60) {
-        setRunningTaskId(timerTask.id);
-        music.play();
-      }
-    }
-  }
-
-  const { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring, deleteAllByRecurringId } =
-    useTasks();
-  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } =
-    useRecurringTasks();
-
-  // Auto-populate recurring tasks whenever the date or recurring templates change
-  React.useEffect(() => {
+  // ─── Recurring task auto-population ────────────────────────────────────────
+  useEffect(() => {
     const existingIds = new Set(
       (tasks[dateKey] || []).map((t) => t.recurringId).filter(Boolean),
     );
@@ -215,49 +184,91 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateKey, recurringTasks]);
 
-  const tasksForDay = tasks[dateKey] || [];
+  // ─── Notification ───────────────────────────────────────────────────────────
+  const showNotification = useCallback((msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(""), 2500);
+  }, []);
 
-  const totalTasks = tasksForDay.length;
-  const completedTasks = tasksForDay.filter((t) => t.done).length;
-  const remainingTasks = totalTasks - completedTasks;
+  // ─── Task selection ─────────────────────────────────────────────────────────
+  const toggleTaskSelection = useCallback((id) => {
+    setExcludedTaskIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
-  const progress =
-    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  // ─── Timer controls ─────────────────────────────────────────────────────────
+  const openTimer = useCallback((task) => {
+    setTimerTask(task);
+    const elapsed = scheduleTimers[task.id] || 0;
+    if (elapsed < task.scheduledMinutes * 60) {
+      setRunningTaskId(task.id);
+      music.play();
+    }
+  }, [scheduleTimers, music]);
 
-  // Schedule generation logic
-  function generateSchedule() {
+  const openTimerForTask = useCallback((task) => {
+    if (task.scheduledMinutes) {
+      openTimer(task);
+    } else {
+      setPendingTimerTask(task);
+      setPendingTimerMinutes(25);
+    }
+  }, [openTimer]);
+
+  const closeTimer = useCallback(() => {
+    setRunningTaskId(null);
+    setTimerTask(null);
+    music.pause();
+  }, [music]);
+
+  const toggleTimer = useCallback(() => {
+    if (!timerTask) return;
+    if (runningTaskId === timerTask.id) {
+      setRunningTaskId(null);
+      music.pause();
+    } else {
+      const elapsed = scheduleTimers[timerTask.id] || 0;
+      if (elapsed < timerTask.scheduledMinutes * 60) {
+        setRunningTaskId(timerTask.id);
+        music.play();
+      }
+    }
+  }, [timerTask, runningTaskId, scheduleTimers, music]);
+
+  const handleSetPomodoroMinutes = useCallback((val) => {
+    const currentElapsed = timerTask ? (scheduleTimers[timerTask.id] || 0) : 0;
+    setPomodoroResetAt(currentElapsed);
+    setPomodoroMinutes(val);
+  }, [timerTask, scheduleTimers]);
+
+  // ─── Schedule controls ──────────────────────────────────────────────────────
+  const generateSchedule = useCallback(() => {
     const selectedTasks = tasksForDay.filter((t) => !excludedTaskIds.has(t.id));
     if (!selectedTasks.length || totalStudyTime <= 0) return;
     const priorityTasks = selectedTasks.filter((t) => t.priority);
     const nonPriorityTasks = selectedTasks.filter((t) => !t.priority);
     let scheduleArr = [];
-    let totalMinutes = totalStudyTime * 60;
-    let priorityMinutes = Math.round(
-      priorityTasks.length && priorityPercent > 0
-        ? (Math.min(priorityPercent, 100) / 100) * totalMinutes
-        : 0,
-    );
+    const totalMinutes = totalStudyTime * 60;
+    let priorityMinutes = priorityTasks.length && priorityPercent > 0
+      ? Math.round((Math.min(priorityPercent, 100) / 100) * totalMinutes)
+      : 0;
     let nonPriorityMinutes = totalMinutes - priorityMinutes;
 
-    // Edge cases
     if (priorityTasks.length === 0) {
-      // All non-priority
       nonPriorityMinutes = totalMinutes;
       priorityMinutes = 0;
     } else if (priorityTasks.length === tasksForDay.length) {
-      // All priority
       priorityMinutes = totalMinutes;
       nonPriorityMinutes = 0;
     }
 
-    // Assign time
     if (priorityTasks.length > 0) {
-      // If only one priority task, give it all priorityMinutes
       if (priorityTasks.length === 1) {
-        scheduleArr.push({
-          ...priorityTasks[0],
-          scheduledMinutes: priorityMinutes,
-        });
+        scheduleArr.push({ ...priorityTasks[0], scheduledMinutes: priorityMinutes });
       } else {
         const minPerTask = Math.floor(priorityMinutes / priorityTasks.length);
         let left = priorityMinutes;
@@ -269,16 +280,10 @@ function App() {
       }
     }
     if (nonPriorityTasks.length > 0) {
-      // If only one non-priority task, give it all nonPriorityMinutes
       if (nonPriorityTasks.length === 1) {
-        scheduleArr.push({
-          ...nonPriorityTasks[0],
-          scheduledMinutes: nonPriorityMinutes,
-        });
+        scheduleArr.push({ ...nonPriorityTasks[0], scheduledMinutes: nonPriorityMinutes });
       } else {
-        const minPerTask = Math.floor(
-          nonPriorityMinutes / nonPriorityTasks.length,
-        );
+        const minPerTask = Math.floor(nonPriorityMinutes / nonPriorityTasks.length);
         let left = nonPriorityMinutes;
         nonPriorityTasks.forEach((t, i) => {
           const time = i === nonPriorityTasks.length - 1 ? left : minPerTask;
@@ -287,37 +292,35 @@ function App() {
         });
       }
     }
-    // Shuffle within each group, keeping priority tasks on top
+
     const prioritySlice = scheduleArr.filter((t) => t.priority).sort(() => Math.random() - 0.5);
     const normalSlice = scheduleArr.filter((t) => !t.priority).sort(() => Math.random() - 0.5);
-    scheduleArr = [...prioritySlice, ...normalSlice];
-    setSchedule(scheduleArr);
-  }
+    setSchedule([...prioritySlice, ...normalSlice]);
+  }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent]);
 
-  // Save schedule to localStorage
-  function saveSchedule() {
+  const saveSchedule = useCallback(() => {
     if (schedule && schedule.length > 0) {
       try {
         localStorage.setItem(`schedule_${dateKey}`, JSON.stringify(schedule));
         showNotification("Schedule saved successfully!");
-      } catch (e) {
+      } catch {
         showNotification("Error saving schedule.");
       }
     }
-  }
+  }, [schedule, dateKey, showNotification]);
 
-  // Delete schedule from localStorage
-  function deleteSchedule() {
+  const deleteSchedule = useCallback(() => {
     try {
       localStorage.removeItem(`schedule_${dateKey}`);
       setSchedule(null);
       showNotification("Schedule deleted.");
-    } catch (e) {
+    } catch {
       showNotification("Error deleting schedule.");
     }
-  }
+  }, [dateKey, showNotification]);
 
-  function resetAddModal() {
+  // ─── Modal resets ───────────────────────────────────────────────────────────
+  const resetAddModal = useCallback(() => {
     setIsModalOpen(false);
     setNewTaskText("");
     setNewTaskImage("");
@@ -327,9 +330,9 @@ function App() {
     setNewTaskEndDate("");
     setNewTaskMonthsAhead("3");
     setNewTaskYearsAhead("2");
-  }
+  }, []);
 
-  function resetEditModal() {
+  const resetEditModal = useCallback(() => {
     setIsEditModalOpen(false);
     setEditTaskId(null);
     setEditTaskText("");
@@ -341,33 +344,12 @@ function App() {
     setEditTaskMonthsAhead("3");
     setEditTaskYearsAhead("2");
     setEditTaskIsRecurringInstance(false);
-  }
+  }, []);
 
-  // Compute the end date for a recurring task based on mode
-  function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
-    const start = new Date((startDate || dateKey) + "T12:00:00");
-    if (recurrence === "daily") {
-      const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
-      return lastDay.toLocaleDateString("en-CA");
-    }
-    if (recurrence === "monthly") {
-      const d = new Date(start);
-      d.setMonth(d.getMonth() + Math.max(1, parseInt(monthsAhead) || 3));
-      return d.toLocaleDateString("en-CA");
-    }
-    if (recurrence === "yearly") {
-      const d = new Date(start);
-      d.setFullYear(d.getFullYear() + Math.max(1, parseInt(yearsAhead) || 2));
-      return d.toLocaleDateString("en-CA");
-    }
-    // custom: user-supplied end date; use "daily" as the actual recurrence
-    return customEndDate || "";
-  }
-
-  const handleAddTask = () => {
+  // ─── Task CRUD handlers ─────────────────────────────────────────────────────
+  const handleAddTask = useCallback(() => {
     const startDate = newTaskStartDate || dateKey;
     if (newTaskRecurrence !== "none") {
-      // "custom" stores as daily with user-supplied dates
       const actualRecurrence = newTaskRecurrence === "custom" ? "daily" : newTaskRecurrence;
       const endDate = computeRecurringEndDate(newTaskRecurrence, startDate, newTaskMonthsAhead, newTaskYearsAhead, newTaskEndDate);
       addRecurring(newTaskText, newTaskImage, newTaskPriority, actualRecurrence, startDate, endDate);
@@ -375,20 +357,19 @@ function App() {
       addTask(dateKey, newTaskText, newTaskImage, newTaskPriority);
     }
     resetAddModal();
-  };
+  }, [newTaskRecurrence, newTaskStartDate, dateKey, newTaskMonthsAhead, newTaskYearsAhead, newTaskEndDate, newTaskText, newTaskImage, newTaskPriority, addRecurring, addTask, resetAddModal]);
 
-  const handleDeleteTask = (id) => {
+  const handleDeleteTask = useCallback((id) => {
     const task = (tasks[dateKey] || []).find((t) => t.id === id);
     if (task?.recurringId) {
-      // Remove the template AND every instance across all dates
       deleteRecurring(task.recurringId);
       deleteAllByRecurringId(task.recurringId);
     } else {
       deleteTask(dateKey, id);
     }
-  };
+  }, [tasks, dateKey, deleteRecurring, deleteAllByRecurringId, deleteTask]);
 
-  const handleEditTask = () => {
+  const handleEditTask = useCallback(() => {
     editTask(dateKey, editTaskId, editTaskText, editTaskImage, editTaskPriority);
     const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
     const startDate = editTaskStartDate || dateKey;
@@ -407,15 +388,11 @@ function App() {
       linkRecurring(dateKey, editTaskId, null);
     }
     resetEditModal();
-  };
+  }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, tasks, dateKey, editTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal]);
 
-  // Helper for marking dates with tasks (includes recurring templates)
-  const markDateWithTasksFn = markDateWithTasks(tasks, formatDateKey, recurringTasks);
-
-  // Main render
+  // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0c0c1a] p-4 sm:p-6 pt-6">
-      {/* Notification */}
       {notification && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
           {notification}
@@ -467,7 +444,6 @@ function App() {
               setIsEditModalOpen(true);
             }}
           />
-          {/* Generate Schedule Button */}
           {tasksForDay.length > 0 && (
             <div className="flex gap-4 justify-end mt-2">
               <button
@@ -479,14 +455,11 @@ function App() {
               </button>
             </div>
           )}
-          {/* Schedule Display and Save/Delete Buttons */}
           {schedule && (
             <>
               <div className="mt-8 bg-surface-container rounded-2xl border border-outline-variant/50 p-6">
                 <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
-                  <span className="material-symbols-outlined text-primary">
-                    schedule
-                  </span>
+                  <span className="material-symbols-outlined text-primary">schedule</span>
                   Today's Schedule
                 </h3>
                 <ul className="flex flex-col gap-3">
@@ -501,43 +474,23 @@ function App() {
                         key={task.id}
                         className="relative flex items-center gap-4 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 overflow-hidden"
                       >
-                        {/* Progress underline */}
                         {(hasProgress || isFinished) && (
                           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
                             <div
                               className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
-                              style={{
-                                width: `${Math.min(100, (elapsed / total) * 100)}%`,
-                              }}
+                              style={{ width: `${Math.min(100, (elapsed / total) * 100)}%` }}
                             />
                           </div>
                         )}
-                        <span
-                          className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`}
-                        />
-                        <span className="flex-1 font-medium text-on-surface text-sm">
-                          {task.text}
-                        </span>
-                        <span className="text-xs text-on-surface-variant font-mono">
-                          {task.scheduledMinutes} min
-                        </span>
+                        <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
+                        <span className="flex-1 font-medium text-on-surface text-sm">{task.text}</span>
+                        <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} min</span>
                         {task.priority && (
-                          <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">
-                            Priority
-                          </span>
+                          <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">Priority</span>
                         )}
-                        {/* Play button */}
                         <button
                           onClick={() => openTimer(task)}
-                          title={
-                            isFinished
-                              ? "Completed"
-                              : isRunning
-                                ? "Running — click to view"
-                                : hasProgress
-                                  ? "Resume timer"
-                                  : "Start timer"
-                          }
+                          title={isFinished ? "Completed" : isRunning ? "Running — click to view" : hasProgress ? "Resume timer" : "Start timer"}
                           className={`flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 ${
                             isFinished
                               ? "bg-tertiary/20 text-tertiary"
@@ -549,11 +502,7 @@ function App() {
                           }`}
                         >
                           <span className="material-symbols-outlined text-base">
-                            {isFinished
-                              ? "check_circle"
-                              : isRunning
-                                ? "pause_circle"
-                                : "play_circle"}
+                            {isFinished ? "check_circle" : isRunning ? "pause_circle" : "play_circle"}
                           </span>
                         </button>
                       </li>
@@ -605,11 +554,6 @@ function App() {
           />
         </div>
       </div>
-      {/* Hidden YouTube player mount point */}
-      <div
-        id="studyflow-yt-player"
-        style={{ position: "fixed", top: -9999, left: -9999, width: 2, height: 2, pointerEvents: "none" }}
-      />
       {/* Timer Modal */}
       {timerTask && (
         <TimerModal

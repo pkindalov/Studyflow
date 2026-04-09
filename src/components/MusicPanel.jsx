@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useCallback } from "react";
 import { extractVideoId } from "../hooks/useMusicPlayer";
 
 function MusicPanel({
@@ -18,7 +18,7 @@ function MusicPanel({
   const [newUrl, setNewUrl] = useState("");
   const [addError, setAddError] = useState("");
 
-  function handleAdd() {
+  const handleAdd = useCallback(() => {
     const name = newName.trim();
     const url = newUrl.trim();
     if (!name) return setAddError("Please enter a track name.");
@@ -28,7 +28,7 @@ function MusicPanel({
     setNewName("");
     setNewUrl("");
     setShowAdd(false);
-  }
+  }, [newName, newUrl, onAddTrack]);
 
   return (
     <section className="bg-surface-container rounded-2xl border border-outline-variant/50 flex flex-col gap-0 overflow-hidden">
