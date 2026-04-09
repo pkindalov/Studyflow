@@ -530,6 +530,9 @@ function App() {
             setTotalStudyTime={setTotalStudyTime}
             priorityPercent={priorityPercent}
             setPriorityPercent={setPriorityPercent}
+            tasks={tasks}
+            recurringTasks={recurringTasks}
+            tasksForDay={tasksForDay}
           />
           <MusicPanel
             playlist={music.playlist}
