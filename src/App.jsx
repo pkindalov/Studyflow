@@ -7,7 +7,9 @@ import TimerModal from "./components/TimerModal";
 import CalendarSidebar from "./components/CalendarSidebar";
 import SummaryCard from "./components/SummaryCard";
 import RightSidebar from "./components/RightSidebar";
+import MusicPanel from "./components/MusicPanel";
 import { useTasks } from "./hooks/useTasks";
+import { useMusicPlayer } from "./hooks/useMusicPlayer";
 import { markDateWithTasks } from "./utils/calendar";
 import "./calendar.css";
 import "./animations.css";
@@ -93,27 +95,33 @@ function App() {
     return () => clearInterval(interval);
   }, [runningTaskId, schedule]);
 
+  const music = useMusicPlayer();
+
   function openTimer(task) {
     setTimerTask(task);
     const elapsed = scheduleTimers[task.id] || 0;
     if (elapsed < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
+      music.play();
     }
   }
 
   function closeTimer() {
     setRunningTaskId(null);
     setTimerTask(null);
+    music.pause();
   }
 
   function toggleTimer() {
     if (!timerTask) return;
     if (runningTaskId === timerTask.id) {
       setRunningTaskId(null);
+      music.pause();
     } else {
       const elapsed = scheduleTimers[timerTask.id] || 0;
       if (elapsed < timerTask.scheduledMinutes * 60) {
         setRunningTaskId(timerTask.id);
+        music.play();
       }
     }
   }
@@ -399,8 +407,25 @@ function App() {
             priorityPercent={priorityPercent}
             setPriorityPercent={setPriorityPercent}
           />
+          <MusicPanel
+            playlist={music.playlist}
+            activeTrackId={music.activeTrackId}
+            activeTrack={music.activeTrack}
+            isPlaying={music.isPlaying}
+            volume={music.volume}
+            onSelectTrack={music.selectTrack}
+            onAddTrack={music.addTrack}
+            onRemoveTrack={music.removeTrack}
+            onTogglePlay={music.togglePlay}
+            onSetVolume={music.setVolume}
+          />
         </div>
       </div>
+      {/* Hidden YouTube player mount point */}
+      <div
+        id="studyflow-yt-player"
+        style={{ position: "fixed", top: -9999, left: -9999, width: 2, height: 2, pointerEvents: "none" }}
+      />
       {/* Timer Modal */}
       {timerTask && (
         <TimerModal

@@ -57,3 +57,17 @@
 .animate-fade-in {
   animation: fadeInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+@keyframes eq1 {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+@keyframes eq2 {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.3); }
+}
+@keyframes eq3 {
+  0%, 100% { transform: scaleY(0.6); }
+  33% { transform: scaleY(1); }
+  66% { transform: scaleY(0.2); }
+}
