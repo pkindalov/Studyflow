@@ -1,10 +1,16 @@
 import { recurrenceLabel } from "../hooks/useRecurringTasks";
 
-function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring }) {
+function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect }) {
   const isDone = !!task.done;
   return (
     <div
-      className={`bg-surface-container p-5 rounded-xl border border-outline-variant/50 flex items-center gap-5 hover:bg-surface-container-high hover:border-outline-variant transition-all group ${isDone ? "opacity-40" : ""}`}
+      className={`bg-surface-container p-5 rounded-xl border flex items-center gap-5 hover:bg-surface-container-high transition-all group ${
+        isDone ? "opacity-40" : ""
+      } ${
+        selected
+          ? "border-outline-variant/50 hover:border-outline-variant"
+          : "border-outline-variant/20 opacity-60"
+      }`}
     >
       <button
         className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-colors ${isDone ? "border-primary bg-primary" : "border-outline-variant group-hover:border-primary"}`}
@@ -18,6 +24,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring }) {
           check
         </span>
       </button>
+
       {/* Image thumbnail if present */}
       {task.imageUrl && (
         <img
@@ -27,6 +34,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring }) {
           style={{ minWidth: 48, minHeight: 48, maxWidth: 48, maxHeight: 48 }}
         />
       )}
+
       <div className="flex-grow flex flex-col gap-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h4
@@ -68,7 +76,27 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring }) {
           </div>
         ) : null}
       </div>
-      <div className="flex gap-1 text-on-surface-variant flex-shrink-0">
+
+      <div className="flex gap-1 text-on-surface-variant flex-shrink-0 items-center">
+        {/* Schedule inclusion toggle */}
+        {onToggleSelect && (
+          <button
+            onClick={() => onToggleSelect(task.id)}
+            className={`p-1.5 rounded-lg transition-colors ${
+              selected
+                ? "text-secondary hover:bg-secondary/10"
+                : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
+            }`}
+            title={selected ? "Exclude from schedule" : "Include in schedule"}
+          >
+            <span
+              className="material-symbols-outlined text-base"
+              style={{ fontVariationSettings: selected ? "'FILL' 1" : "'FILL' 0" }}
+            >
+              event_available
+            </span>
+          </button>
+        )}
         <button
           onClick={() => onEdit(task)}
           className="p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"

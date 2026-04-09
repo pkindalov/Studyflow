@@ -4,14 +4,17 @@ import Pagination from "./Pagination";
 
 const PAGE_SIZE = 8;
 
-function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring }) {
+function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect }) {
   const [page, setPage] = useState(0);
 
-  // Reset to first page whenever the task list changes (date switch, add/delete)
   useEffect(() => { setPage(0); }, [tasks.length]);
 
   const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
   const paginated = tasks.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+
+  const showSelectionControls = !!onToggleSelect;
+  const allSelected = showSelectionControls && tasks.every((t) => !excludedTaskIds.has(t.id));
+  const noneSelected = showSelectionControls && tasks.every((t) => excludedTaskIds.has(t.id));
 
   return (
     <section className="flex flex-col gap-6">
@@ -19,9 +22,27 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
         <h2 className="text-headline-sm font-headline font-semibold text-on-surface">
           Priority Tasks
         </h2>
-        <button className="text-sm font-semibold text-primary hover:underline transition-all">
-          View All Archives
-        </button>
+        {showSelectionControls && tasks.length > 0 && (
+          <button
+            onClick={() => {
+              if (allSelected) {
+                // Deselect all
+                tasks.forEach((t) => { if (!excludedTaskIds.has(t.id)) onToggleSelect(t.id); });
+              } else {
+                // Select all
+                tasks.forEach((t) => { if (excludedTaskIds.has(t.id)) onToggleSelect(t.id); });
+              }
+            }}
+            className="text-xs font-semibold text-secondary hover:text-secondary/80 transition-colors"
+          >
+            {allSelected ? "Deselect all" : noneSelected ? "Select all" : "Select all"}
+          </button>
+        )}
+        {!showSelectionControls && (
+          <button className="text-sm font-semibold text-primary hover:underline transition-all">
+            View All Archives
+          </button>
+        )}
       </div>
       {tasks.length === 0 ? (
         <p className="text-on-surface-variant text-sm text-center mt-10">
@@ -29,13 +50,7 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
         </p>
       ) : (
         <>
-          <div
-            className={
-              isGridView
-                ? "grid grid-cols-2 md:grid-cols-3 gap-4"
-                : "flex flex-col gap-6"
-            }
-          >
+          <div className={isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "flex flex-col gap-6"}>
             {paginated.map((task) => (
               <TaskCard
                 key={task.id}
@@ -44,6 +59,8 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
                 onDelete={onDelete}
                 onEdit={onEdit}
                 onStopRecurring={onStopRecurring}
+                selected={showSelectionControls ? !excludedTaskIds.has(task.id) : true}
+                onToggleSelect={onToggleSelect}
               />
             ))}
           </div>

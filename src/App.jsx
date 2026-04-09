@@ -28,6 +28,8 @@ function App() {
   // New: total study time in hours
   const [totalStudyTime, setTotalStudyTime] = useState(4); // default 4 hours
 
+  const [excludedTaskIds, setExcludedTaskIds] = useState(new Set());
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskImage, setNewTaskImage] = useState("");
@@ -62,6 +64,20 @@ function App() {
   const [timerTask, setTimerTask] = useState(null);
   const [runningTaskId, setRunningTaskId] = useState(null);
   const [scheduleTimers, setScheduleTimers] = useState({});
+
+  // Reset excluded tasks when the date changes
+  React.useEffect(() => {
+    setExcludedTaskIds(new Set());
+  }, [dateKey]);
+
+  function toggleTaskSelection(id) {
+    setExcludedTaskIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   // Load saved schedule from localStorage on date change
   React.useEffect(() => {
@@ -175,9 +191,10 @@ function App() {
 
   // Schedule generation logic
   function generateSchedule() {
-    if (!tasksForDay.length || totalStudyTime <= 0) return;
-    const priorityTasks = tasksForDay.filter((t) => t.priority);
-    const nonPriorityTasks = tasksForDay.filter((t) => !t.priority);
+    const selectedTasks = tasksForDay.filter((t) => !excludedTaskIds.has(t.id));
+    if (!selectedTasks.length || totalStudyTime <= 0) return;
+    const priorityTasks = selectedTasks.filter((t) => t.priority);
+    const nonPriorityTasks = selectedTasks.filter((t) => !t.priority);
     let scheduleArr = [];
     let totalMinutes = totalStudyTime * 60;
     let priorityMinutes = Math.round(
@@ -392,6 +409,8 @@ function App() {
             onToggle={(id) => toggleTask(dateKey, id)}
             onDelete={handleDeleteTask}
             onStopRecurring={(recurringId) => { deleteRecurring(recurringId); deleteAllByRecurringId(recurringId); }}
+            excludedTaskIds={excludedTaskIds}
+            onToggleSelect={toggleTaskSelection}
             onEdit={(task) => {
               setEditTaskId(task.id);
               setEditTaskText(task.text);
