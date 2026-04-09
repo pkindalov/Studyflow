@@ -235,8 +235,10 @@ function App() {
         });
       }
     }
-    // Shuffle for randomness
-    scheduleArr = scheduleArr.sort(() => Math.random() - 0.5);
+    // Shuffle within each group, keeping priority tasks on top
+    const prioritySlice = scheduleArr.filter((t) => t.priority).sort(() => Math.random() - 0.5);
+    const normalSlice = scheduleArr.filter((t) => !t.priority).sort(() => Math.random() - 0.5);
+    scheduleArr = [...prioritySlice, ...normalSlice];
     setSchedule(scheduleArr);
   }
 
