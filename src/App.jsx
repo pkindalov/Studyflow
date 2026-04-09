@@ -72,8 +72,16 @@ function App() {
   const [pomodoroMinutes, setPomodoroMinutes] = useState(() => {
     try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? 25; } catch { return 25; }
   });
+  // Tracks elapsed-seconds anchor when pomodoro settings change mid-run
+  const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
   React.useEffect(() => { localStorage.setItem("pomodoro_enabled", JSON.stringify(pomodoroEnabled)); }, [pomodoroEnabled]);
   React.useEffect(() => { localStorage.setItem("pomodoro_minutes", JSON.stringify(pomodoroMinutes)); }, [pomodoroMinutes]);
+
+  function handleSetPomodoroMinutes(val) {
+    const currentElapsed = timerTask ? (scheduleTimers[timerTask.id] || 0) : 0;
+    setPomodoroResetAt(currentElapsed);
+    setPomodoroMinutes(val);
+  }
 
   // Reset excluded tasks when the date changes
   React.useEffect(() => {
@@ -127,7 +135,7 @@ function App() {
         const next = elapsed + 1;
         if (next >= totalSeconds) {
           setTimeout(() => setRunningTaskId(null), 10);
-        } else if (pomodoroSeconds > 0 && next % pomodoroSeconds === 0) {
+        } else if (pomodoroSeconds > 0 && next > pomodoroResetAt && (next - pomodoroResetAt) % pomodoroSeconds === 0) {
           // Pomodoro interval complete — auto-pause
           setTimeout(() => setRunningTaskId(null), 10);
         }
@@ -135,7 +143,7 @@ function App() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [runningTaskId, schedule, pomodoroEnabled, pomodoroMinutes]);
+  }, [runningTaskId, schedule, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
 
   const music = useMusicPlayer();
 
@@ -600,7 +608,8 @@ function App() {
           pomodoroEnabled={pomodoroEnabled}
           setPomodoroEnabled={setPomodoroEnabled}
           pomodoroMinutes={pomodoroMinutes}
-          setPomodoroMinutes={setPomodoroMinutes}
+          setPomodoroMinutes={handleSetPomodoroMinutes}
+          pomodoroResetAt={pomodoroResetAt}
         />
       )}
       {/* Task Modal */}
