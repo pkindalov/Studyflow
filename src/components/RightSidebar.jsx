@@ -1,4 +1,7 @@
 import { useState } from "react";
+import Pagination from "./Pagination";
+
+const MODAL_PAGE_SIZE = 5;
 
 const MAX_VISIBLE = 5;
 
@@ -95,6 +98,9 @@ function RightSidebar({
   const visible = items.slice(0, MAX_VISIBLE);
   const overflow = items.length - MAX_VISIBLE;
   const [showAll, setShowAll] = useState(false);
+  const [modalPage, setModalPage] = useState(0);
+  const modalTotalPages = Math.ceil(items.length / MODAL_PAGE_SIZE);
+  const modalItems = items.slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE);
   const sectionTitle = recurringTasks.length > 0 ? "Active Projects" : "Today's Tasks";
 
   return (
@@ -219,11 +225,17 @@ function RightSidebar({
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
             </div>
-            <div className="flex flex-col gap-1.5 overflow-y-auto">
-              {items.map(({ key, ...item }) => (
+            <div className="flex flex-col gap-1.5">
+              {modalItems.map(({ key, ...item }) => (
                 <ProgressRow key={key} {...item} />
               ))}
             </div>
+            <Pagination
+              page={modalPage}
+              totalPages={modalTotalPages}
+              onPrev={() => setModalPage((p) => p - 1)}
+              onNext={() => setModalPage((p) => p + 1)}
+            />
           </div>
         </div>
       )}
