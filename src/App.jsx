@@ -35,6 +35,8 @@ function App() {
   const [newTaskRecurrence, setNewTaskRecurrence] = useState("none");
   const [newTaskStartDate, setNewTaskStartDate] = useState("");
   const [newTaskEndDate, setNewTaskEndDate] = useState("");
+  const [newTaskMonthsAhead, setNewTaskMonthsAhead] = useState("3");
+  const [newTaskYearsAhead, setNewTaskYearsAhead] = useState("2");
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState(null);
@@ -44,6 +46,8 @@ function App() {
   const [editTaskRecurrence, setEditTaskRecurrence] = useState("none");
   const [editTaskStartDate, setEditTaskStartDate] = useState("");
   const [editTaskEndDate, setEditTaskEndDate] = useState("");
+  const [editTaskMonthsAhead, setEditTaskMonthsAhead] = useState("3");
+  const [editTaskYearsAhead, setEditTaskYearsAhead] = useState("2");
   const [editTaskIsRecurringInstance, setEditTaskIsRecurringInstance] = useState(false);
 
   const isEditing = isEditModalOpen;
@@ -134,9 +138,9 @@ function App() {
     }
   }
 
-  const { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring } =
+  const { tasks, addTask, addTaskDirect, toggleTask, deleteTask, editTask, linkRecurring, deleteAllByRecurringId } =
     useTasks();
-  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, skipDate } =
+  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } =
     useRecurringTasks();
 
   // Auto-populate recurring tasks whenever the date or recurring templates change
@@ -267,6 +271,8 @@ function App() {
     setNewTaskRecurrence("none");
     setNewTaskStartDate("");
     setNewTaskEndDate("");
+    setNewTaskMonthsAhead("3");
+    setNewTaskYearsAhead("2");
   }
 
   function resetEditModal() {
@@ -278,13 +284,39 @@ function App() {
     setEditTaskRecurrence("none");
     setEditTaskStartDate("");
     setEditTaskEndDate("");
+    setEditTaskMonthsAhead("3");
+    setEditTaskYearsAhead("2");
     setEditTaskIsRecurringInstance(false);
+  }
+
+  // Compute the end date for a recurring task based on mode
+  function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
+    const start = new Date((startDate || dateKey) + "T12:00:00");
+    if (recurrence === "daily") {
+      const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+      return lastDay.toLocaleDateString("en-CA");
+    }
+    if (recurrence === "monthly") {
+      const d = new Date(start);
+      d.setMonth(d.getMonth() + Math.max(1, parseInt(monthsAhead) || 3));
+      return d.toLocaleDateString("en-CA");
+    }
+    if (recurrence === "yearly") {
+      const d = new Date(start);
+      d.setFullYear(d.getFullYear() + Math.max(1, parseInt(yearsAhead) || 2));
+      return d.toLocaleDateString("en-CA");
+    }
+    // custom: user-supplied end date; use "daily" as the actual recurrence
+    return customEndDate || "";
   }
 
   const handleAddTask = () => {
     const startDate = newTaskStartDate || dateKey;
     if (newTaskRecurrence !== "none") {
-      addRecurring(newTaskText, newTaskImage, newTaskPriority, newTaskRecurrence, startDate, newTaskEndDate);
+      // "custom" stores as daily with user-supplied dates
+      const actualRecurrence = newTaskRecurrence === "custom" ? "daily" : newTaskRecurrence;
+      const endDate = computeRecurringEndDate(newTaskRecurrence, startDate, newTaskMonthsAhead, newTaskYearsAhead, newTaskEndDate);
+      addRecurring(newTaskText, newTaskImage, newTaskPriority, actualRecurrence, startDate, endDate);
     } else {
       addTask(dateKey, newTaskText, newTaskImage, newTaskPriority);
     }
@@ -294,29 +326,30 @@ function App() {
   const handleDeleteTask = (id) => {
     const task = (tasks[dateKey] || []).find((t) => t.id === id);
     if (task?.recurringId) {
-      skipDate(task.recurringId, dateKey);
+      // Remove the template AND every instance across all dates
+      deleteRecurring(task.recurringId);
+      deleteAllByRecurringId(task.recurringId);
+    } else {
+      deleteTask(dateKey, id);
     }
-    deleteTask(dateKey, id);
   };
 
   const handleEditTask = () => {
-    // Always update the task's own fields for this day
     editTask(dateKey, editTaskId, editTaskText, editTaskImage, editTaskPriority);
-    // Handle recurrence
     const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
     const startDate = editTaskStartDate || dateKey;
     if (editTaskRecurrence !== "none") {
+      const actualRecurrence = editTaskRecurrence === "custom" ? "daily" : editTaskRecurrence;
+      const endDate = computeRecurringEndDate(editTaskRecurrence, startDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate);
       if (task?.recurringId) {
-        // Update the existing template (affects all future instances)
-        updateRecurring(task.recurringId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, startDate, editTaskEndDate);
+        updateRecurring(task.recurringId, editTaskText, editTaskImage, editTaskPriority, actualRecurrence, startDate, endDate);
       } else {
-        // Convert this one-time task into a recurring task
-        const newId = addRecurring(editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, startDate, editTaskEndDate);
+        const newId = addRecurring(editTaskText, editTaskImage, editTaskPriority, actualRecurrence, startDate, endDate);
         linkRecurring(dateKey, editTaskId, newId);
       }
     } else if (task?.recurringId) {
-      // User removed recurrence — stop the template and unlink this task instance
       deleteRecurring(task.recurringId);
+      deleteAllByRecurringId(task.recurringId);
       linkRecurring(dateKey, editTaskId, null);
     }
     resetEditModal();
@@ -356,7 +389,7 @@ function App() {
             tasks={tasksForDay}
             onToggle={(id) => toggleTask(dateKey, id)}
             onDelete={handleDeleteTask}
-            onStopRecurring={(recurringId) => deleteRecurring(recurringId)}
+            onStopRecurring={(recurringId) => { deleteRecurring(recurringId); deleteAllByRecurringId(recurringId); }}
             onEdit={(task) => {
               setEditTaskId(task.id);
               setEditTaskText(task.text);
@@ -545,6 +578,10 @@ function App() {
         setStartDate={isEditing ? setEditTaskStartDate : setNewTaskStartDate}
         endDate={isEditing ? editTaskEndDate : newTaskEndDate}
         setEndDate={isEditing ? setEditTaskEndDate : setNewTaskEndDate}
+        monthsAhead={isEditing ? editTaskMonthsAhead : newTaskMonthsAhead}
+        setMonthsAhead={isEditing ? setEditTaskMonthsAhead : setNewTaskMonthsAhead}
+        yearsAhead={isEditing ? editTaskYearsAhead : newTaskYearsAhead}
+        setYearsAhead={isEditing ? setEditTaskYearsAhead : setNewTaskYearsAhead}
         isRecurringInstance={isEditing ? editTaskIsRecurringInstance : false}
         title={isEditing ? "Edit Task" : "Add New Task"}
       />

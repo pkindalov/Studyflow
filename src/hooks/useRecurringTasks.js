@@ -15,6 +15,8 @@ export function appliesToDate(template, dateKey) {
       return date.getDay() === start.getDay();
     case "monthly":
       return date.getDate() === start.getDate();
+    case "yearly":
+      return date.getMonth() === start.getMonth() && date.getDate() === start.getDate();
     default:
       return false;
   }
@@ -38,6 +40,7 @@ export function recurrenceLabel(template) {
     case "daily":   label = "Every day"; break;
     case "weekly":  label = `Every ${DAY_NAMES[start.getDay()]}`; break;
     case "monthly": label = `Monthly on the ${start.getDate()}${ordinal(start.getDate())}`; break;
+    case "yearly":  label = `Yearly on ${start.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`; break;
     default:        label = "";
   }
   if (template.endDate) label += ` · ends ${template.endDate}`;

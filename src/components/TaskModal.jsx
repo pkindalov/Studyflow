@@ -1,9 +1,16 @@
 const RECURRENCE_OPTIONS = [
   { value: "none",    label: "No repeat",  icon: "block" },
   { value: "daily",   label: "Daily",      icon: "today" },
-  { value: "weekly",  label: "Weekly",     icon: "view_week" },
   { value: "monthly", label: "Monthly",    icon: "calendar_month" },
+  { value: "yearly",  label: "Yearly",     icon: "event_repeat" },
+  { value: "custom",  label: "Custom",     icon: "date_range" },
 ];
+
+function monthName(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
 
 function TaskModal({
   isOpen,
@@ -22,7 +29,11 @@ function TaskModal({
   setStartDate,
   endDate,
   setEndDate,
-  isRecurringInstance, // true when editing an existing recurring task instance
+  monthsAhead,
+  setMonthsAhead,
+  yearsAhead,
+  setYearsAhead,
+  isRecurringInstance,
   title,
 }) {
   if (!isOpen) return null;
@@ -80,7 +91,7 @@ function TaskModal({
             {isRecurringInstance && (
               <p className="text-xs text-secondary bg-secondary/10 border border-secondary/20 rounded-xl px-3 py-2 flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-sm">info</span>
-                Changes to the repeat pattern will apply to all future instances.
+                Changes to the repeat pattern will apply to all instances.
               </p>
             )}
 
@@ -90,13 +101,13 @@ function TaskModal({
             </span>
 
             {/* Frequency selector */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {RECURRENCE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setRecurrence(opt.value)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${
                     recurrence === opt.value
                       ? "bg-secondary text-on-secondary border-secondary"
                       : "border-outline-variant/60 text-on-surface-variant hover:bg-surface-container-high"
@@ -108,46 +119,98 @@ function TaskModal({
               ))}
             </div>
 
-            {/* Date range — shown only when a repeat mode is active */}
+            {/* Per-mode sub-UI */}
             {hasRepeat && (
-              <div className="flex flex-col gap-2 bg-surface-container-low rounded-xl p-3 border border-outline-variant/40">
-                <div className="flex items-center gap-3">
-                  <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">
-                    From
-                  </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
-                  />
-                </div>
-                <div className="flex items-center gap-3">
-                  <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">
-                    To
-                  </label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    min={startDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
-                    placeholder="No end date"
-                  />
-                  {endDate && (
-                    <button
-                      type="button"
-                      onClick={() => setEndDate("")}
-                      className="text-on-surface-variant hover:text-error transition-colors flex-shrink-0"
-                      title="Remove end date"
-                    >
-                      <span className="material-symbols-outlined text-base">close</span>
-                    </button>
-                  )}
-                </div>
-                <p className="text-[10px] text-on-surface-variant mt-0.5">
-                  {!endDate ? "Repeats indefinitely — set an end date to stop automatically." : ""}
-                </p>
+              <div className="bg-surface-container-low rounded-xl p-3 border border-outline-variant/40 flex flex-col gap-2">
+
+                {/* DAILY — auto end of month, no input needed */}
+                {recurrence === "daily" && (
+                  <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm text-secondary">info</span>
+                    Repeats every day until the end of{" "}
+                    <span className="font-semibold text-on-surface">{monthName(startDate)}</span>.
+                  </p>
+                )}
+
+                {/* MONTHLY — number of months ahead */}
+                {recurrence === "monthly" && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
+                      Repeat for the next
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="24"
+                      value={monthsAhead}
+                      onChange={(e) => setMonthsAhead(e.target.value)}
+                      className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                    />
+                    <span className="text-xs font-semibold text-on-surface-variant">months</span>
+                  </div>
+                )}
+
+                {/* YEARLY — number of years ahead */}
+                {recurrence === "yearly" && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
+                      Repeat for the next
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={yearsAhead}
+                      onChange={(e) => setYearsAhead(e.target.value)}
+                      className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50"
+                    />
+                    <span className="text-xs font-semibold text-on-surface-variant">years</span>
+                  </div>
+                )}
+
+                {/* CUSTOM — manual from/to date pickers */}
+                {recurrence === "custom" && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">
+                        From
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">
+                        To
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        min={startDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
+                      />
+                      {endDate && (
+                        <button
+                          type="button"
+                          onClick={() => setEndDate("")}
+                          className="text-on-surface-variant hover:text-error transition-colors flex-shrink-0"
+                          title="Remove end date"
+                        >
+                          <span className="material-symbols-outlined text-base">close</span>
+                        </button>
+                      )}
+                    </div>
+                    {!endDate && (
+                      <p className="text-[10px] text-on-surface-variant">
+                        Repeats daily — set an end date to stop automatically.
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>

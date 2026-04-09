@@ -79,6 +79,17 @@ export function useTasks() {
     }));
   };
 
+  // Remove every task instance linked to a recurring template (across all dates)
+  const deleteAllByRecurringId = (recurringId) => {
+    setTasks((prev) => {
+      const next = {};
+      for (const key of Object.keys(prev)) {
+        next[key] = prev[key].filter((t) => t.recurringId !== recurringId);
+      }
+      return next;
+    });
+  };
+
   return {
     tasks,
     addTask,
@@ -87,5 +98,6 @@ export function useTasks() {
     deleteTask,
     editTask,
     linkRecurring,
+    deleteAllByRecurringId,
   };
 }
