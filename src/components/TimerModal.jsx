@@ -1,12 +1,24 @@
+import { useState } from "react";
+
+function formatTime(seconds, hms) {
+  if (hms) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, music }) {
+  const [hmsMode, setHmsMode] = useState(false);
+
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
   const isFinished = remaining === 0 && totalSeconds > 0;
 
-  const remMin = Math.floor(remaining / 60);
-  const remSec = remaining % 60;
-  const elMin = Math.floor(elapsedSeconds / 60);
-  const elSec = elapsedSeconds % 60;
 
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
@@ -85,7 +97,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, mus
             ) : (
               <>
                 <span className="text-3xl font-mono font-bold text-on-surface tabular-nums">
-                  {String(remMin).padStart(2, "0")}:{String(remSec).padStart(2, "0")}
+                  {formatTime(remaining, hmsMode)}
                 </span>
                 <span className="text-xs text-on-surface-variant mt-0.5">
                   remaining
@@ -95,17 +107,26 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, mus
           </div>
         </div>
 
-        {/* Elapsed / total */}
-        <div className="flex items-center gap-1.5 text-sm text-on-surface-variant">
-          <span className="material-symbols-outlined text-sm">timer</span>
-          <span className="font-mono text-on-surface">
-            {String(elMin).padStart(2, "0")}:{String(elSec).padStart(2, "0")}
-          </span>
-          <span>/</span>
-          <span className="font-mono">
-            {String(task.scheduledMinutes).padStart(2, "0")}:00
-          </span>
-          <span className="ml-1">elapsed</span>
+        {/* Elapsed / total + format toggle */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-1.5 text-sm text-on-surface-variant">
+            <span className="material-symbols-outlined text-sm">timer</span>
+            <span className="font-mono text-on-surface">
+              {formatTime(elapsedSeconds, hmsMode)}
+            </span>
+            <span>/</span>
+            <span className="font-mono">
+              {formatTime(totalSeconds, hmsMode)}
+            </span>
+            <span className="ml-1">elapsed</span>
+          </div>
+          <button
+            onClick={() => setHmsMode((v) => !v)}
+            className="text-[10px] font-semibold tracking-wider uppercase text-on-surface-variant/60 hover:text-on-surface-variant border border-outline-variant/30 hover:border-outline-variant/60 rounded-full px-2.5 py-0.5 transition-all"
+            title="Toggle time format"
+          >
+            {hmsMode ? "MM:SS" : "HH:MM:SS"}
+          </button>
         </div>
 
         {/* Play / Pause button */}
