@@ -66,6 +66,7 @@ function App() {
   const [editTaskMonthsAhead, setEditTaskMonthsAhead] = useState("3");
   const [editTaskYearsAhead, setEditTaskYearsAhead] = useState("2");
   const [editTaskIsRecurringInstance, setEditTaskIsRecurringInstance] = useState(false);
+  const [editTaskTargetDate, setEditTaskTargetDate] = useState("");
 
   const isEditing = isEditModalOpen;
   const dateKey = formatDateKey(selectedDate);
@@ -93,7 +94,7 @@ function App() {
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
 
-  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId } = useTasks();
+  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } = useRecurringTasks();
   const music = useMusicPlayer();
 
@@ -369,6 +370,7 @@ function App() {
     setEditTaskMonthsAhead("3");
     setEditTaskYearsAhead("2");
     setEditTaskIsRecurringInstance(false);
+    setEditTaskTargetDate("");
   }, []);
 
   // ─── Task CRUD handlers ─────────────────────────────────────────────────────
@@ -396,6 +398,9 @@ function App() {
 
   const handleEditTask = useCallback(() => {
     editTask(dateKey, editTaskId, editTaskText, editTaskImage, editTaskPriority);
+    if (editTaskTargetDate && editTaskTargetDate !== dateKey) {
+      moveTask(dateKey, editTaskTargetDate, editTaskId);
+    }
     const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
     const startDate = editTaskStartDate || dateKey;
     if (editTaskRecurrence !== "none") {
@@ -413,7 +418,7 @@ function App() {
       linkRecurring(dateKey, editTaskId, null);
     }
     resetEditModal();
-  }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, tasks, dateKey, editTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal]);
+  }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, editTaskTargetDate, tasks, dateKey, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -460,11 +465,13 @@ function App() {
                 setEditTaskStartDate(tpl?.startDate || dateKey);
                 setEditTaskEndDate(tpl?.endDate || "");
                 setEditTaskIsRecurringInstance(true);
+                setEditTaskTargetDate("");
               } else {
                 setEditTaskRecurrence("none");
                 setEditTaskStartDate(dateKey);
                 setEditTaskEndDate("");
                 setEditTaskIsRecurringInstance(false);
+                setEditTaskTargetDate(dateKey);
               }
               setIsEditModalOpen(true);
             }}
@@ -671,6 +678,8 @@ function App() {
         yearsAhead={isEditing ? editTaskYearsAhead : newTaskYearsAhead}
         setYearsAhead={isEditing ? setEditTaskYearsAhead : setNewTaskYearsAhead}
         isRecurringInstance={isEditing ? editTaskIsRecurringInstance : false}
+        moveToDate={isEditing && !editTaskIsRecurringInstance ? editTaskTargetDate : undefined}
+        setMoveToDate={isEditing && !editTaskIsRecurringInstance ? setEditTaskTargetDate : undefined}
         title={isEditing ? "Edit Task" : "Add New Task"}
       />
     </div>

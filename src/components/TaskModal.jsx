@@ -34,6 +34,9 @@ function TaskModal({
   yearsAhead,
   setYearsAhead,
   isRecurringInstance,
+  // Move to date (edit mode, non-recurring only)
+  moveToDate,
+  setMoveToDate,
   title,
 }) {
   if (!isOpen) return null;
@@ -213,6 +216,22 @@ function TaskModal({
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Move to date — only for non-recurring tasks in edit mode */}
+        {setMoveToDate && (
+          <div className="flex flex-col gap-2 border-t border-outline-variant/30 pt-4">
+            <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-base">drive_file_move</span>
+              Move to date
+            </span>
+            <input
+              type="date"
+              value={moveToDate}
+              onChange={(e) => setMoveToDate(e.target.value)}
+              className="w-full bg-surface-container-highest border border-outline/60 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60 [color-scheme:dark]"
+            />
           </div>
         )}
 

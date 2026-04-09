@@ -84,5 +84,18 @@ export function useTasks() {
     });
   }, []);
 
-  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId };
+  const moveTask = useCallback((fromDateKey, toDateKey, taskId) => {
+    setTasks((prev) => {
+      const fromList = prev[fromDateKey] || [];
+      const task = fromList.find((t) => t.id === taskId);
+      if (!task) return prev;
+      return {
+        ...prev,
+        [fromDateKey]: fromList.filter((t) => t.id !== taskId),
+        [toDateKey]: [...(prev[toDateKey] || []), task],
+      };
+    });
+  }, []);
+
+  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask };
 }
