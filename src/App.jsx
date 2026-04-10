@@ -273,7 +273,7 @@ function App() {
 
   // ─── Schedule controls ──────────────────────────────────────────────────────
   const generateSchedule = useCallback(() => {
-    const selectedTasks = tasksForDay.filter((t) => !excludedTaskIds.has(t.id));
+    const selectedTasks = tasksForDay.filter((t) => !excludedTaskIds.has(t.id) && !t.done);
     if (!selectedTasks.length || totalStudyTime <= 0) return;
     const priorityTasks = selectedTasks.filter((t) => t.priority);
     const nonPriorityTasks = selectedTasks.filter((t) => !t.priority);
