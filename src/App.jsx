@@ -332,6 +332,15 @@ function App() {
     music.pause();
   }, [music]);
 
+  const restartTimer = useCallback(() => {
+    if (!timerTask) return;
+    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: 0 }));
+    setPomodoroResetAt(0);
+    toggleTask(dateKey, timerTask.id); // task was force-marked done; toggle it back to undone
+    setRunningTaskId(timerTask.id);
+    music.play();
+  }, [timerTask, dateKey, toggleTask, music]);
+
   const toggleTimer = useCallback(() => {
     if (!timerTask) return;
     if (runningTaskId === timerTask.id) {
@@ -773,6 +782,7 @@ function App() {
           isRunning={runningTaskId === timerTask.id}
           onPlayPause={toggleTimer}
           onClose={closeTimer}
+          onRestart={restartTimer}
           music={music}
           pomodoroEnabled={pomodoroEnabled}
           setPomodoroEnabled={setPomodoroEnabled}

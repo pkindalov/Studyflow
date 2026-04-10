@@ -16,7 +16,7 @@ function formatTime(seconds, hms) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, music,
+function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0 }) {
   const [hmsMode, setHmsMode] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
@@ -136,14 +136,23 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, mus
           </button>
         </div>
 
-        {/* Play / Pause button */}
+        {/* Play / Pause / Restart buttons */}
         {isFinished ? (
-          <button
-            onClick={onClose}
-            className="px-8 py-2.5 bg-primary text-on-primary rounded-xl font-semibold hover:opacity-90 transition-all"
-          >
-            Close
-          </button>
+          <div className="flex gap-2 w-full">
+            <button
+              onClick={onRestart}
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-outline-variant/50 text-on-surface-variant rounded-xl font-semibold hover:bg-surface-container-high transition-all"
+            >
+              <span className="material-symbols-outlined text-base">restart_alt</span>
+              Restart
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-semibold hover:opacity-90 transition-all"
+            >
+              Close
+            </button>
+          </div>
         ) : (
           <button
             onClick={onPlayPause}
