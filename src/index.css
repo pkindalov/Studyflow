@@ -40,17 +40,68 @@
   --color-error: #f87171;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* ─── Light theme overrides ─────────────────────────────────────────────── */
+[data-theme="light"] {
+  /* Primary — richer violet for light bg contrast */
+  --color-primary: #5b46df;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #ede9ff;
+
+  /* Secondary — deeper teal */
+  --color-secondary: #0e9670;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #c8f5e4;
+  --color-secondary-dim: #96e8cc;
+
+  /* Tertiary — darker amber */
+  --color-tertiary: #a86200;
+
+  /* Surfaces — warm lavender-white scale */
+  --color-surface: #f5f2ff;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #eee9ff;
+  --color-surface-container-low: #e8e2fe;
+  --color-surface-container: #dfd8fb;
+  --color-surface-container-high: #d4ccf7;
+  --color-surface-container-highest: #c9c0f2;
+
+  /* Text */
+  --color-on-surface: #1c1830;
+  --color-on-surface-variant: #5c5285;
+
+  /* Borders */
+  --color-outline: rgba(0, 0, 0, 0.15);
+  --color-outline-variant: rgba(0, 0, 0, 0.08);
+
+  /* Error */
+  --color-error: #c5221f;
 }
 
-/* Force all inputs into dark mode so browsers don't override bg/text with light defaults */
+[data-theme="light"] body {
+  background-color: #f0eeff;
+}
+
+[data-theme="light"] body::before {
+  opacity: 0.15;
+}
+
+/* Match inputs to the active color scheme */
 input,
 textarea,
 select {
   color-scheme: dark;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {

@@ -41,6 +41,7 @@ function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead,
 }
 
 function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("studyflow_theme") || "dark");
   const [notification, setNotification] = useState("");
   const [priorityPercent, setPriorityPercent] = useState(40);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -190,6 +191,12 @@ function App() {
       .forEach((k) => localStorage.removeItem(k));
     setShowClearConfirm(false);
   }, [clearAllTasks, clearAllRecurring]);
+
+  // ─── Theme ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("studyflow_theme", theme);
+  }, [theme]);
 
   // ─── Persistence effects ────────────────────────────────────────────────────
   useEffect(() => {
@@ -559,7 +566,7 @@ function App() {
   );
 
   const sideColClass = (col) =>
-    `lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl transition-all min-h-16 ${dropTarget === col && draggedSection ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-[#0c0c1a]" : ""}`;
+    `lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl transition-all min-h-16 ${dropTarget === col && draggedSection ? "ring-2 ring-primary/40" : ""}`;
 
   const sideColDropProps = (col) => ({
     onDragOver: (e) => { e.preventDefault(); setDropTarget(col); },
@@ -569,7 +576,7 @@ function App() {
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0c0c1a] p-4 sm:p-6 pt-6">
+    <div className={`min-h-screen p-4 sm:p-6 pt-6 ${theme === "light" ? "bg-[#f0eeff]" : "bg-[#0c0c1a]"}`}>
       {notification && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
           {notification}
@@ -727,6 +734,19 @@ function App() {
         <div className={sideColClass("right")} {...sideColDropProps("right")}>
           {columnLayout.right.map(renderSideSection)}
         </div>
+      </div>
+      {/* Theme toggle — fixed top-right */}
+      <div className="fixed top-5 right-5 z-40">
+        <button
+          onClick={() => setTheme((t) => t === "dark" ? "light" : "dark")}
+          className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
+          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
+            {theme === "dark" ? "light_mode" : "dark_mode"}
+          </span>
+          {theme === "dark" ? "Light" : "Dark"}
+        </button>
       </div>
       {/* Reset layout button — only visible when layout differs from default */}
       {isCustomLayout && (
