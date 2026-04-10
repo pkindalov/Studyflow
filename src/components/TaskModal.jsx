@@ -46,7 +46,7 @@ function TaskModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-md p-7 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-md p-5 sm:p-7 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
         {/* Close button */}
         <button
           onClick={onClose}
@@ -104,20 +104,20 @@ function TaskModal({
             </span>
 
             {/* Frequency selector */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {RECURRENCE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setRecurrence(opt.value)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1.5 px-1.5 sm:px-3 py-2 rounded-xl text-[11px] sm:text-sm font-semibold border transition-all ${
                     recurrence === opt.value
                       ? "bg-secondary text-on-secondary border-secondary"
                       : "border-outline-variant/60 text-on-surface-variant hover:bg-surface-container-high"
                   }`}
                 >
                   <span className="material-symbols-outlined text-base">{opt.icon}</span>
-                  {opt.label}
+                  <span className="leading-tight text-center">{opt.label}</span>
                 </button>
               ))}
             </div>

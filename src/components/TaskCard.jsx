@@ -13,7 +13,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
       onDragEnter={onDragEnter ? () => onDragEnter(task.id) : undefined}
       onDragEnd={onDragEnd}
       onDragOver={onDragOver}
-      className={`bg-surface-container p-5 rounded-xl border flex items-center gap-5 hover:bg-surface-container-high transition-all group ${
+      className={`bg-surface-container p-3 sm:p-5 rounded-xl border flex items-center gap-2 sm:gap-5 hover:bg-surface-container-high transition-all group ${
         dragging ? "opacity-30" : ""
       } ${
         isDone ? "opacity-40" : ""
@@ -93,12 +93,12 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
         ) : null}
       </div>
 
-      <div className="flex gap-1 text-on-surface-variant flex-shrink-0 items-center">
+      <div className="flex gap-0.5 sm:gap-1 text-on-surface-variant flex-shrink-0 items-center">
         {/* Play timer button */}
         {onOpenTimer && (
           <button
             onClick={() => onOpenTimer(task)}
-            className="p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+            className="p-1 sm:p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label="Start timer"
             title="Start timer for this task"
           >
@@ -109,7 +109,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
         {onToggleSelect && (
           <button
             onClick={() => onToggleSelect(task.id)}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
               selected
                 ? "text-secondary hover:bg-secondary/10"
                 : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
@@ -126,7 +126,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
         )}
         <button
           onClick={() => onEdit(task)}
-          className="p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+          className="p-1 sm:p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
           aria-label="Edit task"
         >
           <span className="material-symbols-outlined text-base">edit</span>
@@ -134,7 +134,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
         {task.recurringId && onStopRecurring && (
           <button
             onClick={() => onStopRecurring(task.recurringId)}
-            className="p-1.5 rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
+            className="p-1 sm:p-1.5 rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
             aria-label="Stop repeating"
             title="Stop this task from repeating on future dates"
           >
@@ -143,7 +143,7 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
         )}
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="p-1.5 rounded-lg hover:text-error hover:bg-error/10 transition-colors"
+          className="p-1 sm:p-1.5 rounded-lg hover:text-error hover:bg-error/10 transition-colors"
           aria-label="Delete task"
         >
           <span className="material-symbols-outlined text-base">delete</span>
