@@ -1,13 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import TaskCard from "./TaskCard";
 import Pagination from "./Pagination";
 
 const PAGE_SIZE = 8;
 
-function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer }) {
+function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onReorder }) {
   const [page, setPage] = useState(0);
+  const [draggedId, setDraggedId] = useState(null);
+  const dragOverRef = useRef(null);
 
   useEffect(() => { setPage(0); }, [tasks.length]);
+
+  const handleDragStart = (id) => { setDraggedId(id); dragOverRef.current = id; };
+  const handleDragEnter = (id) => {
+    if (!draggedId || id === dragOverRef.current) return;
+    dragOverRef.current = id;
+    onReorder?.(draggedId, id);
+  };
+  const handleDragEnd = () => { setDraggedId(null); dragOverRef.current = null; };
+  const handleDragOver = (e) => e.preventDefault();
 
   const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
   const paginated = tasks.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -62,6 +73,11 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
                 selected={showSelectionControls ? !excludedTaskIds.has(task.id) : true}
                 onToggleSelect={onToggleSelect}
                 onOpenTimer={onOpenTimer}
+                dragging={draggedId === task.id}
+                onDragStart={onReorder ? handleDragStart : undefined}
+                onDragEnter={onReorder ? handleDragEnter : undefined}
+                onDragEnd={onReorder ? handleDragEnd : undefined}
+                onDragOver={onReorder ? handleDragOver : undefined}
               />
             ))}
           </div>

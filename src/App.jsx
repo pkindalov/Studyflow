@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import TaskList from "./components/TaskList";
@@ -73,6 +73,8 @@ function App() {
 
   // Schedule state
   const [schedule, setSchedule] = useState(null);
+  const [scheduleDraggedId, setScheduleDraggedId] = useState(null);
+  const scheduleDragOverRef = useRef(null);
 
   // Timer state
   const [timerTask, setTimerTask] = useState(null);
@@ -94,7 +96,7 @@ function App() {
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
 
-  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask } = useTasks();
+  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } = useRecurringTasks();
   const music = useMusicPlayer();
 
@@ -454,6 +456,7 @@ function App() {
             excludedTaskIds={excludedTaskIds}
             onToggleSelect={toggleTaskSelection}
             onOpenTimer={openTimerForTask}
+            onReorder={(draggedId, targetId) => reorderTasks(dateKey, draggedId, targetId)}
             onEdit={(task) => {
               setEditTaskId(task.id);
               setEditTaskText(task.text);
@@ -501,10 +504,28 @@ function App() {
                     const isRunning = runningTaskId === task.id;
                     const isFinished = total > 0 && elapsed >= total;
                     const hasProgress = elapsed > 0 && !isFinished;
+                    const isDragging = scheduleDraggedId === task.id;
                     return (
                       <li
                         key={task.id}
-                        className="relative flex items-center gap-4 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 overflow-hidden"
+                        draggable
+                        onDragStart={() => { setScheduleDraggedId(task.id); scheduleDragOverRef.current = task.id; }}
+                        onDragEnter={() => {
+                          if (!scheduleDraggedId || task.id === scheduleDragOverRef.current) return;
+                          scheduleDragOverRef.current = task.id;
+                          setSchedule((prev) => {
+                            const list = [...prev];
+                            const from = list.findIndex((t) => t.id === scheduleDraggedId);
+                            const to = list.findIndex((t) => t.id === task.id);
+                            if (from === -1 || to === -1) return prev;
+                            const [moved] = list.splice(from, 1);
+                            list.splice(to, 0, moved);
+                            return list;
+                          });
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDragEnd={() => { setScheduleDraggedId(null); scheduleDragOverRef.current = null; }}
+                        className={`relative flex items-center gap-4 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 overflow-hidden cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? "opacity-30" : ""}`}
                       >
                         {(hasProgress || isFinished) && (
                           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
@@ -514,6 +535,7 @@ function App() {
                             />
                           </div>
                         )}
+                        <span className="material-symbols-outlined text-base text-on-surface-variant/30 flex-shrink-0 select-none">drag_indicator</span>
                         <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
                         <span className="flex-1 font-medium text-on-surface text-sm">{task.text}</span>
                         <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} min</span>

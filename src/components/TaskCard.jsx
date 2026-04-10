@@ -1,10 +1,17 @@
 import { recurrenceLabel } from "../hooks/useRecurringTasks";
 
-function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer }) {
+function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, dragging, onDragStart, onDragEnter, onDragEnd, onDragOver }) {
   const isDone = !!task.done;
   return (
     <div
+      draggable={!!(onDragStart)}
+      onDragStart={onDragStart ? () => onDragStart(task.id) : undefined}
+      onDragEnter={onDragEnter ? () => onDragEnter(task.id) : undefined}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
       className={`bg-surface-container p-5 rounded-xl border flex items-center gap-5 hover:bg-surface-container-high transition-all group ${
+        dragging ? "opacity-30" : ""
+      } ${
         isDone ? "opacity-40" : ""
       } ${
         selected
@@ -12,6 +19,11 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
           : "border-outline-variant/20 opacity-60"
       }`}
     >
+      {onDragStart && (
+        <span className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 cursor-grab active:cursor-grabbing flex-shrink-0 select-none">
+          drag_indicator
+        </span>
+      )}
       <button
         className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-colors ${isDone ? "border-primary bg-primary" : "border-outline-variant group-hover:border-primary"}`}
         onClick={() => onToggle(task.id)}

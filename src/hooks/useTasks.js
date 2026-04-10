@@ -84,6 +84,18 @@ export function useTasks() {
     });
   }, []);
 
+  const reorderTasks = useCallback((dateKey, draggedId, targetId) => {
+    setTasks((prev) => {
+      const list = [...(prev[dateKey] || [])];
+      const from = list.findIndex((t) => t.id === draggedId);
+      const to = list.findIndex((t) => t.id === targetId);
+      if (from === -1 || to === -1 || from === to) return prev;
+      const [moved] = list.splice(from, 1);
+      list.splice(to, 0, moved);
+      return { ...prev, [dateKey]: list };
+    });
+  }, []);
+
   const moveTask = useCallback((fromDateKey, toDateKey, taskId) => {
     setTasks((prev) => {
       const fromList = prev[fromDateKey] || [];
@@ -97,5 +109,5 @@ export function useTasks() {
     });
   }, []);
 
-  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask };
+  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks };
 }
