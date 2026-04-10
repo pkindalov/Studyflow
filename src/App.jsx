@@ -1,18 +1,18 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import TaskList from "./components/TaskList";
-import TaskModal from "./components/TaskModal";
-import TimerModal from "./components/TimerModal";
-import CalendarSidebar from "./components/CalendarSidebar";
-import SummaryCard from "./components/SummaryCard";
-import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "./components/RightSidebar";
-import MusicPanel from "./components/MusicPanel";
-import { useTasks } from "./hooks/useTasks";
-import { useMusicPlayer } from "./hooks/useMusicPlayer";
-import { useRecurringTasks, appliesToDate } from "./hooks/useRecurringTasks";
-import { markDateWithTasks } from "./utils/calendar";
-import "./calendar.css";
+import TaskList from "./features/tasks/components/TaskList";
+import TaskModal from "./features/tasks/components/TaskModal";
+import TimerModal from "./features/schedule/components/TimerModal";
+import CalendarSidebar from "./features/calendar/components/CalendarSidebar";
+import SummaryCard from "./features/schedule/components/SummaryCard";
+import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "./features/dashboard/components/RightSidebar";
+import MusicPanel from "./features/music/components/MusicPanel";
+import { useTasks } from "./features/tasks/hooks/useTasks";
+import { useMusicPlayer } from "./features/music/hooks/useMusicPlayer";
+import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecurringTasks";
+import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
+import "./features/calendar/calendar.css";
 import "./animations.css";
 
 // Pure helpers — no state dependency, live outside the component

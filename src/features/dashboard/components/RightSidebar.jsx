@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import Pagination from "./Pagination";
+import Pagination from "../../../shared/components/Pagination";
 
 const MODAL_PAGE_SIZE = 5;
 const MAX_VISIBLE = 5;

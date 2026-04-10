@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import TaskCard from "./TaskCard";
-import Pagination from "./Pagination";
+import Pagination from "../../../shared/components/Pagination";
 
 const PAGE_SIZE = 8;
 

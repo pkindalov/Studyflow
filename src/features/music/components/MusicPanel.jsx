@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { extractVideoId } from "../hooks/useMusicPlayer";
-import Pagination from "./Pagination";
+import Pagination from "../../../shared/components/Pagination";
 
 const VISIBLE_COUNT = 5;
 const MODAL_PAGE_SIZE = 8;

@@ -1,4 +1,4 @@
-import { appliesToDate } from "../hooks/useRecurringTasks";
+import { appliesToDate } from "../../tasks/hooks/useRecurringTasks";
 
 export const markDateWithTasks = (tasks, formatDateKey, recurringTasks = []) => (props) => {
   const { date, view } = props;
