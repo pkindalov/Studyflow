@@ -1,16 +1,64 @@
-# React + Vite
+# Studyflow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A personal productivity app for planning your day, tracking tasks, and staying focused — built with React and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Task management** — create, edit, and delete tasks with optional images, priority flags, and categories
+- **Recurring tasks** — set tasks to repeat daily, weekly, monthly, yearly, or on a custom date range
+- **Schedule generator** — automatically allocates your study time across selected tasks, respecting priority limits
+- **Focus timer** — countdown timer per task with pomodoro break support, pause/resume, and auto-completion
+- **Focus music** — add YouTube tracks to a playlist that plays during your timer sessions
+- **Calendar** — visual date picker with dot indicators on days that have tasks
+- **Progress tracking** — live progress bars per task and a circular overall progress ring
+- **Light / dark theme** — toggle between a deep navy dark mode and a warm lavender light mode, persisted across sessions
+- **Drag-and-drop** — reorder tasks, schedule items, and sidebar sections by dragging
+- **Customisable layout** — move sidebar panels between left and right columns, reset to default anytime
+- **Clear all data** — wipe everything with a single confirmed action
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- [React 19](https://react.dev)
+- [Vite](https://vitejs.dev)
+- [Tailwind CSS v3](https://tailwindcss.com)
+- [react-calendar](https://github.com/wojtekmaj/react-calendar)
+- YouTube IFrame API (no extra package)
+- `localStorage` for persistence — no backend required
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+src/
+  features/
+    tasks/        # TaskCard, TaskList, TaskModal, useTasks, useRecurringTasks
+    schedule/     # TimerModal, SummaryCard
+    calendar/     # CalendarSidebar, markDateWithTasks util, calendar.css
+    music/        # MusicPanel, useMusicPlayer, YouTube service
+    dashboard/    # RightSidebar panels (study time, priority, quote, progress)
+  shared/
+    components/   # Pagination
+  App.jsx
+  main.jsx
+  index.css       # CSS custom properties for both themes
+  animations.css
+```
+
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start the dev server
+npm run dev
+
+# Expose to your local network (open on phone/tablet)
+npm run dev -- --host
+
+# Build for production
+npm run build
+```
+
+## Data & Privacy
+
+Everything is stored in your browser's `localStorage`. No account, no server, no data leaves your device.
