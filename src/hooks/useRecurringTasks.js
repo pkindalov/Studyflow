@@ -82,5 +82,7 @@ export function useRecurringTasks() {
     );
   }, []);
 
-  return { recurringTasks, addRecurring, updateRecurring, deleteRecurring, skipDate };
+  const clearAllRecurring = useCallback(() => setRecurringTasks([]), []);
+
+  return { recurringTasks, addRecurring, updateRecurring, deleteRecurring, skipDate, clearAllRecurring };
 }

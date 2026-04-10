@@ -109,5 +109,7 @@ export function useTasks() {
     });
   }, []);
 
-  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks };
+  const clearAllTasks = useCallback(() => setTasks({}), []);
+
+  return { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks };
 }

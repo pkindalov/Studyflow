@@ -109,8 +109,8 @@ function App() {
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
 
-  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks } = useTasks();
-  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring } = useRecurringTasks();
+  const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
+  const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, clearAllRecurring } = useRecurringTasks();
   const music = useMusicPlayer();
 
   // ─── Derived data ───────────────────────────────────────────────────────────
@@ -171,6 +171,25 @@ function App() {
   }, [draggedSection]);
 
   const resetLayout = useCallback(() => setColumnLayout(DEFAULT_LAYOUT), []);
+
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const handleClearAll = useCallback(() => {
+    clearAllTasks();
+    clearAllRecurring();
+    setSchedule(null);
+    setScheduleTimers({});
+    setRunningTaskId(null);
+    setTimerTask(null);
+    setExcludedTaskIds(new Set());
+    setTaskAllocations({});
+    setColumnLayout(DEFAULT_LAYOUT);
+    // Wipe all schedule_* and schedule_timers_* keys from localStorage
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("schedule_"))
+      .forEach((k) => localStorage.removeItem(k));
+    setShowClearConfirm(false);
+  }, [clearAllTasks, clearAllRecurring]);
 
   // ─── Persistence effects ────────────────────────────────────────────────────
   useEffect(() => {
@@ -815,6 +834,60 @@ function App() {
         setMoveToDate={isEditing && !editTaskIsRecurringInstance ? setEditTaskTargetDate : undefined}
         title={isEditing ? "Edit Task" : "Add New Task"}
       />
+      {/* Clear all data — floating trigger */}
+      <div className="fixed bottom-6 left-6 z-40">
+        <button
+          onClick={() => setShowClearConfirm(true)}
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-lg transition-all"
+        >
+          <span className="material-symbols-outlined text-sm">delete_sweep</span>
+          Clear all data
+        </button>
+      </div>
+      {/* Clear all data — confirmation modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-error text-xl">warning</span>
+                Clear all data?
+              </h3>
+              <p className="text-sm text-on-surface-variant">This will permanently remove:</p>
+              <ul className="text-sm text-on-surface-variant flex flex-col gap-1 pl-2">
+                {[
+                  "All tasks across every date",
+                  "All recurring tasks",
+                  "All saved schedules",
+                  "Sidebar layout (reset to default)",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-error/60 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-error/80 bg-error/8 border border-error/20 rounded-xl px-3 py-2 mt-1">
+                This cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClearAll}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error text-white hover:opacity-90 transition-all"
+              >
+                Clear everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
