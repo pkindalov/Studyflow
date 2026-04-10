@@ -6,7 +6,7 @@ import TaskModal from "./components/TaskModal";
 import TimerModal from "./components/TimerModal";
 import CalendarSidebar from "./components/CalendarSidebar";
 import SummaryCard from "./components/SummaryCard";
-import RightSidebar from "./components/RightSidebar";
+import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "./components/RightSidebar";
 import MusicPanel from "./components/MusicPanel";
 import { useTasks } from "./hooks/useTasks";
 import { useMusicPlayer } from "./hooks/useMusicPlayer";
@@ -17,6 +17,8 @@ import "./animations.css";
 
 // Pure helpers — no state dependency, live outside the component
 const formatDateKey = (date) => date.toLocaleDateString("en-CA");
+
+const DEFAULT_LAYOUT = { left: ["calendar"], right: ["studyTime", "priorityPercent", "quote", "todaysTasks", "music"] };
 
 function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
   const start = new Date((startDate) + "T12:00:00");
@@ -71,6 +73,17 @@ function App() {
   const isEditing = isEditModalOpen;
   const dateKey = formatDateKey(selectedDate);
 
+  // Column layout — which sidebar sections live in left vs right
+  const [columnLayout, setColumnLayout] = useState(() => {
+    try {
+      const saved = localStorage.getItem("studyflow_column_layout");
+      return saved ? JSON.parse(saved) : DEFAULT_LAYOUT;
+    } catch { return DEFAULT_LAYOUT; }
+  });
+  const [draggedSection, setDraggedSection] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null);
+  const sectionDragOverRef = useRef(null);
+
   // Schedule state
   const [schedule, setSchedule] = useState(null);
   const [scheduleDraggedId, setScheduleDraggedId] = useState(null);
@@ -118,6 +131,46 @@ function App() {
     () => markDateWithTasks(tasks, formatDateKey, recurringTasks),
     [tasks, recurringTasks],
   );
+
+  // ─── Column layout persistence & handlers ───────────────────────────────────
+  useEffect(() => {
+    localStorage.setItem("studyflow_column_layout", JSON.stringify(columnLayout));
+  }, [columnLayout]);
+
+  const handleSectionEnter = useCallback((targetId) => {
+    if (!draggedSection || targetId === draggedSection || targetId === sectionDragOverRef.current) return;
+    sectionDragOverRef.current = targetId;
+    setColumnLayout((prev) => {
+      // Remove dragged from wherever it is
+      const withoutDragged = {
+        left: prev.left.filter((id) => id !== draggedSection),
+        right: prev.right.filter((id) => id !== draggedSection),
+      };
+      // Find which column the target lives in now
+      const targetCol = withoutDragged.left.includes(targetId) ? "left" : "right";
+      const list = [...withoutDragged[targetCol]];
+      const targetIdx = list.indexOf(targetId);
+      if (targetIdx === -1) return prev;
+      list.splice(targetIdx, 0, draggedSection);
+      return { ...withoutDragged, [targetCol]: list };
+    });
+  }, [draggedSection]);
+
+  const handleDropOnColumn = useCallback((col) => {
+    // Fallback: if user drops on empty column area (not over a section)
+    if (!draggedSection) return;
+    setColumnLayout((prev) => {
+      if (prev[col].includes(draggedSection)) return prev; // already there via handleSectionEnter
+      return {
+        left:  col === "left"  ? [...prev.left, draggedSection]  : prev.left.filter((id) => id !== draggedSection),
+        right: col === "right" ? [...prev.right, draggedSection] : prev.right.filter((id) => id !== draggedSection),
+      };
+    });
+    setDraggedSection(null);
+    setDropTarget(null);
+  }, [draggedSection]);
+
+  const resetLayout = useCallback(() => setColumnLayout(DEFAULT_LAYOUT), []);
 
   // ─── Persistence effects ────────────────────────────────────────────────────
   useEffect(() => {
@@ -422,6 +475,79 @@ function App() {
     resetEditModal();
   }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, editTaskTargetDate, tasks, dateKey, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal]);
 
+  // ─── Render helpers ─────────────────────────────────────────────────────────
+  const isCustomLayout = JSON.stringify(columnLayout) !== JSON.stringify(DEFAULT_LAYOUT);
+
+  const SECTION_JSX = {
+    calendar: (
+      <CalendarSidebar
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        markDateWithTasks={markDateWithTasksFn}
+        onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
+      />
+    ),
+    studyTime: (
+      <StudyTimeSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} />
+    ),
+    priorityPercent: (
+      <PrioritySection priorityPercent={priorityPercent} setPriorityPercent={setPriorityPercent} />
+    ),
+    quote: <QuoteSection />,
+    todaysTasks: (
+      <TasksProgressSection
+        tasks={tasks}
+        recurringTasks={recurringTasks}
+        tasksForDay={tasksForDay}
+        scheduleTimers={scheduleTimers}
+        taskAllocations={taskAllocations}
+      />
+    ),
+    music: (
+      <MusicPanel
+        playlist={music.playlist}
+        activeTrackId={music.activeTrackId}
+        activeTrack={music.activeTrack}
+        isPlaying={music.isPlaying}
+        volume={music.volume}
+        onSelectTrack={music.selectTrack}
+        onAddTrack={music.addTrack}
+        onRemoveTrack={music.removeTrack}
+        onTogglePlay={music.togglePlay}
+        onSetVolume={music.setVolume}
+      />
+    ),
+  };
+
+  const renderSideSection = (id) => (
+    <div
+      key={id}
+      draggable
+      onDragStart={() => { setDraggedSection(id); sectionDragOverRef.current = id; }}
+      onDragEnter={() => handleSectionEnter(id)}
+      onDragOver={(e) => e.preventDefault()}
+      onDragEnd={() => { setDraggedSection(null); setDropTarget(null); sectionDragOverRef.current = null; }}
+      className={`relative group/sec transition-opacity ${draggedSection === id ? "opacity-30" : ""}`}
+    >
+      <div
+        className="absolute top-3 right-3 z-10 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing bg-surface-container-highest/80 rounded-lg p-1"
+        title="Drag to move to other column"
+      >
+        <span className="material-symbols-outlined text-sm text-on-surface-variant">open_with</span>
+      </div>
+      {SECTION_JSX[id]}
+    </div>
+  );
+
+  const sideColClass = (col) =>
+    `lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl transition-all min-h-16 ${dropTarget === col && draggedSection ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-[#0c0c1a]" : ""}`;
+
+  const sideColDropProps = (col) => ({
+    onDragOver: (e) => { e.preventDefault(); setDropTarget(col); },
+    onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDropTarget(null); },
+    onDrop: () => handleDropOnColumn(col),
+  });
+
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0c0c1a] p-4 sm:p-6 pt-6">
@@ -432,13 +558,8 @@ function App() {
       )}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         {/* Left Sidebar */}
-        <div className="lg:col-span-3">
-          <CalendarSidebar
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            markDateWithTasks={markDateWithTasksFn}
-            onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
-          />
+        <div className={sideColClass("left")} {...sideColDropProps("left")}>
+          {columnLayout.left.map(renderSideSection)}
         </div>
         {/* Main Content */}
         <div className="lg:col-span-6 flex flex-col gap-6">
@@ -584,32 +705,22 @@ function App() {
           )}
         </div>
         {/* Right Sidebar */}
-        <div className="lg:col-span-3 flex flex-col gap-4 lg:gap-6">
-          <RightSidebar
-            totalStudyTime={totalStudyTime}
-            setTotalStudyTime={setTotalStudyTime}
-            priorityPercent={priorityPercent}
-            setPriorityPercent={setPriorityPercent}
-            tasks={tasks}
-            recurringTasks={recurringTasks}
-            tasksForDay={tasksForDay}
-            scheduleTimers={scheduleTimers}
-            taskAllocations={taskAllocations}
-          />
-          <MusicPanel
-            playlist={music.playlist}
-            activeTrackId={music.activeTrackId}
-            activeTrack={music.activeTrack}
-            isPlaying={music.isPlaying}
-            volume={music.volume}
-            onSelectTrack={music.selectTrack}
-            onAddTrack={music.addTrack}
-            onRemoveTrack={music.removeTrack}
-            onTogglePlay={music.togglePlay}
-            onSetVolume={music.setVolume}
-          />
+        <div className={sideColClass("right")} {...sideColDropProps("right")}>
+          {columnLayout.right.map(renderSideSection)}
         </div>
       </div>
+      {/* Reset layout button — only visible when layout differs from default */}
+      {isCustomLayout && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={resetLayout}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
+          >
+            <span className="material-symbols-outlined text-sm">restart_alt</span>
+            Reset layout
+          </button>
+        </div>
+      )}
       {/* Timer Modal */}
       {timerTask && (
         <TimerModal
