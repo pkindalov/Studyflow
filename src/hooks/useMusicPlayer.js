@@ -125,6 +125,14 @@ export function useMusicPlayer() {
 
   const selectTrack = useCallback((id) => {
     setActiveTrackId(id);
+    setPlaylist((prev) => {
+      const idx = prev.findIndex((t) => t.id === id);
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      const [picked] = next.splice(idx, 1);
+      next.unshift(picked);
+      return next;
+    });
   }, []);
 
   const addTrack = useCallback((name, url) => {
