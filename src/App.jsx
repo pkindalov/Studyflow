@@ -355,7 +355,12 @@ function App() {
   // ─── Schedule controls ──────────────────────────────────────────────────────
   const generateSchedule = useCallback(() => {
     const selectedTasks = tasksForDay.filter((t) => !excludedTaskIds.has(t.id) && !t.done);
-    if (!selectedTasks.length || totalStudyTime <= 0) return;
+    if (totalStudyTime <= 0) return;
+    if (!selectedTasks.length) {
+      const allDone = tasksForDay.length > 0 && tasksForDay.every((t) => t.done);
+      showNotification(allDone ? "All tasks are done — nothing left to schedule!" : "No tasks selected for scheduling.");
+      return;
+    }
     const priorityTasks = selectedTasks.filter((t) => t.priority);
     const nonPriorityTasks = selectedTasks.filter((t) => !t.priority);
     let scheduleArr = [];
@@ -403,7 +408,7 @@ function App() {
     const prioritySlice = scheduleArr.filter((t) => t.priority).sort(() => Math.random() - 0.5);
     const normalSlice = scheduleArr.filter((t) => !t.priority).sort(() => Math.random() - 0.5);
     setSchedule([...prioritySlice, ...normalSlice]);
-  }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent]);
+  }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, showNotification]);
 
   const saveSchedule = useCallback(() => {
     if (schedule && schedule.length > 0) {

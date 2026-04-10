@@ -1,4 +1,8 @@
 import { useState } from "react";
+import Pagination from "../../../shared/components/Pagination";
+
+const TIMER_VISIBLE = 5;
+const TIMER_PAGE_SIZE = 8;
 
 function formatTime(seconds, hms) {
   if (hms) {
@@ -15,6 +19,8 @@ function formatTime(seconds, hms) {
 function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0 }) {
   const [hmsMode, setHmsMode] = useState(false);
+  const [showAllTracks, setShowAllTracks] = useState(false);
+  const [tracksPage, setTracksPage] = useState(0);
 
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
@@ -260,14 +266,14 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, mus
               )}
             </div>
 
-            {/* Track list */}
-            <div className="flex flex-col gap-1 max-h-36 overflow-y-auto">
+            {/* Track list — compact, first TIMER_VISIBLE tracks */}
+            <div className="flex flex-col gap-1">
               {music.playlist.length === 0 && (
                 <p className="text-xs text-on-surface-variant text-center py-2">
                   No tracks — add one in the sidebar.
                 </p>
               )}
-              {music.playlist.map((track) => {
+              {music.playlist.slice(0, TIMER_VISIBLE).map((track) => {
                 const isActive = track.id === music.activeTrackId;
                 return (
                   <button
@@ -288,21 +294,74 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, mus
                             : "text-on-surface-variant/30"
                       }`}
                     >
-                      {isActive && music.isPlaying
-                        ? "radio_button_checked"
-                        : "radio_button_unchecked"}
+                      {isActive && music.isPlaying ? "radio_button_checked" : "radio_button_unchecked"}
                     </span>
-                    <span
-                      className={`text-xs truncate font-medium ${
-                        isActive ? "text-on-surface" : "text-on-surface-variant"
-                      }`}
-                    >
+                    <span className={`text-xs truncate font-medium ${isActive ? "text-on-surface" : "text-on-surface-variant"}`}>
                       {track.name}
                     </span>
                   </button>
                 );
               })}
+              {music.playlist.length > TIMER_VISIBLE && (
+                <button
+                  onClick={() => { setShowAllTracks(true); setTracksPage(0); }}
+                  className="w-full text-center py-1 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors"
+                >
+                  +{music.playlist.length - TIMER_VISIBLE} more — view all
+                </button>
+              )}
             </div>
+
+            {/* All tracks modal */}
+            {showAllTracks && (
+              <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
+                      <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
+                      Playlist
+                    </h2>
+                    <button
+                      onClick={() => setShowAllTracks(false)}
+                      className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
+                    >
+                      <span className="material-symbols-outlined text-xl">close</span>
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {music.playlist
+                      .slice(tracksPage * TIMER_PAGE_SIZE, tracksPage * TIMER_PAGE_SIZE + TIMER_PAGE_SIZE)
+                      .map((track) => {
+                        const isActive = track.id === music.activeTrackId;
+                        return (
+                          <button
+                            key={track.id}
+                            onClick={() => { music.selectTrack(track.id); setShowAllTracks(false); }}
+                            className={`flex items-center gap-2 w-full px-2.5 py-2 rounded-lg text-left transition-all ${
+                              isActive
+                                ? "bg-tertiary/15 border border-tertiary/30"
+                                : "hover:bg-surface-container-high border border-transparent"
+                            }`}
+                          >
+                            <span className={`material-symbols-outlined text-sm flex-shrink-0 ${isActive && music.isPlaying ? "text-tertiary" : isActive ? "text-tertiary/60" : "text-on-surface-variant/30"}`}>
+                              {isActive && music.isPlaying ? "radio_button_checked" : "radio_button_unchecked"}
+                            </span>
+                            <span className={`text-xs truncate font-medium ${isActive ? "text-on-surface" : "text-on-surface-variant"}`}>
+                              {track.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                  </div>
+                  <Pagination
+                    page={tracksPage}
+                    totalPages={Math.ceil(music.playlist.length / TIMER_PAGE_SIZE)}
+                    onPrev={() => setTracksPage((p) => p - 1)}
+                    onNext={() => setTracksPage((p) => p + 1)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
