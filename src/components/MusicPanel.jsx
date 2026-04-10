@@ -1,5 +1,48 @@
 import { useState, useCallback } from "react";
 import { extractVideoId } from "../hooks/useMusicPlayer";
+import Pagination from "./Pagination";
+
+const VISIBLE_COUNT = 5;
+const MODAL_PAGE_SIZE = 8;
+
+function TrackRow({ track, isActive, isPlaying, onSelect, onRemove }) {
+  return (
+    <div
+      className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all group ${
+        isActive
+          ? "bg-tertiary/15 border border-tertiary/30"
+          : "hover:bg-surface-container-high border border-transparent"
+      }`}
+      onClick={() => onSelect(track.id)}
+    >
+      <span
+        className={`flex-shrink-0 material-symbols-outlined text-base ${
+          isActive && isPlaying
+            ? "text-tertiary"
+            : isActive
+              ? "text-tertiary/70"
+              : "text-on-surface-variant/40"
+        }`}
+      >
+        {isActive && isPlaying ? "radio_button_checked" : "radio_button_unchecked"}
+      </span>
+      <span
+        className={`flex-1 text-sm truncate font-medium ${
+          isActive ? "text-on-surface" : "text-on-surface-variant"
+        }`}
+      >
+        {track.name}
+      </span>
+      <button
+        onClick={(e) => { e.stopPropagation(); onRemove(track.id); }}
+        className="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
+        title="Remove track"
+      >
+        <span className="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+  );
+}
 
 function MusicPanel({
   playlist,
@@ -17,6 +60,8 @@ function MusicPanel({
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [addError, setAddError] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const [modalPage, setModalPage] = useState(0);
 
   const handleAdd = useCallback(() => {
     const name = newName.trim();
@@ -105,57 +150,72 @@ function MusicPanel({
         </div>
       )}
 
-      {/* Track list */}
-      <div className="flex flex-col gap-1 px-4 sm:px-5 pb-2 max-h-52 overflow-y-auto">
+      {/* Track list — compact, shows first VISIBLE_COUNT tracks */}
+      <div className="flex flex-col gap-1 px-4 sm:px-5 pb-2">
         {playlist.length === 0 && (
           <p className="text-xs text-on-surface-variant text-center py-3">
             No tracks yet. Add one below.
           </p>
         )}
-        {playlist.map((track) => {
-          const isActive = track.id === activeTrackId;
-          return (
-            <div
-              key={track.id}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all group ${
-                isActive
-                  ? "bg-tertiary/15 border border-tertiary/30"
-                  : "hover:bg-surface-container-high border border-transparent"
-              }`}
-              onClick={() => onSelectTrack(track.id)}
-            >
-              <span
-                className={`flex-shrink-0 material-symbols-outlined text-base ${
-                  isActive && isPlaying
-                    ? "text-tertiary"
-                    : isActive
-                      ? "text-tertiary/70"
-                      : "text-on-surface-variant/40"
-                }`}
-              >
-                {isActive && isPlaying ? "radio_button_checked" : "radio_button_unchecked"}
-              </span>
-              <span
-                className={`flex-1 text-sm truncate font-medium ${
-                  isActive ? "text-on-surface" : "text-on-surface-variant"
-                }`}
-              >
-                {track.name}
-              </span>
+        {playlist.slice(0, VISIBLE_COUNT).map((track) => (
+          <TrackRow
+            key={track.id}
+            track={track}
+            isActive={track.id === activeTrackId}
+            isPlaying={isPlaying}
+            onSelect={onSelectTrack}
+            onRemove={onRemoveTrack}
+          />
+        ))}
+        {playlist.length > VISIBLE_COUNT && (
+          <button
+            onClick={() => { setShowAll(true); setModalPage(0); }}
+            className="w-full text-center py-1.5 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors"
+          >
+            +{playlist.length - VISIBLE_COUNT} more — view all
+          </button>
+        )}
+      </div>
+
+      {/* All tracks modal */}
+      {showAll && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
+                Playlist
+              </h2>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemoveTrack(track.id);
-                }}
-                className="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
-                title="Remove track"
+                onClick={() => setShowAll(false)}
+                className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
               >
-                <span className="material-symbols-outlined text-sm">close</span>
+                <span className="material-symbols-outlined text-xl">close</span>
               </button>
             </div>
-          );
-        })}
-      </div>
+            <div className="flex flex-col gap-1.5">
+              {playlist
+                .slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE)
+                .map((track) => (
+                  <TrackRow
+                    key={track.id}
+                    track={track}
+                    isActive={track.id === activeTrackId}
+                    isPlaying={isPlaying}
+                    onSelect={onSelectTrack}
+                    onRemove={onRemoveTrack}
+                  />
+                ))}
+            </div>
+            <Pagination
+              page={modalPage}
+              totalPages={Math.ceil(playlist.length / MODAL_PAGE_SIZE)}
+              onPrev={() => setModalPage((p) => p - 1)}
+              onNext={() => setModalPage((p) => p + 1)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Add track */}
       <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-1 border-t border-outline-variant/30 mt-1">
