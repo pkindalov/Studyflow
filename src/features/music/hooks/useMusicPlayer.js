@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { generateId } from "../../../shared/utils/id";
 import {
   initYTPlayer,
   resetYTPlayer,
@@ -136,7 +137,7 @@ export function useMusicPlayer() {
   }, []);
 
   const addTrack = useCallback((name, url) => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     setPlaylist((prev) => [...prev, { id, name, url }]);
     return id;
   }, []);

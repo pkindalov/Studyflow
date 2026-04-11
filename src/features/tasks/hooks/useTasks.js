@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { generateId } from "../../../shared/utils/id";
 
 export function useTasks() {
   const [tasks, setTasks] = useState({});
@@ -19,7 +20,7 @@ export function useTasks() {
       ...prev,
       [dateKey]: [
         ...(prev[dateKey] || []),
-        { id: crypto.randomUUID(), text, done: false, imageUrl, priority: !!priority },
+        { id: generateId(), text, done: false, imageUrl, priority: !!priority },
       ],
     }));
   }, []);

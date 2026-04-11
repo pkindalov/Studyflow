@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { generateId } from "../../../shared/utils/id";
 
 const STORAGE_KEY = "studyflow_recurring";
 
@@ -52,7 +53,7 @@ export function useRecurringTasks() {
   }, [recurringTasks]);
 
   const addRecurring = useCallback((text, imageUrl, priority, recurrence, startDate, endDate = "") => {
-    const id = crypto.randomUUID();
+    const id = generateId();
     setRecurringTasks((prev) => [
       ...prev,
       { id, text, imageUrl: imageUrl || "", priority: !!priority, recurrence, startDate, endDate: endDate || "", skippedDates: [] },

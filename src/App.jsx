@@ -12,6 +12,7 @@ import { useTasks } from "./features/tasks/hooks/useTasks";
 import { useMusicPlayer } from "./features/music/hooks/useMusicPlayer";
 import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecurringTasks";
 import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
+import { generateId } from "./shared/utils/id";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -272,7 +273,7 @@ function App() {
       if ((template.skippedDates || []).includes(dateKey)) return;
       if (!appliesToDate(template, dateKey)) return;
       addTaskDirect(dateKey, {
-        id: crypto.randomUUID(),
+        id: generateId(),
         text: template.text,
         imageUrl: template.imageUrl,
         priority: template.priority,
@@ -590,7 +591,7 @@ function App() {
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen p-4 sm:p-6 pt-6 ${theme === "light" ? "bg-[#f0eeff]" : "bg-[#0c0c1a]"}`}>
+    <div className={`min-h-dvh p-4 sm:p-6 pt-6 ${theme === "light" ? "bg-[#f0eeff]" : "bg-[#0c0c1a]"}`}>
       {notification && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
           {notification}

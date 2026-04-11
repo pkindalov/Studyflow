@@ -203,7 +203,7 @@ export function TasksProgressSection({
 
       {showAll && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80vh]">
+          <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-headline font-bold text-on-surface">{sectionTitle}</h2>
               <button
