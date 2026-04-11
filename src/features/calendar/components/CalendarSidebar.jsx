@@ -1,11 +1,32 @@
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
+function ToggleSwitch({ checked, onChange }) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
+        checked ? "bg-secondary" : "bg-surface-container-highest"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
 function CalendarSidebar({
   selectedDate,
   setSelectedDate,
   markDateWithTasks,
   onAddClick,
+  showCompletion,
+  onToggleCompletion,
 }) {
   return (
     <aside className="flex flex-col p-5 sm:p-6 gap-5 rounded-3xl bg-surface-container border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
@@ -33,6 +54,20 @@ function CalendarSidebar({
         <span className="material-symbols-outlined text-sm">add</span>
         <span>Create Task</span>
       </button>
+
+      {/* Month overview toggle */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
+            calendar_month
+          </span>
+          <span className="text-xs font-medium text-on-surface-variant truncate">
+            Month overview
+          </span>
+        </div>
+        <ToggleSwitch checked={showCompletion} onChange={onToggleCompletion} />
+      </div>
+
       <Calendar
         onChange={setSelectedDate}
         value={selectedDate}

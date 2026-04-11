@@ -46,6 +46,9 @@ function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead,
 
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("studyflow_theme") || "dark");
+  const [showCalendarCompletion, setShowCalendarCompletion] = useState(
+    () => localStorage.getItem("studyflow_calendar_completion") === "true"
+  );
   const [showHelp, setShowHelp] = useState(false);
   const [notification, setNotification] = useState("");
   const [priorityPercent, setPriorityPercent] = useState(40);
@@ -146,8 +149,8 @@ function App() {
   }, [tasksForDay]);
 
   const markDateWithTasksFn = useMemo(
-    () => markDateWithTasks(tasks, formatDateKey, recurringTasks),
-    [tasks, recurringTasks],
+    () => markDateWithTasks(tasks, formatDateKey, recurringTasks, showCalendarCompletion),
+    [tasks, recurringTasks, showCalendarCompletion],
   );
 
   // ─── Column layout persistence & handlers ───────────────────────────────────
@@ -219,6 +222,10 @@ function App() {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("studyflow_theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("studyflow_calendar_completion", String(showCalendarCompletion));
+  }, [showCalendarCompletion]);
 
   // ─── Persistence effects ────────────────────────────────────────────────────
   useEffect(() => {
@@ -569,6 +576,8 @@ function App() {
         setSelectedDate={setSelectedDate}
         markDateWithTasks={markDateWithTasksFn}
         onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
+        showCompletion={showCalendarCompletion}
+        onToggleCompletion={() => setShowCalendarCompletion((v) => !v)}
       />
     ),
     activity: <ActivityPanel tasks={tasks} />,
