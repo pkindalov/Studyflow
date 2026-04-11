@@ -15,6 +15,7 @@ import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecu
 import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
 import { generateId } from "./shared/utils/id";
 import HelpModal from "./shared/components/HelpModal";
+import { exportData, readBackupFile, applyBackup } from "./shared/utils/dataPortability";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -190,6 +191,11 @@ function App() {
   const resetLayout = useCallback(() => setColumnLayout(DEFAULT_LAYOUT), []);
 
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // Import backup state
+  const [pendingImport, setPendingImport] = useState(null); // { exportedAt, keyCount, rawData }
+  const [importError, setImportError] = useState("");
+  const importFileRef = useRef(null);
 
   const handleClearAll = useCallback(() => {
     clearAllTasks();
@@ -530,6 +536,28 @@ function App() {
     }
     resetEditModal();
   }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, editTaskTargetDate, tasks, dateKey, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal]);
+
+  // ─── Import / Export handlers ───────────────────────────────────────────────
+  const handleImportFileChange = useCallback(async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Reset the input so the same file can be picked again if needed
+    e.target.value = "";
+    setImportError("");
+    try {
+      const summary = await readBackupFile(file);
+      setPendingImport(summary);
+    } catch (err) {
+      setImportError(err.message);
+    }
+  }, []);
+
+  const handleImportConfirm = useCallback(() => {
+    if (!pendingImport) return;
+    applyBackup(pendingImport.rawData);
+    setPendingImport(null);
+    window.location.reload();
+  }, [pendingImport]);
 
   // ─── Render helpers ─────────────────────────────────────────────────────────
   const isCustomLayout = JSON.stringify(columnLayout) !== JSON.stringify(DEFAULT_LAYOUT);
@@ -896,16 +924,83 @@ function App() {
         setMoveToDate={isEditing && !editTaskIsRecurringInstance ? setEditTaskTargetDate : undefined}
         title={isEditing ? "Edit Task" : "Add New Task"}
       />
-      {/* Clear all data — floating trigger */}
-      <div className="fixed bottom-6 left-6 z-40">
+      {/* Bottom-left actions — export, import, clear */}
+      <div className="fixed bottom-6 left-6 z-40 flex items-center gap-2">
+        <button
+          onClick={exportData}
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
+          title="Export all data as a backup file"
+        >
+          <span className="material-symbols-outlined text-sm">backup</span>
+          Export
+        </button>
+        <button
+          onClick={() => { setImportError(""); importFileRef.current?.click(); }}
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
+          title="Restore data from a backup file"
+        >
+          <span className="material-symbols-outlined text-sm">restore</span>
+          Import
+        </button>
         <button
           onClick={() => setShowClearConfirm(true)}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-lg transition-all"
+          title="Permanently delete all data"
         >
           <span className="material-symbols-outlined text-sm">delete_sweep</span>
-          Clear all data
+          Clear
         </button>
       </div>
+      {/* Hidden file input for import */}
+      <input
+        ref={importFileRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleImportFileChange}
+      />
+      {/* Import error toast */}
+      {importError && (
+        <div className="fixed bottom-20 left-6 z-50 bg-error text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold max-w-xs">
+          {importError}
+        </div>
+      )}
+      {/* Import confirmation modal */}
+      {pendingImport && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">restore</span>
+                Restore backup?
+              </h3>
+              <p className="text-sm text-on-surface-variant">
+                This will replace all current data with the backup from{" "}
+                <strong className="text-on-surface">
+                  {pendingImport.exportedAt
+                    ? new Date(pendingImport.exportedAt).toLocaleDateString("en-US", { dateStyle: "medium" })
+                    : "unknown date"}
+                </strong>
+                . The page will reload.
+              </p>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setPendingImport(null)}
+                className="px-5 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-all text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImportConfirm}
+                className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold hover:opacity-90 transition-all text-sm"
+              >
+                Restore
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Clear all data — confirmation modal */}
       {showClearConfirm && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
