@@ -49,22 +49,19 @@ export function useActivityStats(tasks) {
     return { streak: count, activeToday: todayDone };
   }, [tasks]);
 
-  const totalFocusSeconds = useMemo(() => {
-    let total = 0;
-    try {
-      Object.keys(localStorage)
-        .filter((k) => k.startsWith("schedule_timers_"))
-        .forEach((k) => {
-          const timers = JSON.parse(localStorage.getItem(k) || "{}");
-          Object.values(timers).forEach((sec) => {
-            if (typeof sec === "number" && sec > 0) total += sec;
-          });
+  let totalFocusSeconds = 0;
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("schedule_timers_"))
+      .forEach((k) => {
+        const timers = JSON.parse(localStorage.getItem(k) || "{}");
+        Object.values(timers).forEach((sec) => {
+          if (typeof sec === "number" && sec > 0) totalFocusSeconds += sec;
         });
-    } catch {
-      // localStorage not available
-    }
-    return total;
-  }, [tasks]); // re-compute when tasks change (timers update alongside tasks)
+      });
+  } catch {
+    // localStorage not available
+  }
 
   return { streak, activeToday, totalFocusSeconds, heatmap };
 }
