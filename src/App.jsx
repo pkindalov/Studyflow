@@ -13,6 +13,7 @@ import { useMusicPlayer } from "./features/music/hooks/useMusicPlayer";
 import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecurringTasks";
 import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
 import { generateId } from "./shared/utils/id";
+import HelpModal from "./shared/components/HelpModal";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -43,6 +44,7 @@ function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead,
 
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("studyflow_theme") || "dark");
+  const [showHelp, setShowHelp] = useState(false);
   const [notification, setNotification] = useState("");
   const [priorityPercent, setPriorityPercent] = useState(40);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -750,8 +752,16 @@ function App() {
           {columnLayout.right.map(renderSideSection)}
         </div>
       </div>
-      {/* Theme toggle — fixed top-right */}
-      <div className="fixed top-5 right-5 z-40">
+      {/* Theme toggle + Help — fixed top-right */}
+      <div className="fixed top-5 right-5 z-40 flex items-center gap-2">
+        <button
+          onClick={() => setShowHelp(true)}
+          className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high shadow-lg transition-all"
+          title="How to use Studyflow"
+          aria-label="Help"
+        >
+          <span className="material-symbols-outlined text-base">help_outline</span>
+        </button>
         <button
           onClick={() => setTheme((t) => t === "dark" ? "light" : "dark")}
           className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
@@ -763,6 +773,8 @@ function App() {
           {theme === "dark" ? "Light" : "Dark"}
         </button>
       </div>
+      {/* Help modal */}
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {/* Reset layout button — only visible when layout differs from default */}
       {isCustomLayout && (
         <div className="fixed bottom-6 right-6 z-40">
