@@ -7,6 +7,7 @@ import TimerModal from "./features/schedule/components/TimerModal";
 import CalendarSidebar from "./features/calendar/components/CalendarSidebar";
 import SummaryCard from "./features/schedule/components/SummaryCard";
 import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "./features/dashboard/components/RightSidebar";
+import { ActivityPanel } from "./features/dashboard/components/ActivityPanel";
 import MusicPanel from "./features/music/components/MusicPanel";
 import { useTasks } from "./features/tasks/hooks/useTasks";
 import { useMusicPlayer } from "./features/music/hooks/useMusicPlayer";
@@ -20,7 +21,7 @@ import "./animations.css";
 // Pure helpers — no state dependency, live outside the component
 const formatDateKey = (date) => date.toLocaleDateString("en-CA");
 
-const DEFAULT_LAYOUT = { left: ["calendar"], right: ["studyTime", "priorityPercent", "quote", "todaysTasks", "music"] };
+const DEFAULT_LAYOUT = { left: ["calendar", "activity"], right: ["studyTime", "priorityPercent", "quote", "todaysTasks", "music"] };
 
 function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
   const start = new Date((startDate) + "T12:00:00");
@@ -81,7 +82,19 @@ function App() {
   const [columnLayout, setColumnLayout] = useState(() => {
     try {
       const saved = localStorage.getItem("studyflow_column_layout");
-      return saved ? JSON.parse(saved) : DEFAULT_LAYOUT;
+      if (!saved) return DEFAULT_LAYOUT;
+      const parsed = JSON.parse(saved);
+      // Migration: add new panel IDs that don't exist in the saved layout yet
+      const allSaved = [...(parsed.left || []), ...(parsed.right || [])];
+      const missingLeft = DEFAULT_LAYOUT.left.filter((id) => !allSaved.includes(id));
+      const missingRight = DEFAULT_LAYOUT.right.filter((id) => !allSaved.includes(id));
+      if (missingLeft.length > 0 || missingRight.length > 0) {
+        return {
+          left: [...(parsed.left || []), ...missingLeft],
+          right: [...missingRight, ...(parsed.right || [])],
+        };
+      }
+      return parsed;
     } catch { return DEFAULT_LAYOUT; }
   });
   const [draggedSection, setDraggedSection] = useState(null);
@@ -530,6 +543,7 @@ function App() {
         onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
       />
     ),
+    activity: <ActivityPanel tasks={tasks} />,
     studyTime: (
       <StudyTimeSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} />
     ),
