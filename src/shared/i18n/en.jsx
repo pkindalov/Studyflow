@@ -1,7 +1,7 @@
 export const en = {
   // ── Branding ────────────────────────────────────────────────────────────────
   appName: "Studyflow",
-  appTagline: "Productivity Ritual",
+  appTagline: "Study smarter every day",
 
   // ── Shared ──────────────────────────────────────────────────────────────────
   cancel: "Cancel",

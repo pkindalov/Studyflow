@@ -681,6 +681,40 @@ function App() {
           {notification}
         </div>
       )}
+      {/* Mobile-only top toolbar — sits in normal document flow, no overlap */}
+      <div className="flex lg:hidden items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high shadow-sm transition-all"
+            title={t.howStudyflowWorks}
+            aria-label="Help"
+          >
+            <span className="material-symbols-outlined text-base">help_outline</span>
+          </button>
+          <div className="flex items-center bg-surface-container border border-outline-variant/50 rounded-xl shadow-sm overflow-hidden">
+            <button
+              onClick={() => setLang("en")}
+              className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "en" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
+            >EN</button>
+            <button
+              onClick={() => setLang("bg")}
+              className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "bg" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
+            >БГ</button>
+          </div>
+          <button
+            onClick={() => setTheme((prev) => prev === "dark" ? "light" : "dark")}
+            className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all"
+            title={theme === "dark" ? t.switchToLight : t.switchToDark}
+          >
+            <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
+              {theme === "dark" ? "light_mode" : "dark_mode"}
+            </span>
+            {theme === "dark" ? t.lightMode : t.darkMode}
+          </button>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         {/* Left Sidebar */}
         <div className={sideColClass("left")} {...sideColDropProps("left")}>
@@ -834,8 +868,47 @@ function App() {
           {columnLayout.right.map(renderSideSection)}
         </div>
       </div>
-      {/* Theme toggle + language + Help — fixed top-right */}
-      <div className="fixed top-5 right-5 z-40 flex items-center gap-2">
+      {/* Mobile-only bottom toolbar — export / import / clear / reset layout */}
+      <div className="flex lg:hidden items-center justify-between gap-2 mt-4 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={exportData}
+            className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all"
+            title={t.exportTitle}
+          >
+            <span className="material-symbols-outlined text-sm">backup</span>
+            {t.exportBtn}
+          </button>
+          <button
+            onClick={() => { setImportError(""); importFileRef.current?.click(); }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all"
+            title={t.importTitle}
+          >
+            <span className="material-symbols-outlined text-sm">restore</span>
+            {t.importBtn}
+          </button>
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-sm transition-all"
+            title={t.clearTitle}
+          >
+            <span className="material-symbols-outlined text-sm">delete_sweep</span>
+            {t.clearBtn}
+          </button>
+        </div>
+        {isCustomLayout && (
+          <button
+            onClick={resetLayout}
+            className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all"
+          >
+            <span className="material-symbols-outlined text-sm">restart_alt</span>
+            {t.resetLayoutBtn}
+          </button>
+        )}
+      </div>
+
+      {/* Theme toggle + language + Help — desktop fixed top-right */}
+      <div className="hidden lg:flex fixed top-5 right-5 z-40 items-center gap-2">
         <button
           onClick={() => setShowHelp(true)}
           className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high shadow-lg transition-all"
@@ -872,9 +945,9 @@ function App() {
       </div>
       {/* Help modal */}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
-      {/* Reset layout button — only visible when layout differs from default */}
+      {/* Reset layout button — desktop only, fixed bottom-right */}
       {isCustomLayout && (
-        <div className="fixed bottom-6 right-6 z-40">
+        <div className="hidden lg:flex fixed bottom-6 right-6 z-40">
           <button
             onClick={resetLayout}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
@@ -979,8 +1052,8 @@ function App() {
         setMoveToDate={isEditing && !editTaskIsRecurringInstance ? setEditTaskTargetDate : undefined}
         title={isEditing ? t.editTaskTitle : t.addTaskTitle}
       />
-      {/* Bottom-left actions — export, import, clear */}
-      <div className="fixed bottom-6 left-6 z-40 flex items-center gap-2">
+      {/* Bottom-left actions — export, import, clear — desktop only */}
+      <div className="hidden lg:flex fixed bottom-6 left-6 z-40 items-center gap-2">
         <button
           onClick={exportData}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"

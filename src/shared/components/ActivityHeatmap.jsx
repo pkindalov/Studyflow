@@ -7,10 +7,10 @@ const WEEKS = 26;
 function cellClass(count, isFuture) {
   if (isFuture) return "bg-transparent";
   if (!count) return "bg-surface-container-highest";
-  if (count === 1) return "bg-primary/25";
-  if (count === 2) return "bg-primary/45";
-  if (count <= 4) return "bg-primary/70";
-  return "bg-primary";
+  if (count === 1) return "bg-emerald-400/40";
+  if (count === 2) return "bg-emerald-400/65";
+  if (count <= 4) return "bg-emerald-500/85";
+  return "bg-emerald-500";
 }
 
 function buildGrid() {
@@ -103,7 +103,7 @@ function ActivityHeatmap({ heatmap }) {
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-1 justify-end">
         <span className="text-[9px] text-on-surface-variant/50">Less</span>
-        {["bg-surface-container-highest", "bg-primary/25", "bg-primary/45", "bg-primary/70", "bg-primary"].map((cls, i) => (
+        {["bg-surface-container-highest", "bg-emerald-400/40", "bg-emerald-400/65", "bg-emerald-500/85", "bg-emerald-500"].map((cls, i) => (
           <div key={i} className={`w-2 h-2 rounded-[2px] ${cls}`} />
         ))}
         <span className="text-[9px] text-on-surface-variant/50">More</span>
