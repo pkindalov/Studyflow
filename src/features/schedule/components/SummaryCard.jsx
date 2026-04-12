@@ -1,4 +1,7 @@
-function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
+import { useLang } from "../../../shared/i18n/LangContext";
+
+function SummaryCard({ total, completed, remaining, progress }) {
+  const { t } = useLang();
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
@@ -9,16 +12,16 @@ function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
         <div className="flex flex-col gap-4 sm:gap-6 min-w-0">
           <div>
             <h3 className="text-lg sm:text-headline-sm font-headline font-semibold text-on-surface mb-0.5">
-              Focus Progress
+              {t.focusProgressLabel}
             </h3>
             <p className="text-sm text-on-surface-variant">
-              You're making great progress today.
+              {t.greatProgressMsg}
             </p>
           </div>
           <div className="flex gap-4 sm:gap-10">
             <div className="flex flex-col">
               <span className="text-[9px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
-                Total
+                {t.totalLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
                 {total}
@@ -26,7 +29,7 @@ function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
             </div>
             <div className="flex flex-col border-l border-outline-variant/20 pl-4 sm:pl-10">
               <span className="text-[9px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
-                Done
+                {t.doneLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-secondary">
                 {completed.toString().padStart(2, "0")}
@@ -34,7 +37,7 @@ function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
             </div>
             <div className="flex flex-col border-l border-outline-variant/20 pl-4 sm:pl-10">
               <span className="text-[9px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
-                Left
+                {t.leftLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-primary">
                 {remaining.toString().padStart(2, "0")}
@@ -75,7 +78,7 @@ function SummaryCard({ total, completed, remaining, progress, onAddClick }) {
               {progress}%
             </span>
             <span className="text-[8px] sm:text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">
-              Done
+              {t.doneLabel}
             </span>
           </div>
         </div>

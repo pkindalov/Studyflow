@@ -1,15 +1,9 @@
-const RECURRENCE_OPTIONS = [
-  { value: "none",    label: "No repeat",  icon: "block" },
-  { value: "daily",   label: "Daily",      icon: "today" },
-  { value: "monthly", label: "Monthly",    icon: "calendar_month" },
-  { value: "yearly",  label: "Yearly",     icon: "event_repeat" },
-  { value: "custom",  label: "Custom",     icon: "date_range" },
-];
+import { useLang } from "../../../shared/i18n/LangContext";
 
-function monthName(dateStr) {
+function monthName(dateStr, locale) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  return d.toLocaleDateString(locale, { month: "long", year: "numeric" });
 }
 
 function TaskModal({
@@ -39,10 +33,21 @@ function TaskModal({
   setMoveToDate,
   title,
 }) {
+  const { t, lang } = useLang();
+
   if (!isOpen) return null;
 
+  const locale = lang === "bg" ? "bg-BG" : "en-US";
   const showRecurrence = !!setRecurrence;
   const hasRepeat = recurrence && recurrence !== "none";
+
+  const RECURRENCE_OPTIONS = [
+    { value: "none",    label: t.noRepeat,  icon: "block" },
+    { value: "daily",   label: t.daily,     icon: "today" },
+    { value: "monthly", label: t.monthly,   icon: "calendar_month" },
+    { value: "yearly",  label: t.yearly,    icon: "event_repeat" },
+    { value: "custom",  label: t.custom,    icon: "date_range" },
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -51,7 +56,7 @@ function TaskModal({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
-          aria-label="Close"
+          aria-label={t.close}
         >
           <span className="material-symbols-outlined text-xl">close</span>
         </button>
@@ -63,13 +68,13 @@ function TaskModal({
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Task description..."
+          placeholder={t.taskDescPlaceholder}
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
         />
         <input
           value={image}
           onChange={(e) => setImage(e.target.value)}
-          placeholder="Image URL (optional)"
+          placeholder={t.imageUrlPlaceholder}
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
         />
         <div className="flex items-center gap-3">
@@ -84,7 +89,7 @@ function TaskModal({
             htmlFor="priority-checkbox"
             className="text-on-surface font-medium cursor-pointer select-none"
           >
-            Priority Task/Subject
+            {t.priorityTaskLabel}
           </label>
         </div>
 
@@ -94,13 +99,13 @@ function TaskModal({
             {isRecurringInstance && (
               <p className="text-xs text-secondary bg-secondary/10 border border-secondary/20 rounded-xl px-3 py-2 flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-sm">info</span>
-                Changes to the repeat pattern will apply to all instances.
+                {t.recurringChangeNote}
               </p>
             )}
 
             <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
               <span className="material-symbols-outlined text-base">repeat</span>
-              Repeat
+              {t.repeatLabel}
             </span>
 
             {/* Frequency selector */}
@@ -130,8 +135,7 @@ function TaskModal({
                 {recurrence === "daily" && (
                   <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-sm text-secondary">info</span>
-                    Repeats every day until the end of{" "}
-                    <span className="font-semibold text-on-surface">{monthName(startDate)}</span>.
+                    {t.repeatsEveryDayUntil(monthName(startDate, locale))}
                   </p>
                 )}
 
@@ -139,7 +143,7 @@ function TaskModal({
                 {recurrence === "monthly" && (
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
-                      Repeat for the next
+                      {t.repeatForNext}
                     </label>
                     <input
                       type="number"
@@ -149,7 +153,7 @@ function TaskModal({
                       onChange={(e) => setMonthsAhead(e.target.value)}
                       className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50"
                     />
-                    <span className="text-xs font-semibold text-on-surface-variant">months</span>
+                    <span className="text-xs font-semibold text-on-surface-variant">{t.months}</span>
                   </div>
                 )}
 
@@ -157,7 +161,7 @@ function TaskModal({
                 {recurrence === "yearly" && (
                   <div className="flex items-center gap-3">
                     <label className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">
-                      Repeat for the next
+                      {t.repeatForNext}
                     </label>
                     <input
                       type="number"
@@ -167,7 +171,7 @@ function TaskModal({
                       onChange={(e) => setYearsAhead(e.target.value)}
                       className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50"
                     />
-                    <span className="text-xs font-semibold text-on-surface-variant">years</span>
+                    <span className="text-xs font-semibold text-on-surface-variant">{t.years}</span>
                   </div>
                 )}
 
@@ -176,7 +180,7 @@ function TaskModal({
                   <>
                     <div className="flex items-center gap-3">
                       <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">
-                        From
+                        {t.fromDate}
                       </label>
                       <input
                         type="date"
@@ -187,7 +191,7 @@ function TaskModal({
                     </div>
                     <div className="flex items-center gap-3">
                       <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">
-                        To
+                        {t.toDate}
                       </label>
                       <input
                         type="date"
@@ -201,7 +205,7 @@ function TaskModal({
                           type="button"
                           onClick={() => setEndDate("")}
                           className="text-on-surface-variant hover:text-error transition-colors flex-shrink-0"
-                          title="Remove end date"
+                          title={t.removeEndDate}
                         >
                           <span className="material-symbols-outlined text-base">close</span>
                         </button>
@@ -209,7 +213,7 @@ function TaskModal({
                     </div>
                     {!endDate && (
                       <p className="text-[10px] text-on-surface-variant">
-                        Repeats daily — set an end date to stop automatically.
+                        {t.repeatsDailyNoEnd}
                       </p>
                     )}
                   </>
@@ -224,7 +228,7 @@ function TaskModal({
           <div className="flex flex-col gap-2 border-t border-outline-variant/30 pt-4">
             <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
               <span className="material-symbols-outlined text-base">drive_file_move</span>
-              Move to date
+              {t.moveToDate}
             </span>
             <input
               type="date"
@@ -240,13 +244,13 @@ function TaskModal({
             onClick={onClose}
             className="px-5 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-all"
           >
-            Cancel
+            {t.cancel}
           </button>
           <button
             onClick={() => onSave()}
             className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold shadow-sm hover:opacity-90 transition-all"
           >
-            Save
+            {t.save}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import Pagination from "../../../shared/components/Pagination";
+import { useLang } from "../../../shared/i18n/LangContext";
 
 const MODAL_PAGE_SIZE = 5;
 const MAX_VISIBLE = 5;
@@ -40,11 +41,12 @@ function ProgressRow({ label, progress, colorClass, priority }) {
 }
 
 export function StudyTimeSection({ totalStudyTime, setTotalStudyTime }) {
+  const { t } = useLang();
   return (
     <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-2">
       <div className="flex items-center gap-2 mb-2">
         <span className="material-symbols-outlined text-xl text-primary">schedule</span>
-        <span className="font-headline font-bold text-on-surface text-lg">Total Study Time</span>
+        <span className="font-headline font-bold text-on-surface text-lg">{t.totalStudyTime}</span>
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -56,18 +58,19 @@ export function StudyTimeSection({ totalStudyTime, setTotalStudyTime }) {
           onChange={(e) => setTotalStudyTime(Number(e.target.value))}
           className="w-20 px-3 py-2 rounded-xl border border-outline-variant/50 bg-surface-container-highest text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary/60 border-outline/60"
         />
-        <span className="text-on-surface-variant font-medium">hours</span>
+        <span className="text-on-surface-variant font-medium">{t.hoursUnit}</span>
       </div>
     </section>
   );
 }
 
 export function PrioritySection({ priorityPercent, setPriorityPercent }) {
+  const { t } = useLang();
   return (
     <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-2">
       <div className="flex items-center gap-2 mb-2">
         <span className="material-symbols-outlined text-xl text-secondary">star</span>
-        <span className="font-headline font-bold text-on-surface text-lg">Priority Time Limit</span>
+        <span className="font-headline font-bold text-on-surface text-lg">{t.priorityTimeLimit}</span>
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -79,28 +82,29 @@ export function PrioritySection({ priorityPercent, setPriorityPercent }) {
           onChange={(e) => setPriorityPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
           className="w-20 px-3 py-2 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-secondary/60"
         />
-        <span className="text-on-surface-variant font-medium">% of total time</span>
+        <span className="text-on-surface-variant font-medium">{t.percentOfTotal}</span>
       </div>
       <span className="text-xs text-on-surface-variant">
-        Max percent of study time that can be allocated to priority tasks.
+        {t.priorityMaxNote}
       </span>
     </section>
   );
 }
 
 export function QuoteSection() {
+  const { t } = useLang();
   return (
     <section className="bg-primary/10 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="relative z-10 flex flex-col gap-4">
         <span className="material-symbols-outlined text-3xl text-primary/60">format_quote</span>
         <p className="font-headline font-medium text-base leading-relaxed italic text-on-surface">
-          "The secret of getting ahead is getting started."
+          {t.quote}
         </p>
         <div className="flex items-center gap-3">
           <div className="w-6 h-px bg-primary/40" />
           <span className="text-xs uppercase tracking-widest font-semibold text-on-surface-variant">
-            Mark Twain
+            {t.quoteAuthor}
           </span>
         </div>
       </div>
@@ -115,14 +119,15 @@ export function TasksProgressSection({
   scheduleTimers = {},
   taskAllocations = {},
 }) {
+  const { t } = useLang();
   const [showAll, setShowAll] = useState(false);
   const [modalPage, setModalPage] = useState(0);
 
   const items = useMemo(() => {
     if (recurringTasks.length > 0) {
       return recurringTasks.map((tpl, idx) => {
-        const instances = Object.values(tasks).flat().filter((t) => t.recurringId === tpl.id);
-        const done = instances.filter((t) => t.done).length;
+        const instances = Object.values(tasks).flat().filter((task) => task.recurringId === tpl.id);
+        const done = instances.filter((task) => task.done).length;
         const progress = instances.length > 0 ? Math.round((done / instances.length) * 100) : 0;
         return {
           key: tpl.id,
@@ -135,20 +140,20 @@ export function TasksProgressSection({
     }
 
     if (tasksForDay.length > 0) {
-      const taskRows = tasksForDay.map((t, idx) => {
+      const taskRows = tasksForDay.map((task, idx) => {
         let progress = 0;
-        if (t.done) {
+        if (task.done) {
           progress = 100;
         } else {
-          const elapsed = scheduleTimers[t.id] || 0;
-          const totalSec = (taskAllocations[t.id] || 0) * 60;
+          const elapsed = scheduleTimers[task.id] || 0;
+          const totalSec = (taskAllocations[task.id] || 0) * 60;
           if (totalSec > 0) progress = Math.min(100, Math.round((elapsed / totalSec) * 100));
         }
         return {
-          key: t.id,
-          label: t.text,
+          key: task.id,
+          label: task.text,
           progress,
-          priority: t.priority,
+          priority: task.priority,
           colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length],
         };
       });
@@ -158,20 +163,20 @@ export function TasksProgressSection({
         : 0;
 
       return [
-        { key: "__today__", label: "Today's progress", progress: overallProgress, priority: false, colorClass: "bg-primary" },
+        { key: "__today__", label: t.todaysTasks, progress: overallProgress, priority: false, colorClass: "bg-primary" },
         ...taskRows,
       ];
     }
 
     return [];
-  }, [recurringTasks, tasks, tasksForDay, scheduleTimers, taskAllocations]);
+  }, [recurringTasks, tasks, tasksForDay, scheduleTimers, taskAllocations, t]);
 
   const hasAny = items.length > 0;
   const visible = items.slice(0, MAX_VISIBLE);
   const overflow = items.length - MAX_VISIBLE;
   const modalTotalPages = Math.ceil(items.length / MODAL_PAGE_SIZE);
   const modalItems = items.slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE);
-  const sectionTitle = recurringTasks.length > 0 ? "Active Projects" : "Today's Tasks";
+  const sectionTitle = recurringTasks.length > 0 ? t.activeProjects : t.todaysTasks;
 
   if (!hasAny) return null;
 
@@ -183,7 +188,7 @@ export function TasksProgressSection({
             {sectionTitle}
           </h3>
           {items.length > 1 && (
-            <span className="text-[10px] text-on-surface-variant/60">{items.length} total</span>
+            <span className="text-[10px] text-on-surface-variant/60">{t.nTotal(items.length)}</span>
           )}
         </div>
         <div className="flex flex-col gap-1.5">
@@ -195,7 +200,7 @@ export function TasksProgressSection({
               onClick={() => setShowAll(true)}
               className="w-full text-center py-1.5 text-xs text-secondary hover:text-secondary/80 font-semibold transition-colors"
             >
-              +{overflow} more — view all
+              {t.moreViewAll(overflow)}
             </button>
           )}
         </div>

@@ -1,5 +1,6 @@
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import { useLang } from "../../../shared/i18n/LangContext";
 
 function ToggleSwitch({ checked, onChange }) {
   return (
@@ -28,6 +29,8 @@ function CalendarSidebar({
   showCompletion,
   onToggleCompletion,
 }) {
+  const { t } = useLang();
+
   return (
     <aside className="flex flex-col p-5 sm:p-6 gap-5 rounded-3xl bg-surface-container border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
       <div className="flex flex-col gap-2">
@@ -39,10 +42,10 @@ function CalendarSidebar({
           />
           <div className="flex flex-col">
             <span className="font-headline font-bold text-lg text-on-surface leading-none">
-              Studyflow
+              {t.appName}
             </span>
             <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">
-              Productivity Ritual
+              {t.appTagline}
             </span>
           </div>
         </div>
@@ -52,7 +55,7 @@ function CalendarSidebar({
         onClick={onAddClick}
       >
         <span className="material-symbols-outlined text-sm">add</span>
-        <span>Create Task</span>
+        <span>{t.createTask}</span>
       </button>
 
       {/* Month overview toggle */}
@@ -62,7 +65,7 @@ function CalendarSidebar({
             calendar_month
           </span>
           <span className="text-xs font-medium text-on-surface-variant truncate">
-            Month overview
+            {t.monthOverview}
           </span>
         </div>
         <ToggleSwitch checked={showCompletion} onChange={onToggleCompletion} />

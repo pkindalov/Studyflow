@@ -1,18 +1,20 @@
 import { useActivityStats } from "../../../shared/hooks/useActivityStats";
 import ActivityHeatmap from "../../../shared/components/ActivityHeatmap";
+import { useLang } from "../../../shared/i18n/LangContext";
 
-function formatFocusTime(totalSeconds) {
+function formatFocusTime(totalSeconds, t) {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
-  if (h === 0 && m === 0) return { value: "0", unit: "min" };
-  if (h === 0) return { value: String(m), unit: "min" };
-  if (m === 0) return { value: String(h), unit: h === 1 ? "hour" : "hours" };
-  return { value: `${h}h ${m}m`, unit: "total" };
+  if (h === 0 && m === 0) return { value: "0", unit: t.minUnit };
+  if (h === 0) return { value: String(m), unit: t.minUnit };
+  if (m === 0) return { value: String(h), unit: h === 1 ? t.hourUnit : t.hoursUnit2 };
+  return { value: `${h}h ${m}m`, unit: null };
 }
 
 export function ActivityPanel({ tasks }) {
+  const { t } = useLang();
   const { streak, activeToday, totalFocusSeconds, heatmap } = useActivityStats(tasks);
-  const focus = formatFocusTime(totalFocusSeconds);
+  const focus = formatFocusTime(totalFocusSeconds, t);
 
   const totalDone = Object.values(heatmap).reduce((sum, n) => sum + n, 0);
 
@@ -21,7 +23,7 @@ export function ActivityPanel({ tasks }) {
       {/* Header */}
       <div className="flex items-center gap-2">
         <span className="material-symbols-outlined text-xl text-primary">local_fire_department</span>
-        <span className="font-headline font-bold text-on-surface text-lg">Activity</span>
+        <span className="font-headline font-bold text-on-surface text-lg">{t.activityLabel}</span>
       </div>
 
       {/* Stats row */}
@@ -29,27 +31,27 @@ export function ActivityPanel({ tasks }) {
         {/* Streak */}
         <div className="bg-surface-container-high rounded-xl p-3 flex flex-col gap-0.5">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-on-surface-variant">
-            Streak
+            {t.streakLabel}
           </span>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-on-surface tabular-nums leading-none">
               {streak}
             </span>
-            <span className="text-xs text-on-surface-variant">days</span>
+            <span className="text-xs text-on-surface-variant">{t.daysUnit}</span>
           </div>
           {streak === 0 && (
             <span className="text-[10px] text-on-surface-variant/60 mt-0.5">
-              Complete a task to start
+              {t.startStreakMsg}
             </span>
           )}
           {streak > 0 && activeToday && (
             <span className="text-[10px] text-secondary font-semibold mt-0.5">
-              Active today!
+              {t.activeTodayMsg}
             </span>
           )}
           {streak > 0 && !activeToday && (
             <span className="text-[10px] text-tertiary font-semibold mt-0.5">
-              Keep it going!
+              {t.keepGoingMsg}
             </span>
           )}
         </div>
@@ -57,18 +59,18 @@ export function ActivityPanel({ tasks }) {
         {/* Focus time */}
         <div className="bg-surface-container-high rounded-xl p-3 flex flex-col gap-0.5">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-on-surface-variant">
-            Focus time
+            {t.focusTimeLabel}
           </span>
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-on-surface tabular-nums leading-none">
               {focus.value}
             </span>
-            {focus.unit !== "total" && (
+            {focus.unit && (
               <span className="text-xs text-on-surface-variant">{focus.unit}</span>
             )}
           </div>
           <span className="text-[10px] text-on-surface-variant/60 mt-0.5">
-            {totalDone} task{totalDone === 1 ? "" : "s"} completed
+            {t.tasksCompletedFn(totalDone)}
           </span>
         </div>
       </div>
@@ -76,7 +78,7 @@ export function ActivityPanel({ tasks }) {
       {/* Heatmap */}
       <div className="flex flex-col gap-1">
         <span className="text-[10px] uppercase tracking-wider font-semibold text-on-surface-variant px-0.5">
-          Last 6 months
+          {t.last6Months}
         </span>
         <ActivityHeatmap heatmap={heatmap} />
       </div>

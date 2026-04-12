@@ -1,11 +1,12 @@
 import { useState, useCallback } from "react";
 import { extractVideoId } from "../hooks/useMusicPlayer";
 import Pagination from "../../../shared/components/Pagination";
+import { useLang } from "../../../shared/i18n/LangContext";
 
 const VISIBLE_COUNT = 5;
 const MODAL_PAGE_SIZE = 8;
 
-function TrackRow({ track, isActive, isPlaying, onSelect, onRemove }) {
+function TrackRow({ track, isActive, isPlaying, onSelect, onRemove, removeTitle }) {
   return (
     <div
       className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all group ${
@@ -36,7 +37,7 @@ function TrackRow({ track, isActive, isPlaying, onSelect, onRemove }) {
       <button
         onClick={(e) => { e.stopPropagation(); onRemove(track.id); }}
         className="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
-        title="Remove track"
+        title={removeTitle}
       >
         <span className="material-symbols-outlined text-sm">close</span>
       </button>
@@ -56,6 +57,7 @@ function MusicPanel({
   onTogglePlay,
   onSetVolume,
 }) {
+  const { t } = useLang();
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
@@ -66,14 +68,14 @@ function MusicPanel({
   const handleAdd = useCallback(() => {
     const name = newName.trim();
     const url = newUrl.trim();
-    if (!name) return setAddError("Please enter a track name.");
-    if (!extractVideoId(url)) return setAddError("Invalid YouTube URL.");
+    if (!name) return setAddError(t.enterTrackNameError);
+    if (!extractVideoId(url)) return setAddError(t.invalidUrlError);
     setAddError("");
     onAddTrack(name, url);
     setNewName("");
     setNewUrl("");
     setShowAdd(false);
-  }, [newName, newUrl, onAddTrack]);
+  }, [newName, newUrl, onAddTrack, t]);
 
   return (
     <section className="bg-surface-container rounded-2xl border border-outline-variant/50 flex flex-col gap-0 overflow-hidden">
@@ -83,7 +85,7 @@ function MusicPanel({
           headphones
         </span>
         <span className="font-headline font-bold text-on-surface text-lg flex-1">
-          Focus Music
+          {t.focusMusicLabel}
         </span>
         {activeTrack && (
           <button
@@ -93,7 +95,7 @@ function MusicPanel({
                 ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
                 : "bg-primary text-on-primary hover:opacity-90"
             }`}
-            title={isPlaying ? "Pause music" : "Play music"}
+            title={isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
           >
             <span className="material-symbols-outlined text-base">
               {isPlaying ? "pause" : "play_arrow"}
@@ -154,7 +156,7 @@ function MusicPanel({
       <div className="flex flex-col gap-1 px-4 sm:px-5 pb-2">
         {playlist.length === 0 && (
           <p className="text-xs text-on-surface-variant text-center py-3">
-            No tracks yet. Add one below.
+            {t.noTracksMsg}
           </p>
         )}
         {playlist.slice(0, VISIBLE_COUNT).map((track) => (
@@ -165,6 +167,7 @@ function MusicPanel({
             isPlaying={isPlaying}
             onSelect={onSelectTrack}
             onRemove={onRemoveTrack}
+            removeTitle={t.removeTrackTitle}
           />
         ))}
         {playlist.length > VISIBLE_COUNT && (
@@ -172,7 +175,7 @@ function MusicPanel({
             onClick={() => { setShowAll(true); setModalPage(0); }}
             className="w-full text-center py-1.5 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors"
           >
-            +{playlist.length - VISIBLE_COUNT} more — view all
+            {t.moreViewAll(playlist.length - VISIBLE_COUNT)}
           </button>
         )}
       </div>
@@ -184,7 +187,7 @@ function MusicPanel({
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
-                Playlist
+                {t.playlistLabel}
               </h2>
               <button
                 onClick={() => setShowAll(false)}
@@ -204,6 +207,7 @@ function MusicPanel({
                     isPlaying={isPlaying}
                     onSelect={onSelectTrack}
                     onRemove={onRemoveTrack}
+                    removeTitle={t.removeTrackTitle}
                   />
                 ))}
             </div>
@@ -225,20 +229,20 @@ function MusicPanel({
             className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors mt-2"
           >
             <span className="material-symbols-outlined text-sm">add</span>
-            Add YouTube track
+            {t.addYoutubeTrack}
           </button>
         ) : (
           <div className="flex flex-col gap-2 mt-2">
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Track name..."
+              placeholder={t.trackNamePlaceholder}
               className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-tertiary/50 text-on-surface placeholder:text-on-surface-variant/60"
             />
             <input
               value={newUrl}
               onChange={(e) => setNewUrl(e.target.value)}
-              placeholder="YouTube URL..."
+              placeholder={t.youtubeUrlPlaceholder}
               className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-tertiary/50 text-on-surface placeholder:text-on-surface-variant/60"
             />
             {addError && (
@@ -249,7 +253,7 @@ function MusicPanel({
                 onClick={handleAdd}
                 className="flex-1 px-3 py-1.5 bg-tertiary text-on-tertiary rounded-xl text-xs font-semibold hover:opacity-90 transition-all"
               >
-                Add
+                {t.add}
               </button>
               <button
                 onClick={() => {
@@ -260,7 +264,7 @@ function MusicPanel({
                 }}
                 className="px-3 py-1.5 border border-outline-variant/60 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-all"
               >
-                Cancel
+                {t.cancel}
               </button>
             </div>
           </div>

@@ -16,6 +16,7 @@ import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
 import { generateId } from "./shared/utils/id";
 import HelpModal from "./shared/components/HelpModal";
 import { exportData, readBackupFile, applyBackup } from "./shared/utils/dataPortability";
+import { useLang } from "./shared/i18n/LangContext";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -45,6 +46,7 @@ function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead,
 }
 
 function App() {
+  const { lang, setLang, t } = useLang();
   const [theme, setTheme] = useState(() => localStorage.getItem("studyflow_theme") || "dark");
   const [showCalendarCompletion, setShowCalendarCompletion] = useState(
     () => localStorage.getItem("studyflow_calendar_completion") === "true"
@@ -392,15 +394,15 @@ function App() {
 
   // ─── Schedule controls ──────────────────────────────────────────────────────
   const generateSchedule = useCallback(() => {
-    const selectedTasks = tasksForDay.filter((t) => !excludedTaskIds.has(t.id) && !t.done);
+    const selectedTasks = tasksForDay.filter((task) => !excludedTaskIds.has(task.id) && !task.done);
     if (totalStudyTime <= 0) return;
     if (!selectedTasks.length) {
-      const allDone = tasksForDay.length > 0 && tasksForDay.every((t) => t.done);
-      showNotification(allDone ? "All tasks are done — nothing left to schedule!" : "No tasks selected for scheduling.");
+      const allDone = tasksForDay.length > 0 && tasksForDay.every((task) => task.done);
+      showNotification(allDone ? t.allDoneNothing : t.noTasksSelected);
       return;
     }
-    const priorityTasks = selectedTasks.filter((t) => t.priority);
-    const nonPriorityTasks = selectedTasks.filter((t) => !t.priority);
+    const priorityTasks = selectedTasks.filter((task) => task.priority);
+    const nonPriorityTasks = selectedTasks.filter((task) => !task.priority);
     let scheduleArr = [];
     const totalMinutes = totalStudyTime * 60;
     let priorityMinutes = priorityTasks.length && priorityPercent > 0
@@ -422,9 +424,9 @@ function App() {
       } else {
         const minPerTask = Math.floor(priorityMinutes / priorityTasks.length);
         let left = priorityMinutes;
-        priorityTasks.forEach((t, i) => {
+        priorityTasks.forEach((task, i) => {
           const time = i === priorityTasks.length - 1 ? left : minPerTask;
-          scheduleArr.push({ ...t, scheduledMinutes: time });
+          scheduleArr.push({ ...task, scheduledMinutes: time });
           left -= time;
         });
       }
@@ -435,39 +437,39 @@ function App() {
       } else {
         const minPerTask = Math.floor(nonPriorityMinutes / nonPriorityTasks.length);
         let left = nonPriorityMinutes;
-        nonPriorityTasks.forEach((t, i) => {
+        nonPriorityTasks.forEach((task, i) => {
           const time = i === nonPriorityTasks.length - 1 ? left : minPerTask;
-          scheduleArr.push({ ...t, scheduledMinutes: time });
+          scheduleArr.push({ ...task, scheduledMinutes: time });
           left -= time;
         });
       }
     }
 
-    const prioritySlice = scheduleArr.filter((t) => t.priority).sort(() => Math.random() - 0.5);
-    const normalSlice = scheduleArr.filter((t) => !t.priority).sort(() => Math.random() - 0.5);
+    const prioritySlice = scheduleArr.filter((task) => task.priority).sort(() => Math.random() - 0.5);
+    const normalSlice = scheduleArr.filter((task) => !task.priority).sort(() => Math.random() - 0.5);
     setSchedule([...prioritySlice, ...normalSlice]);
-  }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, showNotification]);
+  }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, showNotification, t]);
 
   const saveSchedule = useCallback(() => {
     if (schedule && schedule.length > 0) {
       try {
         localStorage.setItem(`schedule_${dateKey}`, JSON.stringify(schedule));
-        showNotification("Schedule saved successfully!");
+        showNotification(t.scheduleSaved);
       } catch {
-        showNotification("Error saving schedule.");
+        showNotification(t.scheduleError);
       }
     }
-  }, [schedule, dateKey, showNotification]);
+  }, [schedule, dateKey, showNotification, t]);
 
   const deleteSchedule = useCallback(() => {
     try {
       localStorage.removeItem(`schedule_${dateKey}`);
       setSchedule(null);
-      showNotification("Schedule deleted.");
+      showNotification(t.scheduleDeleted);
     } catch {
-      showNotification("Error deleting schedule.");
+      showNotification(t.scheduleDeleteError);
     }
-  }, [dateKey, showNotification]);
+  }, [dateKey, showNotification, t]);
 
   // ─── Modal resets ───────────────────────────────────────────────────────────
   const resetAddModal = useCallback(() => {
@@ -625,7 +627,7 @@ function App() {
     >
       <div
         className="absolute top-3 right-3 z-10 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing bg-surface-container-highest/80 rounded-lg p-1"
-        title="Drag to move to other column"
+        title={t.dragToMoveHint}
       >
         <span className="material-symbols-outlined text-sm text-on-surface-variant">open_with</span>
       </div>
@@ -701,7 +703,7 @@ function App() {
                 onClick={generateSchedule}
               >
                 <span className="material-symbols-outlined">play_circle</span>
-                Generate Schedule
+                {t.generateSchedule}
               </button>
             </div>
           )}
@@ -710,7 +712,7 @@ function App() {
               <div className="mt-8 bg-surface-container rounded-2xl border border-outline-variant/50 p-6">
                 <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
                   <span className="material-symbols-outlined text-primary">schedule</span>
-                  Today's Schedule
+                  {t.todaysSchedule}
                 </h3>
                 <ul className="flex flex-col gap-3">
                   {schedule.map((task) => {
@@ -753,13 +755,13 @@ function App() {
                         <span className="material-symbols-outlined text-base text-on-surface-variant/30 flex-shrink-0 select-none">drag_indicator</span>
                         <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
                         <span className="flex-1 font-medium text-on-surface text-sm">{task.text}</span>
-                        <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} min</span>
+                        <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} {t.minUnit}</span>
                         {task.priority && (
-                          <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">Priority</span>
+                          <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">{t.priorityBadge}</span>
                         )}
                         <button
                           onClick={() => openTimer(task)}
-                          title={isFinished ? "Completed" : isRunning ? "Running — click to view" : hasProgress ? "Resume timer" : "Start timer"}
+                          title={isFinished ? t.completedStatus : isRunning ? t.runningStatus : hasProgress ? t.resumeTimerStatus : t.startTimerStatus}
                           className={`flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 ${
                             isFinished
                               ? "bg-tertiary/20 text-tertiary"
@@ -785,14 +787,14 @@ function App() {
                   onClick={saveSchedule}
                 >
                   <span className="material-symbols-outlined text-base">save</span>
-                  Save Schedule
+                  {t.saveSchedule}
                 </button>
                 <button
                   className="flex-1 sm:flex-none px-5 py-2.5 bg-error/10 text-error border border-error/20 rounded-xl font-semibold hover:bg-error/20 transition-all flex items-center justify-center gap-2 text-sm"
                   onClick={deleteSchedule}
                 >
                   <span className="material-symbols-outlined text-base">delete</span>
-                  Delete
+                  {t.delete}
                 </button>
               </div>
             </>
@@ -803,25 +805,40 @@ function App() {
           {columnLayout.right.map(renderSideSection)}
         </div>
       </div>
-      {/* Theme toggle + Help — fixed top-right */}
+      {/* Theme toggle + language + Help — fixed top-right */}
       <div className="fixed top-5 right-5 z-40 flex items-center gap-2">
         <button
           onClick={() => setShowHelp(true)}
           className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high shadow-lg transition-all"
-          title="How to use Studyflow"
+          title={t.howStudyflowWorks}
           aria-label="Help"
         >
           <span className="material-symbols-outlined text-base">help_outline</span>
         </button>
+        {/* Language toggle */}
+        <div className="flex items-center bg-surface-container border border-outline-variant/50 rounded-xl shadow-lg overflow-hidden">
+          <button
+            onClick={() => setLang("en")}
+            className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "en" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => setLang("bg")}
+            className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "bg" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
+          >
+            БГ
+          </button>
+        </div>
         <button
-          onClick={() => setTheme((t) => t === "dark" ? "light" : "dark")}
+          onClick={() => setTheme((prev) => prev === "dark" ? "light" : "dark")}
           className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
-          title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          title={theme === "dark" ? t.switchToLight : t.switchToDark}
         >
           <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
             {theme === "dark" ? "light_mode" : "dark_mode"}
           </span>
-          {theme === "dark" ? "Light" : "Dark"}
+          {theme === "dark" ? t.lightMode : t.darkMode}
         </button>
       </div>
       {/* Help modal */}
@@ -834,7 +851,7 @@ function App() {
             className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
           >
             <span className="material-symbols-outlined text-sm">restart_alt</span>
-            Reset layout
+            {t.resetLayoutBtn}
           </button>
         </div>
       )}
@@ -863,7 +880,7 @@ function App() {
               <h3 className="font-headline font-bold text-on-surface text-base leading-tight line-clamp-2">
                 {pendingTimerTask.text}
               </h3>
-              <p className="text-xs text-on-surface-variant">How many minutes do you want to work on this?</p>
+              <p className="text-xs text-on-surface-variant">{t.howManyMinutes}</p>
             </div>
             <div className="flex items-center gap-3">
               <input
@@ -884,14 +901,14 @@ function App() {
                 autoFocus
                 className="flex-1 bg-surface-container-highest border border-outline/60 rounded-xl px-3 py-2 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
-              <span className="text-sm text-on-surface-variant">min</span>
+              <span className="text-sm text-on-surface-variant">{t.minUnit}</span>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setPendingTimerTask(null)}
                 className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 onClick={() => {
@@ -901,7 +918,7 @@ function App() {
                 }}
                 className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all"
               >
-                Start
+                {t.startTimerBtn}
               </button>
             </div>
           </div>
@@ -931,33 +948,33 @@ function App() {
         isRecurringInstance={isEditing ? editTaskIsRecurringInstance : false}
         moveToDate={isEditing && !editTaskIsRecurringInstance ? editTaskTargetDate : undefined}
         setMoveToDate={isEditing && !editTaskIsRecurringInstance ? setEditTaskTargetDate : undefined}
-        title={isEditing ? "Edit Task" : "Add New Task"}
+        title={isEditing ? t.editTaskTitle : t.addTaskTitle}
       />
       {/* Bottom-left actions — export, import, clear */}
       <div className="fixed bottom-6 left-6 z-40 flex items-center gap-2">
         <button
           onClick={exportData}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
-          title="Export all data as a backup file"
+          title={t.exportTitle}
         >
           <span className="material-symbols-outlined text-sm">backup</span>
-          Export
+          {t.exportBtn}
         </button>
         <button
           onClick={() => { setImportError(""); importFileRef.current?.click(); }}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
-          title="Restore data from a backup file"
+          title={t.importTitle}
         >
           <span className="material-symbols-outlined text-sm">restore</span>
-          Import
+          {t.importBtn}
         </button>
         <button
           onClick={() => setShowClearConfirm(true)}
           className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-lg transition-all"
-          title="Permanently delete all data"
+          title={t.clearTitle}
         >
           <span className="material-symbols-outlined text-sm">delete_sweep</span>
-          Clear
+          {t.clearBtn}
         </button>
       </div>
       {/* Hidden file input for import */}
@@ -981,16 +998,14 @@ function App() {
             <div className="flex flex-col gap-2">
               <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl">restore</span>
-                Restore backup?
+                {t.restoreBackupTitle}
               </h3>
               <p className="text-sm text-on-surface-variant">
-                This will replace all current data with the backup from{" "}
-                <strong className="text-on-surface">
-                  {pendingImport.exportedAt
-                    ? new Date(pendingImport.exportedAt).toLocaleDateString("en-US", { dateStyle: "medium" })
-                    : "unknown date"}
-                </strong>
-                . The page will reload.
+                {t.restoreConfirmFn(
+                  pendingImport.exportedAt
+                    ? new Date(pendingImport.exportedAt).toLocaleDateString(lang === "bg" ? "bg-BG" : "en-US", { dateStyle: "medium" })
+                    : t.unknownDate
+                )}
               </p>
             </div>
             <div className="flex gap-3 justify-end">
@@ -998,13 +1013,13 @@ function App() {
                 onClick={() => setPendingImport(null)}
                 className="px-5 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-all text-sm"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 onClick={handleImportConfirm}
                 className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold hover:opacity-90 transition-all text-sm"
               >
-                Restore
+                {t.restore}
               </button>
             </div>
           </div>
@@ -1017,16 +1032,11 @@ function App() {
             <div className="flex flex-col gap-2">
               <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
                 <span className="material-symbols-outlined text-error text-xl">warning</span>
-                Clear all data?
+                {t.clearAllDataTitle}
               </h3>
-              <p className="text-sm text-on-surface-variant">This will permanently remove:</p>
+              <p className="text-sm text-on-surface-variant">{t.clearWarningMsg}</p>
               <ul className="text-sm text-on-surface-variant flex flex-col gap-1 pl-2">
-                {[
-                  "All tasks across every date",
-                  "All recurring tasks",
-                  "All saved schedules",
-                  "Sidebar layout (reset to default)",
-                ].map((item) => (
+                {[t.clearItem1, t.clearItem2, t.clearItem3, t.clearItem4].map((item) => (
                   <li key={item} className="flex items-center gap-2">
                     <span className="w-1 h-1 rounded-full bg-error/60 flex-shrink-0" />
                     {item}
@@ -1034,7 +1044,7 @@ function App() {
                 ))}
               </ul>
               <p className="text-xs text-error/80 bg-error/8 border border-error/20 rounded-xl px-3 py-2 mt-1">
-                This cannot be undone.
+                {t.cannotUndo}
               </p>
             </div>
             <div className="flex gap-2">
@@ -1042,13 +1052,13 @@ function App() {
                 onClick={() => setShowClearConfirm(false)}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all"
               >
-                Cancel
+                {t.cancel}
               </button>
               <button
                 onClick={handleClearAll}
                 className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error text-white hover:opacity-90 transition-all"
               >
-                Clear everything
+                {t.clearConfirmBtn}
               </button>
             </div>
           </div>

@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import TaskCard from "./TaskCard";
 import Pagination from "../../../shared/components/Pagination";
+import { useLang } from "../../../shared/i18n/LangContext";
 
 const PAGE_SIZE = 8;
 
 function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onReorder }) {
+  const { t } = useLang();
   const [page, setPage] = useState(0);
   const [draggedId, setDraggedId] = useState(null);
   const dragOverRef = useRef(null);
@@ -24,40 +26,37 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
   const paginated = tasks.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   const showSelectionControls = !!onToggleSelect;
-  const allSelected = showSelectionControls && tasks.every((t) => !excludedTaskIds.has(t.id));
-  const noneSelected = showSelectionControls && tasks.every((t) => excludedTaskIds.has(t.id));
+  const allSelected = showSelectionControls && tasks.every((task) => !excludedTaskIds.has(task.id));
 
   return (
     <section className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h2 className="text-headline-sm font-headline font-semibold text-on-surface">
-          Priority Tasks
+          {t.tasksHeading}
         </h2>
         {showSelectionControls && tasks.length > 0 && (
           <button
             onClick={() => {
               if (allSelected) {
-                // Deselect all
-                tasks.forEach((t) => { if (!excludedTaskIds.has(t.id)) onToggleSelect(t.id); });
+                tasks.forEach((task) => { if (!excludedTaskIds.has(task.id)) onToggleSelect(task.id); });
               } else {
-                // Select all
-                tasks.forEach((t) => { if (excludedTaskIds.has(t.id)) onToggleSelect(t.id); });
+                tasks.forEach((task) => { if (excludedTaskIds.has(task.id)) onToggleSelect(task.id); });
               }
             }}
             className="text-xs font-semibold text-secondary hover:text-secondary/80 transition-colors"
           >
-            {allSelected ? "Deselect all" : noneSelected ? "Select all" : "Select all"}
+            {allSelected ? t.deselectAll : t.selectAll}
           </button>
         )}
         {!showSelectionControls && (
           <button className="text-sm font-semibold text-primary hover:underline transition-all">
-            View All Archives
+            {t.viewAllArchives}
           </button>
         )}
       </div>
       {tasks.length === 0 ? (
         <p className="text-on-surface-variant text-sm text-center mt-10">
-          No tasks for this day.
+          {t.noTasksMessage}
         </p>
       ) : (
         <>

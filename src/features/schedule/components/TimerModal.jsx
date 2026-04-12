@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Pagination from "../../../shared/components/Pagination";
+import { useLang } from "../../../shared/i18n/LangContext";
 
 const TIMER_VISIBLE = 5;
 const TIMER_PAGE_SIZE = 8;
@@ -18,6 +19,7 @@ function formatTime(seconds, hms) {
 
 function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0 }) {
+  const { t } = useLang();
   const [hmsMode, setHmsMode] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [tracksPage, setTracksPage] = useState(0);
@@ -25,7 +27,6 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
   const isFinished = remaining === 0 && totalSeconds > 0;
-
 
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
@@ -39,7 +40,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
-          aria-label="Close"
+          aria-label={t.close}
         >
           <span className="material-symbols-outlined text-xl">close</span>
         </button>
@@ -51,7 +52,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
           </h2>
           {task.priority && (
             <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase mt-1 block">
-              Priority
+              {t.priorityBadge}
             </span>
           )}
         </div>
@@ -99,7 +100,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                 <span className="material-symbols-outlined text-tertiary text-5xl">
                   check_circle
                 </span>
-                <span className="text-tertiary font-bold text-sm">Done!</span>
+                <span className="text-tertiary font-bold text-sm">{t.timerDone}</span>
               </div>
             ) : (
               <>
@@ -107,7 +108,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                   {formatTime(remaining, hmsMode)}
                 </span>
                 <span className="text-xs text-on-surface-variant mt-0.5">
-                  remaining
+                  {t.remainingLabel}
                 </span>
               </>
             )}
@@ -125,12 +126,12 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
             <span className="font-mono">
               {formatTime(totalSeconds, hmsMode)}
             </span>
-            <span className="ml-1">elapsed</span>
+            <span className="ml-1">{t.elapsedLabel}</span>
           </div>
           <button
             onClick={() => setHmsMode((v) => !v)}
             className="text-[10px] font-semibold tracking-wider uppercase text-on-surface-variant/60 hover:text-on-surface-variant border border-outline-variant/30 hover:border-outline-variant/60 rounded-full px-2.5 py-0.5 transition-all"
-            title="Toggle time format"
+            title={t.toggleTimeFormat}
           >
             {hmsMode ? "MM:SS" : "HH:MM:SS"}
           </button>
@@ -144,13 +145,13 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
               className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-outline-variant/50 text-on-surface-variant rounded-xl font-semibold hover:bg-surface-container-high transition-all"
             >
               <span className="material-symbols-outlined text-base">restart_alt</span>
-              Restart
+              {t.restart}
             </button>
             <button
               onClick={onClose}
               className="flex-1 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-semibold hover:opacity-90 transition-all"
             >
-              Close
+              {t.close}
             </button>
           </div>
         ) : (
@@ -173,12 +174,12 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
         {/* Status hint */}
         <p className="text-xs text-on-surface-variant text-center">
           {isFinished
-            ? "Task time completed! Great work."
+            ? t.taskCompletedMsg
             : isRunning
-              ? "Timer running — close to pause and save progress"
+              ? t.timerRunningHint
               : elapsedSeconds > 0
-                ? "Paused — progress saved automatically"
-                : "Press play to start the countdown"}
+                ? t.timerPausedHint
+                : t.timerReadyHint}
         </p>
 
         {/* Pomodoro controls */}
@@ -187,14 +188,14 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-base text-error/70">timer</span>
               <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider flex-1">
-                Pomodoro
+                {t.pomodoroLabel}
               </span>
               <button
                 onClick={() => setPomodoroEnabled((v) => !v)}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${
                   pomodoroEnabled ? "bg-error/70" : "bg-outline-variant/50"
                 }`}
-                title={pomodoroEnabled ? "Disable Pomodoro" : "Enable Pomodoro"}
+                title={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
@@ -208,7 +209,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
               <>
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-on-surface-variant flex-1">
-                    Break every
+                    {t.breakEvery}
                   </label>
                   <input
                     type="number"
@@ -218,7 +219,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                     onChange={(e) => setPomodoroMinutes(Math.max(1, Math.min(60, Number(e.target.value))))}
                     className="w-14 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-error/40"
                   />
-                  <span className="text-xs text-on-surface-variant">min</span>
+                  <span className="text-xs text-on-surface-variant">{t.minUnit}</span>
                 </div>
 
                 {elapsedSeconds > 0 && (() => {
@@ -230,14 +231,14 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                   return (
                     <div className="flex items-center justify-between bg-error/8 border border-error/20 rounded-lg px-3 py-1.5">
                       <span className="text-xs text-error/80 font-semibold">
-                        Cycle {cycle}
+                        {t.cycleLabel} {cycle}
                       </span>
                       <span className="text-xs text-on-surface-variant font-mono">
                         {isRunning
-                          ? `break in ${formatTime(untilBreak, false)}`
+                          ? `${t.breakIn} ${formatTime(untilBreak, false)}`
                           : timeInCycle === 0
-                            ? "Take a break!"
-                            : `paused · ${formatTime(untilBreak, false)} left`}
+                            ? t.takeBreak
+                            : t.pausedLeft(formatTime(untilBreak, false))}
                       </span>
                     </div>
                   );
@@ -256,7 +257,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                 headphones
               </span>
               <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider flex-1">
-                Music
+                {t.musicLabel}
               </span>
               {music.activeTrack && (
                 <button
@@ -266,7 +267,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                       ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
                       : "bg-tertiary text-on-tertiary hover:opacity-90"
                   }`}
-                  title={music.isPlaying ? "Pause music" : "Play music"}
+                  title={music.isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
                 >
                   <span className="material-symbols-outlined text-sm">
                     {music.isPlaying ? "pause" : "play_arrow"}
@@ -279,7 +280,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
             <div className="flex flex-col gap-1">
               {music.playlist.length === 0 && (
                 <p className="text-xs text-on-surface-variant text-center py-2">
-                  No tracks — add one in the sidebar.
+                  {t.noTracksTimer}
                 </p>
               )}
               {music.playlist.slice(0, TIMER_VISIBLE).map((track) => {
@@ -316,7 +317,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                   onClick={() => { setShowAllTracks(true); setTracksPage(0); }}
                   className="w-full text-center py-1 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors"
                 >
-                  +{music.playlist.length - TIMER_VISIBLE} more — view all
+                  {t.moreViewAll(music.playlist.length - TIMER_VISIBLE)}
                 </button>
               )}
             </div>
@@ -328,7 +329,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
                       <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
-                      Playlist
+                      {t.playlistLabel}
                     </h2>
                     <button
                       onClick={() => setShowAllTracks(false)}
