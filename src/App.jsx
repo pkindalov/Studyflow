@@ -119,6 +119,10 @@ function App() {
   // Maps taskId → scheduledMinutes so RightSidebar can show live progress
   const [taskAllocations, setTaskAllocations] = useState({});
 
+  // Refs for wall-clock timer (survive tab-switch throttling)
+  const scheduleTimersRef = useRef({});
+  const timerStartRef = useRef(null); // { startedAt, baseElapsed, taskId, totalSeconds }
+
   // Quick-timer prompt for unscheduled tasks
   const [pendingTimerTask, setPendingTimerTask] = useState(null);
   const [pendingTimerMinutes, setPendingTimerMinutes] = useState(25);
@@ -256,22 +260,47 @@ function App() {
     localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
   }, [scheduleTimers, dateKey]);
 
-  // ─── Countdown interval — pure increment, no side-effects ──────────────────
+  // ─── Keep a ref in sync so the interval can read current elapsed without
+  //     listing scheduleTimers as a dependency (which would reset the clock).
+  useEffect(() => { scheduleTimersRef.current = scheduleTimers; }, [scheduleTimers]);
+
+  // ─── Countdown interval — wall-clock based, survives tab throttling ─────────
   useEffect(() => {
     if (!runningTaskId) return;
     const task = (schedule && schedule.find((t) => t.id === runningTaskId)) || timerTask;
     if (!task) return;
     const totalSeconds = task.scheduledMinutes * 60;
     const taskId = runningTaskId;
-    const interval = setInterval(() => {
-      setScheduleTimers((prev) => {
-        const elapsed = prev[taskId] || 0;
-        if (elapsed >= totalSeconds) return prev;
-        return { ...prev, [taskId]: elapsed + 1 };
-      });
-    }, 1000);
-    return () => clearInterval(interval);
+
+    // Snapshot the current elapsed and wall-clock start time once.
+    const startedAt = Date.now();
+    const baseElapsed = scheduleTimersRef.current[taskId] || 0;
+    timerStartRef.current = { startedAt, baseElapsed, taskId, totalSeconds };
+
+    const tick = () => {
+      const { startedAt: sa, baseElapsed: be, taskId: tid, totalSeconds: ts } = timerStartRef.current;
+      const nowElapsed = Math.min(ts, be + Math.floor((Date.now() - sa) / 1000));
+      setScheduleTimers((prev) => ({ ...prev, [tid]: nowElapsed }));
+    };
+
+    const interval = setInterval(tick, 1000);
+    return () => {
+      clearInterval(interval);
+      timerStartRef.current = null;
+    };
   }, [runningTaskId, schedule, timerTask]);
+
+  // ─── Catch up immediately when the tab becomes visible again ────────────────
+  useEffect(() => {
+    const sync = () => {
+      if (document.visibilityState !== "visible" || !timerStartRef.current) return;
+      const { startedAt, baseElapsed, taskId, totalSeconds } = timerStartRef.current;
+      const nowElapsed = Math.min(totalSeconds, baseElapsed + Math.floor((Date.now() - startedAt) / 1000));
+      setScheduleTimers((prev) => ({ ...prev, [taskId]: nowElapsed }));
+    };
+    document.addEventListener("visibilitychange", sync);
+    return () => document.removeEventListener("visibilitychange", sync);
+  }, []);
 
   // ─── Completion & pomodoro detection — runs after each timer tick ───────────
   // useEffect callbacks are NOT double-invoked by StrictMode on re-renders,
