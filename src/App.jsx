@@ -884,6 +884,16 @@ function App() {
                             {isFinished ? "check_circle" : isRunning ? "pause_circle" : "play_circle"}
                           </span>
                         </button>
+                        <button
+                          onClick={() => setSchedule((prev) => {
+                            const next = prev.filter((t) => t.id !== task.id);
+                            return next.length > 0 ? next : null;
+                          })}
+                          title="Remove from schedule"
+                          className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-error hover:bg-error/10"
+                        >
+                          <span className="material-symbols-outlined text-base">close</span>
+                        </button>
                       </li>
                     );
                   })}
