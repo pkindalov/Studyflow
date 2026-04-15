@@ -302,6 +302,18 @@ function App() {
     return () => document.removeEventListener("visibilitychange", sync);
   }, []);
 
+  // ─── Document title — reflects timer state for background-tab awareness ────
+  useEffect(() => {
+    if (!timerTask) {
+      document.title = "StudyFlow";
+      return () => { document.title = "StudyFlow"; };
+    }
+    document.title = runningTaskId
+      ? `⏱ ${timerTask.text} — StudyFlow`
+      : `⏸ Paused — StudyFlow`;
+    return () => { document.title = "StudyFlow"; };
+  }, [timerTask, runningTaskId]);
+
   // ─── Completion & pomodoro detection — runs after each timer tick ───────────
   // useEffect callbacks are NOT double-invoked by StrictMode on re-renders,
   // unlike state updater functions — so side-effects here fire exactly once.
@@ -319,8 +331,9 @@ function App() {
     const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
     if (pomodoroSeconds > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomodoroSeconds === 0) {
       setRunningTaskId(null);
+      music.pause();
     }
-  }, [scheduleTimers, runningTaskId, schedule, timerTask, dateKey, markTaskDone, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
+  }, [scheduleTimers, runningTaskId, schedule, timerTask, dateKey, markTaskDone, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt, music]);
 
   // ─── Recurring task auto-population ────────────────────────────────────────
   useEffect(() => {
