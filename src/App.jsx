@@ -422,6 +422,7 @@ function App() {
     if (!timerTask) return;
     setRunningTaskId(null);
     markTaskDone(dateKey, timerTask.id);
+    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: timerTask.scheduledMinutes * 60 }));
     music.pause();
     setTimerTask(null);
   }, [timerTask, dateKey, markTaskDone, music]);
