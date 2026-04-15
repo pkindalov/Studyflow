@@ -540,20 +540,42 @@ function App() {
     resetAddModal();
   }, [newTaskRecurrence, newTaskStartDate, dateKey, newTaskMonthsAhead, newTaskYearsAhead, newTaskEndDate, newTaskText, newTaskImage, newTaskPriority, addRecurring, addTask, resetAddModal]);
 
+  const removeTaskFromSchedule = useCallback((predicate) => {
+    setSchedule(prev => {
+      if (!prev) return null;
+      const next = prev.filter(t => !predicate(t));
+      return next.length > 0 ? next : null;
+    });
+    const saved = localStorage.getItem(`schedule_${dateKey}`);
+    if (saved) {
+      try {
+        const updated = JSON.parse(saved).filter(t => !predicate(t));
+        if (updated.length > 0) {
+          localStorage.setItem(`schedule_${dateKey}`, JSON.stringify(updated));
+        } else {
+          localStorage.removeItem(`schedule_${dateKey}`);
+        }
+      } catch { /* ignore parse errors */ }
+    }
+  }, [dateKey]);
+
   const handleDeleteTask = useCallback((id) => {
     const task = (tasks[dateKey] || []).find((t) => t.id === id);
     if (task?.recurringId) {
       deleteRecurring(task.recurringId);
       deleteAllByRecurringId(task.recurringId);
+      removeTaskFromSchedule(t => t.recurringId === task.recurringId);
     } else {
       deleteTask(dateKey, id);
+      removeTaskFromSchedule(t => t.id === id);
     }
-  }, [tasks, dateKey, deleteRecurring, deleteAllByRecurringId, deleteTask]);
+  }, [tasks, dateKey, deleteRecurring, deleteAllByRecurringId, deleteTask, removeTaskFromSchedule]);
 
   const handleEditTask = useCallback(() => {
     editTask(dateKey, editTaskId, editTaskText, editTaskImage, editTaskPriority);
     if (editTaskTargetDate && editTaskTargetDate !== dateKey) {
       moveTask(dateKey, editTaskTargetDate, editTaskId);
+      removeTaskFromSchedule(t => t.id === editTaskId);
     }
     const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
     const startDate = editTaskStartDate || dateKey;
@@ -572,7 +594,7 @@ function App() {
       linkRecurring(dateKey, editTaskId, null);
     }
     resetEditModal();
-  }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, editTaskTargetDate, tasks, dateKey, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal]);
+  }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, editTaskTargetDate, tasks, dateKey, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal, removeTaskFromSchedule]);
 
   // ─── Import / Export handlers ───────────────────────────────────────────────
   const handleImportFileChange = useCallback(async (e) => {
