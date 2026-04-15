@@ -372,6 +372,20 @@ function App() {
     });
   }, []);
 
+  // ─── Sync individual task toggle → schedule timer ───────────────────────────
+  const handleToggleTask = useCallback((id) => {
+    const task = (tasks[dateKey] || []).find((t) => t.id === id);
+    toggleTask(dateKey, id);
+    if (!task || !schedule) return;
+    const inSchedule = schedule.find((s) => s.id === id);
+    if (!inSchedule) return;
+    const nowDone = !task.done;
+    setScheduleTimers((prev) => ({
+      ...prev,
+      [id]: nowDone ? inSchedule.scheduledMinutes * 60 : 0,
+    }));
+  }, [tasks, dateKey, toggleTask, schedule]);
+
   // ─── Timer controls ─────────────────────────────────────────────────────────
   const openTimer = useCallback((task) => {
     setTimerTask(task);
@@ -775,7 +789,7 @@ function App() {
           />
           <TaskList
             tasks={tasksForDay}
-            onToggle={(id) => toggleTask(dateKey, id)}
+            onToggle={handleToggleTask}
             onDelete={handleDeleteTask}
             onStopRecurring={(recurringId) => { deleteRecurring(recurringId); deleteAllByRecurringId(recurringId); }}
             excludedTaskIds={excludedTaskIds}
