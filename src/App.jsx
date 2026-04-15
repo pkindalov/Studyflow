@@ -366,9 +366,8 @@ function App() {
     const elapsed = scheduleTimers[task.id] || 0;
     if (elapsed < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
-      music.play();
     }
-  }, [scheduleTimers, music]);
+  }, [scheduleTimers]);
 
   const openTimerForTask = useCallback((task) => {
     if (task.scheduledMinutes) {
