@@ -73,6 +73,7 @@ export const bg = {
   timerRunningHint: "Таймерът върви — затвори за пауза и запазване",
   timerPausedHint: "Пауза — напредъкът е запазен автоматично",
   timerReadyHint: "Натисни play за стартиране",
+  markDoneEarly: "Маркирай като готово",
   restart: "Повтори",
   pomodoroLabel: "Помодоро",
   breakEvery: "Почивка на всеки",

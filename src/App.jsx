@@ -404,6 +404,14 @@ function App() {
     music.pause();
   }, [music]);
 
+  const markTimerTaskDone = useCallback(() => {
+    if (!timerTask) return;
+    setRunningTaskId(null);
+    markTaskDone(dateKey, timerTask.id);
+    music.pause();
+    setTimerTask(null);
+  }, [timerTask, dateKey, markTaskDone, music]);
+
   const restartTimer = useCallback(() => {
     if (!timerTask) return;
     setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: 0 }));
@@ -1003,6 +1011,7 @@ function App() {
           onPlayPause={toggleTimer}
           onClose={closeTimer}
           onRestart={restartTimer}
+          onMarkDone={markTimerTaskDone}
           music={music}
           pomodoroEnabled={pomodoroEnabled}
           setPomodoroEnabled={setPomodoroEnabled}

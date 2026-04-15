@@ -17,7 +17,7 @@ function formatTime(seconds, hms) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, music,
+function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onMarkDone, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0 }) {
   const { t } = useLang();
   const [hmsMode, setHmsMode] = useState(false);
@@ -155,20 +155,31 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
             </button>
           </div>
         ) : (
-          <button
-            onClick={onPlayPause}
-            className={`flex items-center justify-center w-16 h-16 rounded-full shadow-lg transition-all active:scale-95 ${
-              isRunning
-                ? "bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40"
-                : "bg-primary hover:opacity-90"
-            }`}
-          >
-            <span
-              className={`material-symbols-outlined text-4xl ${isRunning ? "text-on-surface" : "text-on-primary"}`}
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={onPlayPause}
+              className={`flex items-center justify-center w-16 h-16 rounded-full shadow-lg transition-all active:scale-95 ${
+                isRunning
+                  ? "bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40"
+                  : "bg-primary hover:opacity-90"
+              }`}
             >
-              {isRunning ? "pause" : "play_arrow"}
-            </span>
-          </button>
+              <span
+                className={`material-symbols-outlined text-4xl ${isRunning ? "text-on-surface" : "text-on-primary"}`}
+              >
+                {isRunning ? "pause" : "play_arrow"}
+              </span>
+            </button>
+            {onMarkDone && (
+              <button
+                onClick={onMarkDone}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-semibold text-tertiary border border-tertiary/30 hover:bg-tertiary/10 transition-all"
+              >
+                <span className="material-symbols-outlined text-sm">check_circle</span>
+                {t.markDoneEarly}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Status hint */}

@@ -73,6 +73,7 @@ export const en = {
   timerRunningHint: "Timer running — close to pause and save progress",
   timerPausedHint: "Paused — progress saved automatically",
   timerReadyHint: "Press play to start the countdown",
+  markDoneEarly: "Mark as Done",
   restart: "Restart",
   pomodoroLabel: "Pomodoro",
   breakEvery: "Break every",
