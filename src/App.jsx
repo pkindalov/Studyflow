@@ -421,6 +421,9 @@ function App() {
     } else {
       const elapsed = scheduleTimers[timerTask.id] || 0;
       if (elapsed < timerTask.scheduledMinutes * 60) {
+        // Advance the Pomodoro baseline so the detection effect doesn't
+        // immediately re-fire on the already-elapsed boundary (e.g. 1500s % 1500 === 0).
+        setPomodoroResetAt(elapsed);
         setRunningTaskId(timerTask.id);
         music.play();
       }
