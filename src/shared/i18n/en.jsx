@@ -117,6 +117,7 @@ export const en = {
   activeTodayMsg: "Active today!",
   keepGoingMsg: "Keep it going!",
   focusTimeLabel: "Focus time",
+  todayFocusLabel: "Today",
   hourUnit: "hour",
   hoursUnit2: "hours",
   totalUnit: "total",

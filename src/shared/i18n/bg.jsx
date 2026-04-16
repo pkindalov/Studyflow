@@ -117,6 +117,7 @@ export const bg = {
   activeTodayMsg: "Активен днес!",
   keepGoingMsg: "Продължавай така!",
   focusTimeLabel: "Фокус",
+  todayFocusLabel: "Днес",
   hourUnit: "час",
   hoursUnit2: "часа",
   totalUnit: "общо",
