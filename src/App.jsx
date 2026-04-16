@@ -15,6 +15,7 @@ import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecu
 import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
 import { generateId } from "./shared/utils/id";
 import HelpModal from "./shared/components/HelpModal";
+import Confetti from "./shared/components/Confetti";
 import TaskBankModal from "./features/tasks/components/TaskBankModal";
 import { useTaskBank } from "./features/tasks/hooks/useTaskBank";
 import { exportData, readBackupFile, applyBackup } from "./shared/utils/dataPortability";
@@ -108,6 +109,8 @@ function App() {
   const [draggedSection, setDraggedSection] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
   const sectionDragOverRef = useRef(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const prevAllScheduleDoneRef = useRef(false);
 
   // Schedule state
   const [schedule, setSchedule] = useState(null);
@@ -167,6 +170,16 @@ function App() {
       (scheduleTimers[task.id] || 0) >= task.scheduledMinutes * 60
     ),
   [schedule, scheduleTimers]);
+
+  useEffect(() => {
+    if (allScheduleDone && !prevAllScheduleDoneRef.current) {
+      prevAllScheduleDoneRef.current = true;
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 4500);
+      return () => clearTimeout(timer);
+    }
+    if (!allScheduleDone) prevAllScheduleDoneRef.current = false;
+  }, [allScheduleDone]);
 
   const markDateWithTasksFn = useMemo(
     () => markDateWithTasks(tasks, formatDateKey, recurringTasks, showCalendarCompletion),
@@ -866,12 +879,12 @@ function App() {
           )}
           {schedule && (
             <>
-              <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-emerald-500/15 border-emerald-500/40" : "bg-surface-container border-outline-variant/50"}`}>
+              <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-emerald-700/80 border-emerald-500/40" : "bg-surface-container border-outline-variant/50"}`}>
                 {allScheduleDone ? (
                   <div className="flex flex-col items-center gap-3 py-4 text-center">
-                    <span className="material-symbols-outlined text-5xl text-emerald-400" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                    <h3 className="font-headline font-bold text-2xl text-emerald-400">{t.scheduleAllDoneHeadline}</h3>
-                    <p className="text-sm text-emerald-300/80 max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
+                    <span className="material-symbols-outlined text-5xl text-emerald-200" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                    <h3 className="font-headline font-bold text-2xl text-white">{t.scheduleAllDoneHeadline}</h3>
+                    <p className="text-sm text-emerald-100 max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
                   </div>
                 ) : (
                   <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
@@ -1070,6 +1083,7 @@ function App() {
       </div>
       {/* Help modal */}
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+      <Confetti active={showConfetti} />
       {/* Reset layout button — desktop only, fixed bottom-right */}
       {isCustomLayout && (
         <div className="hidden lg:flex fixed bottom-6 right-6 z-40">
