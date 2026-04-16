@@ -65,11 +65,12 @@ function TaskModal({
           {title}
         </h2>
 
-        <input
+        <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={t.taskDescPlaceholder}
-          className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
+          rows={3}
+          className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60 resize-none"
         />
         <input
           value={image}
