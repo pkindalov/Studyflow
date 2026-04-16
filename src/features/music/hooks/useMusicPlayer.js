@@ -59,6 +59,7 @@ export function useMusicPlayer() {
   );
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackError, setPlaybackError] = useState(null); // { code, trackId }
 
   const [volume, setVolumeState] = useState(() => {
     const saved = localStorage.getItem("music_volume");
@@ -84,19 +85,29 @@ export function useMusicPlayer() {
 
   // Init the YouTube player — the service manages its own DOM element
   useEffect(() => {
-    initYTPlayer((e) => {
-      if (typeof window.YT?.PlayerState !== "undefined") {
-        setIsPlaying(e.data === window.YT.PlayerState.PLAYING);
-      }
-    });
+    initYTPlayer(
+      (e) => {
+        if (typeof window.YT?.PlayerState !== "undefined") {
+          setIsPlaying(e.data === window.YT.PlayerState.PLAYING);
+        }
+      },
+      (code) => {
+        setActiveTrackId((currentId) => {
+          setPlaybackError({ code, trackId: currentId });
+          return currentId;
+        });
+        setIsPlaying(false);
+      },
+    );
     ytVolume(volume);
     return resetYTPlayer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When active track changes: cue the new video (don't auto-play)
+  // When active track changes: cue the new video (don't auto-play) and clear any prior error
   useEffect(() => {
     if (!activeTrackId) return;
+    setPlaybackError(null);
     const track = playlist.find((t) => t.id === activeTrackId);
     const videoId = track ? extractVideoId(track.url) : null;
     if (videoId) ytCue(videoId);
@@ -153,6 +164,8 @@ export function useMusicPlayer() {
     setPlaylist((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const clearPlaybackError = useCallback(() => setPlaybackError(null), []);
+
   const activeTrack = playlist.find((t) => t.id === activeTrackId) || null;
 
   return {
@@ -161,6 +174,7 @@ export function useMusicPlayer() {
     activeTrack,
     isPlaying,
     volume,
+    playbackError,
     play,
     pause,
     togglePlay,
@@ -168,5 +182,6 @@ export function useMusicPlayer() {
     selectTrack,
     addTrack,
     removeTrack,
+    clearPlaybackError,
   };
 }

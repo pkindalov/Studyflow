@@ -8,6 +8,7 @@ let _player = null;
 let _ready = false;
 let _pending = [];
 let _stateCallback = null;
+let _errorCallback = null;
 let _initialized = false;
 
 function ensureContainer() {
@@ -37,8 +38,9 @@ function onPlayerReady(event) {
   _pending = [];
 }
 
-export function initYTPlayer(onStateChange) {
+export function initYTPlayer(onStateChange, onError) {
   _stateCallback = onStateChange;
+  _errorCallback = onError ?? null;
 
   if (_initialized) return;
   _initialized = true;
@@ -61,6 +63,7 @@ export function initYTPlayer(onStateChange) {
       events: {
         onReady: onPlayerReady,
         onStateChange: (e) => _stateCallback?.(e),
+        onError: (e) => _errorCallback?.(e.data),
       },
     });
   };
@@ -93,6 +96,7 @@ export function resetYTPlayer() {
   _ready = false;
   _pending = [];
   _stateCallback = null;
+  _errorCallback = null;
   _initialized = false;
 }
 

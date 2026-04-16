@@ -132,6 +132,8 @@ export const bg = {
   youtubeUrlPlaceholder: "YouTube URL...",
   enterTrackNameError: "Моля, въведи име на песента.",
   invalidUrlError: "Невалиден YouTube URL.",
+  trackPlaybackError: "Тази песен не може да се пусне (вграждането е ограничено или видеото е недостъпно). Опитай с друго видео.",
+  trackPlaybackErrorDismiss: "Затвори",
 
   // ── Schedule (App.jsx) ────────────────────────────────────────────────────────
   generateSchedule: "Генерирай разписание",

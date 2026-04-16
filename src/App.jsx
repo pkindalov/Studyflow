@@ -718,11 +718,13 @@ function App() {
         activeTrack={music.activeTrack}
         isPlaying={music.isPlaying}
         volume={music.volume}
+        playbackError={music.playbackError}
         onSelectTrack={music.selectTrack}
         onAddTrack={music.addTrack}
         onRemoveTrack={music.removeTrack}
         onTogglePlay={music.togglePlay}
         onSetVolume={music.setVolume}
+        onClearPlaybackError={music.clearPlaybackError}
       />
     ),
   };

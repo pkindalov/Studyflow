@@ -132,6 +132,8 @@ export const en = {
   youtubeUrlPlaceholder: "YouTube URL...",
   enterTrackNameError: "Please enter a track name.",
   invalidUrlError: "Invalid YouTube URL.",
+  trackPlaybackError: "This track can't be played (embedding restricted or unavailable). Try a different video.",
+  trackPlaybackErrorDismiss: "Dismiss",
 
   // ── Schedule (App.jsx) ────────────────────────────────────────────────────────
   generateSchedule: "Generate Schedule",

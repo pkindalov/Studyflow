@@ -6,13 +6,15 @@ import { useLang } from "../../../shared/i18n/LangContext";
 const VISIBLE_COUNT = 5;
 const MODAL_PAGE_SIZE = 8;
 
-function TrackRow({ track, isActive, isPlaying, onSelect, onRemove, removeTitle }) {
+function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, removeTitle }) {
   return (
     <div
       className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all group ${
-        isActive
-          ? "bg-tertiary/15 border border-tertiary/30"
-          : "hover:bg-surface-container-high border border-transparent"
+        isErrored
+          ? "bg-error/8 border border-error/30"
+          : isActive
+            ? "bg-tertiary/15 border border-tertiary/30"
+            : "hover:bg-surface-container-high border border-transparent"
       }`}
       onClick={() => onSelect(track.id)}
     >
@@ -51,11 +53,13 @@ function MusicPanel({
   activeTrack,
   isPlaying,
   volume,
+  playbackError,
   onSelectTrack,
   onAddTrack,
   onRemoveTrack,
   onTogglePlay,
   onSetVolume,
+  onClearPlaybackError,
 }) {
   const { t } = useLang();
   const [showAdd, setShowAdd] = useState(false);
@@ -132,6 +136,21 @@ function MusicPanel({
         </div>
       )}
 
+      {/* Playback error banner */}
+      {playbackError && (
+        <div className="mx-4 mb-3 rounded-xl px-3 py-2 flex items-start gap-2 bg-error/10 border border-error/30">
+          <span className="material-symbols-outlined text-base text-error flex-shrink-0 mt-0.5">error</span>
+          <p className="flex-1 text-xs text-error leading-snug">{t.trackPlaybackError}</p>
+          <button
+            onClick={onClearPlaybackError}
+            className="flex-shrink-0 text-error/60 hover:text-error transition-colors"
+            title={t.trackPlaybackErrorDismiss}
+          >
+            <span className="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      )}
+
       {/* Volume slider */}
       {activeTrack && (
         <div className="mx-4 mb-3 flex items-center gap-2">
@@ -165,6 +184,7 @@ function MusicPanel({
             track={track}
             isActive={track.id === activeTrackId}
             isPlaying={isPlaying}
+            isErrored={playbackError?.trackId === track.id}
             onSelect={onSelectTrack}
             onRemove={onRemoveTrack}
             removeTitle={t.removeTrackTitle}
@@ -205,6 +225,7 @@ function MusicPanel({
                     track={track}
                     isActive={track.id === activeTrackId}
                     isPlaying={isPlaying}
+                    isErrored={playbackError?.trackId === track.id}
                     onSelect={onSelectTrack}
                     onRemove={onRemoveTrack}
                     removeTitle={t.removeTrackTitle}
