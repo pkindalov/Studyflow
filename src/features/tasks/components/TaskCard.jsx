@@ -15,13 +15,17 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
       onDragEnter={onDragEnter ? () => onDragEnter(task.id) : undefined}
       onDragEnd={onDragEnd}
       onDragOver={onDragOver}
-      className={`bg-surface-container p-3 sm:p-5 rounded-xl border flex items-center gap-2 sm:gap-5 hover:bg-surface-container-high transition-all group ${
+      className={`p-3 sm:p-5 rounded-xl border flex items-center gap-2 sm:gap-5 transition-all group ${
         dragging ? "opacity-30" : ""
       } ${
         isDone ? "opacity-40" : ""
       } ${
+        task.priority
+          ? "bg-tertiary/10 hover:bg-tertiary/15"
+          : "bg-surface-container hover:bg-surface-container-high"
+      } ${
         selected
-          ? "border-outline-variant/50 hover:border-outline-variant"
+          ? task.priority ? "border-tertiary/30 hover:border-tertiary/50" : "border-outline-variant/50 hover:border-outline-variant"
           : "border-outline-variant/20 opacity-60"
       }`}
     >

@@ -922,7 +922,7 @@ function App() {
                         }}
                         onDragOver={(e) => e.preventDefault()}
                         onDragEnd={() => { setScheduleDraggedId(null); scheduleDragOverRef.current = null; }}
-                        className={`relative flex items-center gap-4 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 overflow-hidden cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? "opacity-30" : ""}`}
+                        className={`relative flex items-center gap-4 p-3 rounded-xl border overflow-hidden cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? "opacity-30" : ""} ${task.priority ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-low border-outline-variant/50"}`}
                       >
                         {(hasProgress || isFinished) && (
                           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
