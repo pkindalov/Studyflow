@@ -162,6 +162,12 @@ function App() {
 
   const savedListTexts = useMemo(() => new Set(taskBank.map((t) => t.text)), [taskBank]);
 
+  const allScheduleDone = useMemo(() =>
+    !!schedule && schedule.length > 0 && schedule.every((task) =>
+      (scheduleTimers[task.id] || 0) >= task.scheduledMinutes * 60
+    ),
+  [schedule, scheduleTimers]);
+
   const markDateWithTasksFn = useMemo(
     () => markDateWithTasks(tasks, formatDateKey, recurringTasks, showCalendarCompletion),
     [tasks, recurringTasks, showCalendarCompletion],
@@ -860,11 +866,19 @@ function App() {
           )}
           {schedule && (
             <>
-              <div className="mt-8 bg-surface-container rounded-2xl border border-outline-variant/50 p-6">
-                <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
-                  <span className="material-symbols-outlined text-primary">schedule</span>
-                  {t.todaysSchedule}
-                </h3>
+              <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-emerald-500/15 border-emerald-500/40" : "bg-surface-container border-outline-variant/50"}`}>
+                {allScheduleDone ? (
+                  <div className="flex flex-col items-center gap-3 py-4 text-center">
+                    <span className="material-symbols-outlined text-5xl text-emerald-400" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+                    <h3 className="font-headline font-bold text-2xl text-emerald-400">{t.scheduleAllDoneHeadline}</h3>
+                    <p className="text-sm text-emerald-300/80 max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
+                  </div>
+                ) : (
+                  <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
+                    <span className="material-symbols-outlined text-primary">schedule</span>
+                    {t.todaysSchedule}
+                  </h3>
+                )}
                 <ul className="flex flex-col gap-3">
                   {schedule.map((task) => {
                     const elapsed = scheduleTimers[task.id] || 0;

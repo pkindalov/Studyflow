@@ -146,6 +146,8 @@ export const en = {
   scheduleError: "Error saving schedule.",
   scheduleDeleted: "Schedule deleted.",
   scheduleDeleteError: "Error deleting schedule.",
+  scheduleAllDoneHeadline: "Session Complete!",
+  scheduleAllDoneBody: "You crushed every task on the schedule. Take a breath, celebrate the win, and keep that momentum going!",
   completedStatus: "Completed",
   runningStatus: "Running — click to view",
   resumeTimerStatus: "Resume timer",
