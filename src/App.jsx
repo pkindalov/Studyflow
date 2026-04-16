@@ -501,7 +501,7 @@ function App() {
     const priorityTasks = selectedTasks.filter((task) => task.priority);
     const nonPriorityTasks = selectedTasks.filter((task) => !task.priority);
     let scheduleArr = [];
-    const totalMinutes = totalStudyTime * 60;
+    const totalMinutes = Math.max(1, Math.round(totalStudyTime * 60));
     let priorityMinutes = priorityTasks.length && priorityPercent > 0
       ? Math.round((Math.min(priorityPercent, 100) / 100) * totalMinutes)
       : 0;
@@ -544,6 +544,8 @@ function App() {
 
     const prioritySlice = scheduleArr.filter((task) => task.priority).sort(() => Math.random() - 0.5);
     const normalSlice = scheduleArr.filter((task) => !task.priority).sort(() => Math.random() - 0.5);
+    setRunningTaskId(null);
+    setScheduleTimers({});
     setSchedule([...prioritySlice, ...normalSlice]);
   }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, showNotification, t]);
 
