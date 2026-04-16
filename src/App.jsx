@@ -116,6 +116,7 @@ function App() {
   const [schedule, setSchedule] = useState(null);
   const [scheduleDraggedId, setScheduleDraggedId] = useState(null);
   const scheduleDragOverRef = useRef(null);
+  const scheduleDragHandleRef = useRef(false);
 
   // Timer state
   const [timerTask, setTimerTask] = useState(null);
@@ -758,13 +759,14 @@ function App() {
       onDragEnter={() => handleSectionEnter(id)}
       onDragOver={(e) => e.preventDefault()}
       onDragEnd={() => { setDraggedSection(null); setDropTarget(null); sectionDragOverRef.current = null; }}
-      className={`relative group/sec transition-opacity ${draggedSection === id ? "opacity-30" : ""}`}
+      className={`group/sec transition-opacity ${draggedSection === id ? "opacity-30" : ""}`}
     >
+      {/* Drag grip — floats above the panel so it never overlaps panel controls */}
       <div
-        className="absolute top-3 right-3 z-10 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing bg-surface-container-highest/80 rounded-lg p-1"
+        className="flex justify-center mb-1 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
         title={t.dragToMoveHint}
       >
-        <span className="material-symbols-outlined text-sm text-on-surface-variant">open_with</span>
+        <span className="material-symbols-outlined text-base text-on-surface-variant/50 hover:text-on-surface-variant transition-colors">drag_indicator</span>
       </div>
       {SECTION_JSX[id]}
     </div>
@@ -906,7 +908,11 @@ function App() {
                       <li
                         key={task.id}
                         draggable
-                        onDragStart={() => { setScheduleDraggedId(task.id); scheduleDragOverRef.current = task.id; }}
+                        onDragStart={(e) => {
+                          if (!scheduleDragHandleRef.current) { e.preventDefault(); return; }
+                          setScheduleDraggedId(task.id);
+                          scheduleDragOverRef.current = task.id;
+                        }}
                         onDragEnter={() => {
                           if (!scheduleDraggedId || task.id === scheduleDragOverRef.current) return;
                           scheduleDragOverRef.current = task.id;
@@ -921,8 +927,8 @@ function App() {
                           });
                         }}
                         onDragOver={(e) => e.preventDefault()}
-                        onDragEnd={() => { setScheduleDraggedId(null); scheduleDragOverRef.current = null; }}
-                        className={`relative flex items-center gap-4 p-3 rounded-xl border overflow-hidden cursor-grab active:cursor-grabbing transition-opacity ${isDragging ? "opacity-30" : ""} ${task.priority ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-low border-outline-variant/50"}`}
+                        onDragEnd={() => { setScheduleDraggedId(null); scheduleDragOverRef.current = null; scheduleDragHandleRef.current = false; }}
+                        className={`relative flex items-center gap-4 p-3 rounded-xl border overflow-hidden transition-opacity ${isDragging ? "opacity-30" : ""} ${task.priority ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-low border-outline-variant/50"}`}
                       >
                         {(hasProgress || isFinished) && (
                           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
@@ -932,7 +938,12 @@ function App() {
                             />
                           </div>
                         )}
-                        <span className="material-symbols-outlined text-base text-on-surface-variant/30 flex-shrink-0 select-none">drag_indicator</span>
+                        <span
+                          className="material-symbols-outlined text-base text-on-surface-variant/40 flex-shrink-0 select-none cursor-grab active:cursor-grabbing hover:text-on-surface-variant/70 transition-colors"
+                          onMouseDown={() => { scheduleDragHandleRef.current = true; }}
+                          onMouseUp={() => { scheduleDragHandleRef.current = false; }}
+                          onMouseLeave={() => { scheduleDragHandleRef.current = false; }}
+                        >drag_indicator</span>
                         <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
                         <span className="flex-1 font-medium text-on-surface text-sm">{task.text}</span>
                         <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} {t.minUnit}</span>
