@@ -2,7 +2,7 @@ import { useState } from "react";
 import { recurrenceLabel } from "../hooks/useRecurringTasks";
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, dragging, onDragStart, onDragEnter, onDragEnd, onDragOver }) {
+function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, onDragStart, onDragEnter, onDragEnd, onDragOver }) {
   const { t } = useLang();
   const isDone = !!task.done;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -81,6 +81,25 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
             title={t.startTimerTitle}
           >
             <span className="material-symbols-outlined text-base">play_circle</span>
+          </button>
+        )}
+        {onSaveToBank && (
+          <button
+            onClick={() => onSaveToBank(task)}
+            className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
+              isInList
+                ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
+                : "text-on-surface-variant/50 hover:text-secondary hover:bg-secondary/10"
+            }`}
+            aria-label={t.saveToList}
+            title={isInList ? t.savedListBtn : t.saveToList}
+          >
+            <span
+              className="material-symbols-outlined text-base"
+              style={{ fontVariationSettings: isInList ? "'FILL' 1" : "'FILL' 0" }}
+            >
+              bookmark
+            </span>
           </button>
         )}
         {onToggleSelect && (

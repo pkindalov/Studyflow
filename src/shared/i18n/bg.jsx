@@ -185,6 +185,23 @@ export const bg = {
   howManyMinutes: "Колко минути искаш да работиш върху нея?",
   startTimerBtn: "Стартирай",
 
+  // ── Saved task list ───────────────────────────────────────────────────────────
+  savedListTitle: "Запазен списък",
+  savedListSubtitle: "Избери задачи за днес или импортирай от друга дата.",
+  savedListTab: "Запазен списък",
+  importFromDateTab: "От дата",
+  savedListEmpty: "Списъкът е празен. Добави задачи по-долу или използвай иконата за отметка в картите.",
+  addToListPlaceholder: "Нова задача в списъка...",
+  removeFromList: "Премахни от списъка",
+  saveToList: "Добавено в списъка!",
+  savedListBtn: "Запазен списък",
+  useFromSavedList: "Използвай запазен списък",
+  addToToday: "Добави за днес",
+  editListItem: "Редактирай",
+  pickDateHint: "Избери дата, за да видиш задачите.",
+  noTasksOnDate: "Няма незавършени задачи на тази дата.",
+  addAndGenerate: "Добави за днес и генерирай",
+
   // ── Help modal ────────────────────────────────────────────────────────────────
   howStudyflowWorks: "Как работи Studyflow",
   dataNote: "Данните са в браузъра ти — без акаунт.",

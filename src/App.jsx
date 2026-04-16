@@ -15,6 +15,8 @@ import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecu
 import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
 import { generateId } from "./shared/utils/id";
 import HelpModal from "./shared/components/HelpModal";
+import TaskBankModal from "./features/tasks/components/TaskBankModal";
+import { useTaskBank } from "./features/tasks/hooks/useTaskBank";
 import { exportData, readBackupFile, applyBackup } from "./shared/utils/dataPortability";
 import { useLang } from "./shared/i18n/LangContext";
 import "./features/calendar/calendar.css";
@@ -138,7 +140,11 @@ function App() {
 
   const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, clearAllRecurring } = useRecurringTasks();
+  const { taskBank, addToBank, removeFromBank, updateInBank } = useTaskBank();
   const music = useMusicPlayer();
+
+  const [showTaskBankModal, setShowTaskBankModal] = useState(false);
+  const [taskBankModalAutoGenerate, setTaskBankModalAutoGenerate] = useState(false);
 
   // ─── Derived data ───────────────────────────────────────────────────────────
   const tasksForDay = useMemo(() => tasks[dateKey] || [], [tasks, dateKey]);
@@ -153,6 +159,8 @@ function App() {
       progress: total === 0 ? 0 : Math.round((completed / total) * 100),
     };
   }, [tasksForDay]);
+
+  const savedListTexts = useMemo(() => new Set(taskBank.map((t) => t.text)), [taskBank]);
 
   const markDateWithTasksFn = useMemo(
     () => markDateWithTasks(tasks, formatDateKey, recurringTasks, showCalendarCompletion),
@@ -465,7 +473,10 @@ function App() {
     if (totalStudyTime <= 0) return;
     if (!selectedTasks.length) {
       const allDone = tasksForDay.length > 0 && tasksForDay.every((task) => task.done);
-      showNotification(allDone ? t.allDoneNothing : t.noTasksSelected);
+      if (allDone) { showNotification(t.allDoneNothing); return; }
+      // No tasks at all — open the saved list modal and auto-generate after confirm
+      setTaskBankModalAutoGenerate(true);
+      setShowTaskBankModal(true);
       return;
     }
     const priorityTasks = selectedTasks.filter((task) => task.priority);
@@ -808,6 +819,9 @@ function App() {
             excludedTaskIds={excludedTaskIds}
             onToggleSelect={toggleTaskSelection}
             onOpenTimer={openTimerForTask}
+            onSaveToBank={(task) => { addToBank(task.text, task.priority); showNotification(t.saveToList); }}
+            onOpenSavedList={() => { setTaskBankModalAutoGenerate(false); setShowTaskBankModal(true); }}
+            savedListTexts={savedListTexts}
             onReorder={(draggedId, targetId) => reorderTasks(dateKey, draggedId, targetId)}
             onEdit={(task) => {
               setEditTaskId(task.id);
@@ -1121,6 +1135,32 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+      {/* Task Bank Modal */}
+      {showTaskBankModal && (
+        <TaskBankModal
+          taskBank={taskBank}
+          tasks={tasks}
+          onClose={() => setShowTaskBankModal(false)}
+          onRemoveFromBank={removeFromBank}
+          onAddToBank={addToBank}
+          onUpdateInBank={updateInBank}
+          withGenerate={taskBankModalAutoGenerate}
+          onConfirm={(selectedTasks) => {
+            selectedTasks.forEach(({ text, priority, imageUrl }) =>
+              addTaskDirect(dateKey, {
+                id: generateId(),
+                text,
+                priority: !!priority,
+                imageUrl: imageUrl || "",
+                done: false,
+              })
+            );
+            setShowTaskBankModal(false);
+            // If triggered from Generate Schedule, auto-generate after state flushes
+            if (taskBankModalAutoGenerate) setTimeout(generateSchedule, 0);
+          }}
+        />
       )}
       {/* Task Modal */}
       <TaskModal

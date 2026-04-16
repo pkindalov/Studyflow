@@ -185,6 +185,23 @@ export const en = {
   howManyMinutes: "How many minutes do you want to work on it?",
   startTimerBtn: "Start Timer",
 
+  // ── Saved task list ───────────────────────────────────────────────────────────
+  savedListTitle: "Saved Task List",
+  savedListSubtitle: "Select tasks to add to today, or import from another date.",
+  savedListTab: "Saved List",
+  importFromDateTab: "From Date",
+  savedListEmpty: "Your saved list is empty. Add tasks below or use the bookmark icon on any task card.",
+  addToListPlaceholder: "New task for saved list...",
+  removeFromList: "Remove from list",
+  saveToList: "Saved to list!",
+  savedListBtn: "Saved List",
+  useFromSavedList: "Use saved list",
+  addToToday: "Add to today",
+  editListItem: "Edit",
+  pickDateHint: "Pick a date to see its tasks.",
+  noTasksOnDate: "No pending tasks on that date.",
+  addAndGenerate: "Add to today & Generate",
+
   // ── Help modal ────────────────────────────────────────────────────────────────
   howStudyflowWorks: "How Studyflow works",
   dataNote: "Data lives in your browser — no account needed.",
