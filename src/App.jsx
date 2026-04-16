@@ -899,6 +899,19 @@ function App() {
                             {isFinished ? "check_circle" : isRunning ? "pause_circle" : "play_circle"}
                           </span>
                         </button>
+                        {!isFinished && (
+                          <button
+                            onClick={() => {
+                              if (runningTaskId === task.id) setRunningTaskId(null);
+                              markTaskDone(dateKey, task.id);
+                              setScheduleTimers((prev) => ({ ...prev, [task.id]: task.scheduledMinutes * 60 }));
+                            }}
+                            title={t.markDoneEarly}
+                            className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-tertiary hover:bg-tertiary/10"
+                          >
+                            <span className="material-symbols-outlined text-base">check_circle</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => setSchedule((prev) => {
                             const next = prev.filter((t) => t.id !== task.id);
