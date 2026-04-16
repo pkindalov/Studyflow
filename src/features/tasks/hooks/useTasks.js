@@ -105,7 +105,7 @@ export function useTasks() {
       return {
         ...prev,
         [fromDateKey]: fromList.filter((t) => t.id !== taskId),
-        [toDateKey]: [...(prev[toDateKey] || []), task],
+        [toDateKey]: [...(prev[toDateKey] || []), { ...task, done: false }],
       };
     });
   }, []);

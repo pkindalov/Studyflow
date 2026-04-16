@@ -615,6 +615,18 @@ function App() {
     if (editTaskTargetDate && editTaskTargetDate !== dateKey) {
       moveTask(dateKey, editTaskTargetDate, editTaskId);
       removeTaskFromSchedule(t => t.id === editTaskId);
+      // Clear elapsed timer for this task so the target date starts at 0
+      setScheduleTimers((prev) => {
+        const next = { ...prev };
+        delete next[editTaskId];
+        return next;
+      });
+      try {
+        const key = `schedule_timers_${editTaskTargetDate}`;
+        const saved = JSON.parse(localStorage.getItem(key) || "{}");
+        delete saved[editTaskId];
+        localStorage.setItem(key, JSON.stringify(saved));
+      } catch { /* ignore */ }
     }
     const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
     const startDate = editTaskStartDate || dateKey;
