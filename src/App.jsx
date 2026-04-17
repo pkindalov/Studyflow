@@ -109,6 +109,7 @@ function App() {
   const [draggedSection, setDraggedSection] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
   const sectionDragOverRef = useRef(null);
+  const skipTimerPersistRef = useRef(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const prevAllScheduleDoneRef = useRef(false);
 
@@ -279,12 +280,17 @@ function App() {
     const saved = localStorage.getItem(`schedule_${dateKey}`);
     setSchedule(saved ? JSON.parse(saved) : null);
     const savedTimers = localStorage.getItem(`schedule_timers_${dateKey}`);
+    skipTimerPersistRef.current = true;
     setScheduleTimers(savedTimers ? JSON.parse(savedTimers) : {});
     setRunningTaskId(null);
     setTimerTask(null);
   }, [dateKey]);
 
   useEffect(() => {
+    if (skipTimerPersistRef.current) {
+      skipTimerPersistRef.current = false;
+      return;
+    }
     localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
   }, [scheduleTimers, dateKey]);
 

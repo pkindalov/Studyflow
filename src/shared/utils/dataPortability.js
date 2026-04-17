@@ -1,7 +1,9 @@
 const STATIC_KEYS = [
   "studyflow_tasks",
   "studyflow_recurring",
+  "studyflow_task_bank",
   "studyflow_theme",
+  "studyflow_calendar_completion",
   "studyflow_column_layout",
   "pomodoro_enabled",
   "pomodoro_minutes",
