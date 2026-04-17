@@ -28,6 +28,48 @@ const formatDateKey = (date) => date.toLocaleDateString("en-CA");
 
 const DEFAULT_LAYOUT = { left: ["calendar", "activity"], right: ["studyTime", "priorityPercent", "quote", "todaysTasks", "music"] };
 
+// ─── Consolidated localStorage helpers ──────────────────────────────────────
+const SCHEDULES_KEY = "studyflow_schedules";
+const TIMERS_KEY = "studyflow_schedule_timers";
+
+const readAllSchedules = () => { try { return JSON.parse(localStorage.getItem(SCHEDULES_KEY)) || {}; } catch { return {}; } };
+const readAllTimers    = () => { try { return JSON.parse(localStorage.getItem(TIMERS_KEY))    || {}; } catch { return {}; } };
+
+const writeScheduleForDate = (dateKey, schedule) => {
+  const all = readAllSchedules();
+  if (!schedule || schedule.length === 0) { delete all[dateKey]; }
+  else { all[dateKey] = schedule; }
+  localStorage.setItem(SCHEDULES_KEY, JSON.stringify(all));
+};
+
+const writeTimersForDate = (dateKey, timers) => {
+  const all = readAllTimers();
+  if (!timers || Object.keys(timers).length === 0) { delete all[dateKey]; }
+  else { all[dateKey] = timers; }
+  localStorage.setItem(TIMERS_KEY, JSON.stringify(all));
+};
+
+// One-time migration: fold old per-date schedule_* keys into the unified objects
+(() => {
+  const schedules = readAllSchedules();
+  const timers    = readAllTimers();
+  let migratedSchedules = false;
+  let migratedTimers    = false;
+  Object.keys(localStorage).forEach((k) => {
+    if (k.startsWith("schedule_timers_")) {
+      const dk = k.slice("schedule_timers_".length);
+      try { const v = JSON.parse(localStorage.getItem(k)); if (v && Object.keys(v).length > 0) { timers[dk] = v; migratedTimers = true; } } catch { /* ignore */ }
+      localStorage.removeItem(k);
+    } else if (k.startsWith("schedule_")) {
+      const dk = k.slice("schedule_".length);
+      try { const v = JSON.parse(localStorage.getItem(k)); if (v && v.length > 0) { schedules[dk] = v; migratedSchedules = true; } } catch { /* ignore */ }
+      localStorage.removeItem(k);
+    }
+  });
+  if (migratedSchedules) localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules));
+  if (migratedTimers)    localStorage.setItem(TIMERS_KEY,    JSON.stringify(timers));
+})();
+
 function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
   const start = new Date((startDate) + "T12:00:00");
   if (recurrence === "daily") {
@@ -245,10 +287,8 @@ function App() {
     setExcludedTaskIds(new Set());
     setTaskAllocations({});
     setColumnLayout(DEFAULT_LAYOUT);
-    // Wipe all schedule_* and schedule_timers_* keys from localStorage
-    Object.keys(localStorage)
-      .filter((k) => k.startsWith("schedule_"))
-      .forEach((k) => localStorage.removeItem(k));
+    localStorage.removeItem(SCHEDULES_KEY);
+    localStorage.removeItem(TIMERS_KEY);
     setShowClearConfirm(false);
   }, [clearAllTasks, clearAllRecurring]);
 
@@ -277,11 +317,11 @@ function App() {
   }, [dateKey]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`schedule_${dateKey}`);
-    setSchedule(saved ? JSON.parse(saved) : null);
-    const savedTimers = localStorage.getItem(`schedule_timers_${dateKey}`);
+    const allSchedules = readAllSchedules();
+    setSchedule(allSchedules[dateKey] || null);
+    const allTimers = readAllTimers();
     skipTimerPersistRef.current = true;
-    setScheduleTimers(savedTimers ? JSON.parse(savedTimers) : {});
+    setScheduleTimers(allTimers[dateKey] || {});
     setRunningTaskId(null);
     setTimerTask(null);
   }, [dateKey]);
@@ -291,11 +331,7 @@ function App() {
       skipTimerPersistRef.current = false;
       return;
     }
-    if (Object.keys(scheduleTimers).length === 0) {
-      localStorage.removeItem(`schedule_timers_${dateKey}`);
-    } else {
-      localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
-    }
+    writeTimersForDate(dateKey, scheduleTimers);
   }, [scheduleTimers, dateKey]);
 
   // ─── Keep a ref in sync so the interval can read current elapsed without
@@ -563,7 +599,7 @@ function App() {
   const saveSchedule = useCallback(() => {
     if (schedule && schedule.length > 0) {
       try {
-        localStorage.setItem(`schedule_${dateKey}`, JSON.stringify(schedule));
+        writeScheduleForDate(dateKey, schedule);
         showNotification(t.scheduleSaved);
       } catch {
         showNotification(t.scheduleError);
@@ -573,7 +609,7 @@ function App() {
 
   const deleteSchedule = useCallback(() => {
     try {
-      localStorage.removeItem(`schedule_${dateKey}`);
+      writeScheduleForDate(dateKey, null);
       setSchedule(null);
       showNotification(t.scheduleDeleted);
     } catch {
@@ -628,16 +664,9 @@ function App() {
       const next = prev.filter(t => !predicate(t));
       return next.length > 0 ? next : null;
     });
-    const saved = localStorage.getItem(`schedule_${dateKey}`);
-    if (saved) {
-      try {
-        const updated = JSON.parse(saved).filter(t => !predicate(t));
-        if (updated.length > 0) {
-          localStorage.setItem(`schedule_${dateKey}`, JSON.stringify(updated));
-        } else {
-          localStorage.removeItem(`schedule_${dateKey}`);
-        }
-      } catch { /* ignore parse errors */ }
+    const existing = readAllSchedules()[dateKey];
+    if (existing) {
+      writeScheduleForDate(dateKey, existing.filter(t => !predicate(t)));
     }
   }, [dateKey]);
 
@@ -665,10 +694,10 @@ function App() {
         return next;
       });
       try {
-        const key = `schedule_timers_${editTaskTargetDate}`;
-        const saved = JSON.parse(localStorage.getItem(key) || "{}");
-        delete saved[editTaskId];
-        localStorage.setItem(key, JSON.stringify(saved));
+        const allTimers = readAllTimers();
+        const targetTimers = { ...(allTimers[editTaskTargetDate] || {}) };
+        delete targetTimers[editTaskId];
+        writeTimersForDate(editTaskTargetDate, targetTimers);
       } catch { /* ignore */ }
     }
     const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
