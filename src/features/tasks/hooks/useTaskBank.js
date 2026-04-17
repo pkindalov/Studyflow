@@ -5,17 +5,19 @@ const STORAGE_KEY = "studyflow_task_bank";
 
 export function useTaskBank() {
   const [taskBank, setTaskBank] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try { setTaskBank(JSON.parse(saved)); } catch { /* ignore */ }
     }
+    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(taskBank));
-  }, [taskBank]);
+    if (isLoaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(taskBank));
+  }, [taskBank, isLoaded]);
 
   const addToBank = useCallback((text, priority = false) => {
     const trimmed = text.trim();
