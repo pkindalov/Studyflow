@@ -184,6 +184,7 @@ function App() {
     try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? 25; } catch { return 25; }
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
+  const musicWasPlayingRef = useRef(false);
 
   const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, clearAllRecurring } = useRecurringTasks();
@@ -513,19 +514,24 @@ function App() {
   const toggleTimer = useCallback(() => {
     if (!timerTask) return;
     if (runningTaskId === timerTask.id) {
+      musicWasPlayingRef.current = music.isPlaying;
       setRunningTaskId(null);
       music.pause();
     } else {
       const elapsed = scheduleTimers[timerTask.id] || 0;
       if (elapsed < timerTask.scheduledMinutes * 60) {
-        // Advance the Pomodoro baseline so the detection effect doesn't
-        // immediately re-fire on the already-elapsed boundary (e.g. 1500s % 1500 === 0).
-        setPomodoroResetAt(elapsed);
+        // Only advance the Pomodoro baseline when exactly on a boundary to
+        // prevent the detection effect from immediately re-firing (e.g. 1500s % 1500 === 0).
+        const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
+        if (pomSec > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomSec === 0) {
+          setPomodoroResetAt(elapsed);
+        }
         setRunningTaskId(timerTask.id);
-        music.play();
+        // On fresh start always play; on resume only if music was playing before pause.
+        if (elapsed === 0 || musicWasPlayingRef.current) music.play();
       }
     }
-  }, [timerTask, runningTaskId, scheduleTimers, music]);
+  }, [timerTask, runningTaskId, scheduleTimers, music, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
 
   const handleSetPomodoroMinutes = useCallback((val) => {
     const currentElapsed = timerTask ? (scheduleTimers[timerTask.id] || 0) : 0;
