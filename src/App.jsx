@@ -291,7 +291,11 @@ function App() {
       skipTimerPersistRef.current = false;
       return;
     }
-    localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
+    if (Object.keys(scheduleTimers).length === 0) {
+      localStorage.removeItem(`schedule_timers_${dateKey}`);
+    } else {
+      localStorage.setItem(`schedule_timers_${dateKey}`, JSON.stringify(scheduleTimers));
+    }
   }, [scheduleTimers, dateKey]);
 
   // ─── Keep a ref in sync so the interval can read current elapsed without
