@@ -225,33 +225,36 @@ function TaskBankModal({
               )}
 
               {/* Add new task form */}
-              <form onSubmit={handleAddToList} className="flex gap-2 pt-2 pb-1 border-t border-outline-variant/30 mt-1">
-                <input
-                  type="text"
+              <form onSubmit={handleAddToList} className="flex flex-col gap-2 pt-2 pb-1 border-t border-outline-variant/30 mt-1">
+                <textarea
                   value={newTaskText}
                   onChange={(e) => setNewTaskText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAddToList(e); } }}
                   placeholder={t.addToListPlaceholder}
-                  className="flex-1 bg-surface-container-highest border border-outline/40 rounded-xl px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  rows={3}
+                  className="w-full bg-surface-container-highest border border-outline/60 rounded-xl px-4 py-3 text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/60 resize-none"
                 />
-                <button
-                  type="button"
-                  onClick={() => setNewTaskPriority((p) => !p)}
-                  title={t.priorityTaskLabel}
-                  className={`p-2 rounded-xl border transition-all flex-shrink-0 ${
-                    newTaskPriority
-                      ? "bg-tertiary/15 border-tertiary/40 text-tertiary"
-                      : "border-outline/40 text-on-surface-variant hover:border-tertiary/40 hover:text-tertiary"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: newTaskPriority ? "'FILL' 1" : "'FILL' 0" }}>star</span>
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newTaskText.trim()}
-                  className="px-3 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-                >
-                  {t.add}
-                </button>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewTaskPriority((p) => !p)}
+                    title={t.priorityTaskLabel}
+                    className={`p-2 rounded-xl border transition-all ${
+                      newTaskPriority
+                        ? "bg-tertiary/15 border-tertiary/40 text-tertiary"
+                        : "border-outline/40 text-on-surface-variant hover:border-tertiary/40 hover:text-tertiary"
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: newTaskPriority ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!newTaskText.trim()}
+                    className="px-3 py-2 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {t.add}
+                  </button>
+                </div>
               </form>
             </div>
           ) : (
