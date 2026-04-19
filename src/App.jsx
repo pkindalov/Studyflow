@@ -1,4 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import ScheduleItem from "./features/schedule/components/ScheduleItem";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import TaskList from "./features/tasks/components/TaskList";
@@ -69,6 +73,27 @@ const writeTimersForDate = (dateKey, timers) => {
   if (migratedSchedules) localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules));
   if (migratedTimers)    localStorage.setItem(TIMERS_KEY,    JSON.stringify(timers));
 })();
+
+function SortableSection({ id, t, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.3 : 1 }}
+      className="group/sec"
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex justify-center mb-1 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+        title={t.dragToMoveHint}
+      >
+        <span className="material-symbols-outlined text-base text-on-surface-variant/50 hover:text-on-surface-variant transition-colors">drag_indicator</span>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
   const start = new Date((startDate) + "T12:00:00");
@@ -148,18 +173,12 @@ function App() {
       return parsed;
     } catch { return DEFAULT_LAYOUT; }
   });
-  const [draggedSection, setDraggedSection] = useState(null);
-  const [dropTarget, setDropTarget] = useState(null);
-  const sectionDragOverRef = useRef(null);
   const skipTimerPersistRef = useRef(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const prevAllScheduleDoneRef = useRef(false);
 
   // Schedule state
   const [schedule, setSchedule] = useState(null);
-  const [scheduleDraggedId, setScheduleDraggedId] = useState(null);
-  const scheduleDragOverRef = useRef(null);
-  const scheduleDragHandleRef = useRef(false);
 
   // Timer state
   const [timerTask, setTimerTask] = useState(null);
@@ -236,38 +255,45 @@ function App() {
     localStorage.setItem("studyflow_column_layout", JSON.stringify(columnLayout));
   }, [columnLayout]);
 
-  const handleSectionEnter = useCallback((targetId) => {
-    if (!draggedSection || targetId === draggedSection || targetId === sectionDragOverRef.current) return;
-    sectionDragOverRef.current = targetId;
-    setColumnLayout((prev) => {
-      // Remove dragged from wherever it is
-      const withoutDragged = {
-        left: prev.left.filter((id) => id !== draggedSection),
-        right: prev.right.filter((id) => id !== draggedSection),
-      };
-      // Find which column the target lives in now
-      const targetCol = withoutDragged.left.includes(targetId) ? "left" : "right";
-      const list = [...withoutDragged[targetCol]];
-      const targetIdx = list.indexOf(targetId);
-      if (targetIdx === -1) return prev;
-      list.splice(targetIdx, 0, draggedSection);
-      return { ...withoutDragged, [targetCol]: list };
-    });
-  }, [draggedSection]);
+  const sectionSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
 
-  const handleDropOnColumn = useCallback((col) => {
-    // Fallback: if user drops on empty column area (not over a section)
-    if (!draggedSection) return;
+  const sectionDragSnapshot = useRef(null);
+
+  const handleSectionDragStart = useCallback(() => {
+    setColumnLayout((prev) => { sectionDragSnapshot.current = prev; return prev; });
+  }, []);
+
+  const handleSectionDragOver = useCallback(({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const activeId = active.id;
+    const overId = over.id;
     setColumnLayout((prev) => {
-      if (prev[col].includes(draggedSection)) return prev; // already there via handleSectionEnter
-      return {
-        left:  col === "left"  ? [...prev.left, draggedSection]  : prev.left.filter((id) => id !== draggedSection),
-        right: col === "right" ? [...prev.right, draggedSection] : prev.right.filter((id) => id !== draggedSection),
+      const overInLeft = prev.left.includes(overId);
+      const overInRight = prev.right.includes(overId);
+      if (!overInLeft && !overInRight) return prev;
+      const withoutActive = {
+        left: prev.left.filter((id) => id !== activeId),
+        right: prev.right.filter((id) => id !== activeId),
       };
+      const targetCol = overInLeft ? "left" : "right";
+      const list = [...withoutActive[targetCol]];
+      const overIdx = list.indexOf(overId);
+      if (overIdx === -1) return prev;
+      list.splice(overIdx, 0, activeId);
+      return { ...withoutActive, [targetCol]: list };
     });
-    setDraggedSection(null);
-    setDropTarget(null);
-  }, [draggedSection]);
+  }, []);
+
+  const handleSectionDragEnd = useCallback(({ over }) => {
+    if (!over && sectionDragSnapshot.current) {
+      setColumnLayout(sectionDragSnapshot.current);
+    }
+    sectionDragSnapshot.current = null;
+  }, []);
+
 
   const resetLayout = useCallback(() => setColumnLayout(DEFAULT_LAYOUT), []);
 
@@ -613,6 +639,36 @@ function App() {
     }
   }, [schedule, dateKey, showNotification, t]);
 
+  const scheduleSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  const handleScheduleDragEnd = useCallback(({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    setSchedule((prev) => {
+      const from = prev.findIndex((t) => t.id === active.id);
+      const to = prev.findIndex((t) => t.id === over.id);
+      return arrayMove(prev, from, to);
+    });
+  }, []);
+
+  const handleMarkScheduleItemDone = useCallback((taskId) => {
+    const task = schedule?.find((t) => t.id === taskId);
+    if (!task) return;
+    if (runningTaskId === taskId) setRunningTaskId(null);
+    markTaskDone(dateKey, taskId);
+    setScheduleTimers((prev) => ({ ...prev, [taskId]: task.scheduledMinutes * 60 }));
+  }, [schedule, runningTaskId, markTaskDone, dateKey]);
+
+  const handleRemoveScheduleItem = useCallback((taskId) => {
+    setSchedule((prev) => {
+      const next = prev.filter((t) => t.id !== taskId);
+      return next.length > 0 ? next : null;
+    });
+  }, []);
+
   const deleteSchedule = useCallback(() => {
     try {
       writeScheduleForDate(dateKey, null);
@@ -796,35 +852,7 @@ function App() {
     ),
   };
 
-  const renderSideSection = (id) => (
-    <div
-      key={id}
-      draggable
-      onDragStart={() => { setDraggedSection(id); sectionDragOverRef.current = id; }}
-      onDragEnter={() => handleSectionEnter(id)}
-      onDragOver={(e) => e.preventDefault()}
-      onDragEnd={() => { setDraggedSection(null); setDropTarget(null); sectionDragOverRef.current = null; }}
-      className={`group/sec transition-opacity ${draggedSection === id ? "opacity-30" : ""}`}
-    >
-      {/* Drag grip — floats above the panel so it never overlaps panel controls */}
-      <div
-        className="flex justify-center mb-1 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-        title={t.dragToMoveHint}
-      >
-        <span className="material-symbols-outlined text-base text-on-surface-variant/50 hover:text-on-surface-variant transition-colors">drag_indicator</span>
-      </div>
-      {SECTION_JSX[id]}
-    </div>
-  );
-
-  const sideColClass = (col) =>
-    `lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl transition-all min-h-16 ${dropTarget === col && draggedSection ? "ring-2 ring-primary/40" : ""}`;
-
-  const sideColDropProps = (col) => ({
-    onDragOver: (e) => { e.preventDefault(); setDropTarget(col); },
-    onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDropTarget(null); },
-    onDrop: () => handleDropOnColumn(col),
-  });
+  const sideColClass = "lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl min-h-16";
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -868,10 +896,21 @@ function App() {
         </div>
       </div>
 
+      <DndContext
+        sensors={sectionSensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleSectionDragStart}
+        onDragOver={handleSectionDragOver}
+        onDragEnd={handleSectionDragEnd}
+      >
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         {/* Left Sidebar */}
-        <div className={sideColClass("left")} {...sideColDropProps("left")}>
-          {columnLayout.left.map(renderSideSection)}
+        <div className={sideColClass}>
+          <SortableContext items={columnLayout.left} strategy={verticalListSortingStrategy}>
+            {columnLayout.left.map((id) => (
+              <SortableSection key={id} id={id} t={t}>{SECTION_JSX[id]}</SortableSection>
+            ))}
+          </SortableContext>
         </div>
         {/* Main Content */}
         <div className="lg:col-span-6 flex flex-col gap-6">
@@ -941,104 +980,25 @@ function App() {
                     {t.todaysSchedule}
                   </h3>
                 )}
-                <ul className="flex flex-col gap-3">
-                  {schedule.map((task) => {
-                    const elapsed = scheduleTimers[task.id] || 0;
-                    const total = task.scheduledMinutes * 60;
-                    const isRunning = runningTaskId === task.id;
-                    const isFinished = total > 0 && elapsed >= total;
-                    const hasProgress = elapsed > 0 && !isFinished;
-                    const isDragging = scheduleDraggedId === task.id;
-                    return (
-                      <li
-                        key={task.id}
-                        draggable
-                        onDragStart={(e) => {
-                          if (!scheduleDragHandleRef.current) { e.preventDefault(); return; }
-                          setScheduleDraggedId(task.id);
-                          scheduleDragOverRef.current = task.id;
-                        }}
-                        onDragEnter={() => {
-                          if (!scheduleDraggedId || task.id === scheduleDragOverRef.current) return;
-                          scheduleDragOverRef.current = task.id;
-                          setSchedule((prev) => {
-                            const list = [...prev];
-                            const from = list.findIndex((t) => t.id === scheduleDraggedId);
-                            const to = list.findIndex((t) => t.id === task.id);
-                            if (from === -1 || to === -1) return prev;
-                            const [moved] = list.splice(from, 1);
-                            list.splice(to, 0, moved);
-                            return list;
-                          });
-                        }}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDragEnd={() => { setScheduleDraggedId(null); scheduleDragOverRef.current = null; scheduleDragHandleRef.current = false; }}
-                        className={`relative flex items-center gap-4 p-3 rounded-xl border overflow-hidden transition-opacity ${isDragging ? "opacity-30" : ""} ${task.priority ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-low border-outline-variant/50"}`}
-                      >
-                        {(hasProgress || isFinished) && (
-                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
-                            <div
-                              className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
-                              style={{ width: `${Math.min(100, (elapsed / total) * 100)}%` }}
-                            />
-                          </div>
-                        )}
-                        <span
-                          className="material-symbols-outlined text-base text-on-surface-variant/40 flex-shrink-0 select-none cursor-grab active:cursor-grabbing hover:text-on-surface-variant/70 transition-colors"
-                          onMouseDown={() => { scheduleDragHandleRef.current = true; }}
-                          onMouseUp={() => { scheduleDragHandleRef.current = false; }}
-                          onMouseLeave={() => { scheduleDragHandleRef.current = false; }}
-                        >drag_indicator</span>
-                        <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
-                        <span className="flex-1 font-medium text-on-surface text-sm">{task.text}</span>
-                        <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} {t.minUnit}</span>
-                        {task.priority && (
-                          <span className="text-[10px] text-tertiary font-bold tracking-wider uppercase ml-1">{t.priorityBadge}</span>
-                        )}
-                        <button
-                          onClick={() => openTimer(task)}
-                          title={isFinished ? t.completedStatus : isRunning ? t.runningStatus : hasProgress ? t.resumeTimerStatus : t.startTimerStatus}
-                          className={`flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 ${
-                            isFinished
-                              ? "bg-tertiary/20 text-tertiary"
-                              : isRunning
-                                ? "bg-primary/20 text-primary animate-pulse"
-                                : hasProgress
-                                  ? "bg-secondary/20 text-secondary hover:bg-secondary/30"
-                                  : "bg-on-surface-variant/10 text-on-surface-variant hover:bg-on-surface-variant/20"
-                          }`}
-                        >
-                          <span className="material-symbols-outlined text-base">
-                            {isFinished ? "check_circle" : isRunning ? "pause_circle" : "play_circle"}
-                          </span>
-                        </button>
-                        {!isFinished && (
-                          <button
-                            onClick={() => {
-                              if (runningTaskId === task.id) setRunningTaskId(null);
-                              markTaskDone(dateKey, task.id);
-                              setScheduleTimers((prev) => ({ ...prev, [task.id]: task.scheduledMinutes * 60 }));
-                            }}
-                            title={t.markDoneEarly}
-                            className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-tertiary hover:bg-tertiary/10"
-                          >
-                            <span className="material-symbols-outlined text-base">check_circle</span>
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setSchedule((prev) => {
-                            const next = prev.filter((t) => t.id !== task.id);
-                            return next.length > 0 ? next : null;
-                          })}
-                          title="Remove from schedule"
-                          className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-error hover:bg-error/10"
-                        >
-                          <span className="material-symbols-outlined text-base">close</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <DndContext sensors={scheduleSensors} collisionDetection={closestCenter} onDragEnd={handleScheduleDragEnd}>
+                  <SortableContext items={schedule.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+                    <ul className="flex flex-col gap-3">
+                      {schedule.map((task) => (
+                        <ScheduleItem
+                          key={task.id}
+                          task={task}
+                          elapsed={scheduleTimers[task.id] || 0}
+                          isRunning={runningTaskId === task.id}
+                          runningTaskId={runningTaskId}
+                          onOpenTimer={openTimer}
+                          onMarkDone={handleMarkScheduleItemDone}
+                          onRemove={handleRemoveScheduleItem}
+                          t={t}
+                        />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </DndContext>
               </div>
               <div className="flex gap-3 justify-end mt-4 flex-wrap">
                 <button
@@ -1060,10 +1020,15 @@ function App() {
           )}
         </div>
         {/* Right Sidebar */}
-        <div className={sideColClass("right")} {...sideColDropProps("right")}>
-          {columnLayout.right.map(renderSideSection)}
+        <div className={sideColClass}>
+          <SortableContext items={columnLayout.right} strategy={verticalListSortingStrategy}>
+            {columnLayout.right.map((id) => (
+              <SortableSection key={id} id={id} t={t}>{SECTION_JSX[id]}</SortableSection>
+            ))}
+          </SortableContext>
         </div>
       </div>
+      </DndContext>
       {/* Mobile-only bottom toolbar — export / import / clear / reset layout */}
       <div className="flex lg:hidden items-center justify-between gap-2 mt-4 flex-wrap">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -1143,17 +1108,16 @@ function App() {
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       <Confetti active={showConfetti} />
       {/* Reset layout button — desktop only, fixed bottom-right */}
-      {isCustomLayout && (
-        <div className="hidden lg:flex fixed bottom-6 right-6 z-40">
-          <button
-            onClick={resetLayout}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
-          >
-            <span className="material-symbols-outlined text-sm">restart_alt</span>
-            {t.resetLayoutBtn}
-          </button>
-        </div>
-      )}
+      <div className="hidden lg:flex fixed bottom-6 right-6 z-40">
+        <button
+          onClick={resetLayout}
+          disabled={!isCustomLayout}
+          className={`flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold shadow-lg transition-all ${isCustomLayout ? "hover:bg-surface-container-high" : "opacity-40 cursor-not-allowed"}`}
+        >
+          <span className="material-symbols-outlined text-sm">restart_alt</span>
+          {t.resetLayoutBtn}
+        </button>
+      </div>
       {/* Timer Modal */}
       {timerTask && (
         <TimerModal
