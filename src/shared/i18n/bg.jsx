@@ -203,6 +203,8 @@ export const bg = {
   importFromDateTab: "От дата",
   savedListEmpty:
     "Списъкът е празен. Добави задачи по-долу или използвай иконата за отметка в картите.",
+  savedListSearch: "Търси запазени задачи…",
+  savedListNoResults: "Няма задачи, съответстващи на търсенето.",
   addToListPlaceholder: "Нова задача в списъка...",
   removeFromList: "Премахни от списъка",
   saveToList: "Добавено в списъка!",

@@ -196,6 +196,8 @@ export const en = {
   savedListTab: "Saved List",
   importFromDateTab: "From Date",
   savedListEmpty: "Your saved list is empty. Add tasks below or use the bookmark icon on any task card.",
+  savedListSearch: "Search saved tasks…",
+  savedListNoResults: "No tasks match your search.",
   addToListPlaceholder: "New task for saved list...",
   removeFromList: "Remove from list",
   saveToList: "Saved to list!",

@@ -20,6 +20,7 @@ function TaskBankModal({
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const [editPriority, setEditPriority] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const importDateTasks = useMemo(() => {
     if (!importDate) return [];
@@ -39,7 +40,14 @@ function TaskBankModal({
     setTab(next);
     setSelectedIds(new Set());
     setEditingId(null);
+    setSearchQuery("");
   };
+
+  const filteredBank = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return taskBank;
+    return taskBank.filter((task) => task.text.toLowerCase().includes(q));
+  }, [taskBank, searchQuery]);
 
   const handleConfirm = () => {
     if (selectedIds.size === 0) return;
@@ -121,12 +129,35 @@ function TaskBankModal({
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 min-h-0">
           {tab === "list" ? (
-            <div className="flex flex-col gap-2 pb-2">
+            <div className="flex flex-col gap-2 pt-2 pb-2">
+              {taskBank.length > 0 && (
+                <div className="relative mb-1">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base text-on-surface-variant/50 pointer-events-none">search</span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t.savedListSearch}
+                    className="w-full bg-surface-container-highest border border-outline/40 rounded-xl pl-9 pr-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 hover:text-on-surface-variant transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base">close</span>
+                    </button>
+                  )}
+                </div>
+              )}
               {taskBank.length === 0 && (
                 <p className="text-sm text-on-surface-variant text-center py-6">{t.savedListEmpty}</p>
               )}
+              {taskBank.length > 0 && filteredBank.length === 0 && (
+                <p className="text-sm text-on-surface-variant text-center py-6">{t.savedListNoResults}</p>
+              )}
 
-              {taskBank.map((task) =>
+              {filteredBank.map((task) =>
                 editingId === task.id ? (
                   /* ── Edit row ── */
                   <div key={task.id} className="flex items-center gap-2 p-2 rounded-xl bg-surface-container-highest border border-primary/40">
