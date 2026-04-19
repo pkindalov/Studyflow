@@ -176,6 +176,9 @@ function App() {
   const skipTimerPersistRef = useRef(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const prevAllScheduleDoneRef = useRef(false);
+  const [scheduleUnsaved, setScheduleUnsaved] = useState(false);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const unsavedProceedRef = useRef(null);
 
   // Schedule state
   const [schedule, setSchedule] = useState(null);
@@ -316,6 +319,8 @@ function App() {
     setColumnLayout(DEFAULT_LAYOUT);
     localStorage.removeItem(SCHEDULES_KEY);
     localStorage.removeItem(TIMERS_KEY);
+    setScheduleUnsaved(false);
+    setShowUnsavedWarning(false);
     setShowClearConfirm(false);
   }, [clearAllTasks, clearAllRecurring]);
 
@@ -346,6 +351,7 @@ function App() {
   useEffect(() => {
     const allSchedules = readAllSchedules();
     setSchedule(allSchedules[dateKey] || null);
+    setScheduleUnsaved(false);
     const allTimers = readAllTimers();
     skipTimerPersistRef.current = true;
     setScheduleTimers(allTimers[dateKey] || {});
@@ -566,7 +572,7 @@ function App() {
   }, [timerTask, scheduleTimers]);
 
   // ─── Schedule controls ──────────────────────────────────────────────────────
-  const generateSchedule = useCallback(() => {
+  const doGenerate = useCallback(() => {
     const selectedTasks = tasksForDay.filter((task) => !excludedTaskIds.has(task.id) && !task.done);
     if (totalStudyTime <= 0) return;
     if (!selectedTasks.length) {
@@ -626,18 +632,56 @@ function App() {
     setRunningTaskId(null);
     setScheduleTimers({});
     setSchedule([...prioritySlice, ...normalSlice]);
+    setScheduleUnsaved(true);
   }, [tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, showNotification, t]);
+
+  const generateSchedule = useCallback(() => {
+    if (scheduleUnsaved && schedule?.length > 0) {
+      unsavedProceedRef.current = doGenerate;
+      setShowUnsavedWarning(true);
+      return;
+    }
+    doGenerate();
+  }, [scheduleUnsaved, schedule, doGenerate]);
+
+  const handleDateChange = useCallback((newDate) => {
+    if (scheduleUnsaved) {
+      unsavedProceedRef.current = () => setSelectedDate(newDate);
+      setShowUnsavedWarning(true);
+    } else {
+      setSelectedDate(newDate);
+    }
+  }, [scheduleUnsaved]);
 
   const saveSchedule = useCallback(() => {
     if (schedule && schedule.length > 0) {
       try {
         writeScheduleForDate(dateKey, schedule);
+        setScheduleUnsaved(false);
         showNotification(t.scheduleSaved);
       } catch {
         showNotification(t.scheduleError);
       }
     }
   }, [schedule, dateKey, showNotification, t]);
+
+  const handleUnsavedSaveAndContinue = useCallback(() => {
+    saveSchedule();
+    unsavedProceedRef.current?.();
+    unsavedProceedRef.current = null;
+    setShowUnsavedWarning(false);
+  }, [saveSchedule]);
+
+  const handleUnsavedDiscard = useCallback(() => {
+    unsavedProceedRef.current?.();
+    unsavedProceedRef.current = null;
+    setShowUnsavedWarning(false);
+  }, []);
+
+  const handleUnsavedCancel = useCallback(() => {
+    unsavedProceedRef.current = null;
+    setShowUnsavedWarning(false);
+  }, []);
 
   const scheduleSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -667,12 +711,14 @@ function App() {
       const next = prev.filter((t) => t.id !== taskId);
       return next.length > 0 ? next : null;
     });
+    setScheduleUnsaved(true);
   }, []);
 
   const deleteSchedule = useCallback(() => {
     try {
       writeScheduleForDate(dateKey, null);
       setSchedule(null);
+      setScheduleUnsaved(false);
       showNotification(t.scheduleDeleted);
     } catch {
       showNotification(t.scheduleDeleteError);
@@ -810,7 +856,7 @@ function App() {
     calendar: (
       <CalendarSidebar
         selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
+        setSelectedDate={handleDateChange}
         markDateWithTasks={markDateWithTasksFn}
         onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
         showCompletion={showCalendarCompletion}
@@ -1310,6 +1356,40 @@ function App() {
                 className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold hover:opacity-90 transition-all text-sm"
               >
                 {t.restore}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Unsaved schedule warning modal */}
+      {showUnsavedWarning && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-xl" style={{ color: "var(--color-warning, #f59e0b)" }}>warning</span>
+                {t.unsavedScheduleTitle}
+              </h3>
+              <p className="text-sm text-on-surface-variant">{t.unsavedScheduleMsg}</p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={handleUnsavedCancel}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={handleUnsavedDiscard}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error/10 text-error border border-error/20 hover:bg-error/20 transition-all"
+              >
+                {t.discardAndContinue}
+              </button>
+              <button
+                onClick={handleUnsavedSaveAndContinue}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all"
+              >
+                {t.saveAndContinue}
               </button>
             </div>
           </div>

@@ -150,6 +150,10 @@ export const bg = {
   scheduleSaved: "Разписанието е запазено успешно!",
   scheduleError: "Грешка при запазване.",
   scheduleDeleted: "Разписанието е изтрито.",
+  unsavedScheduleTitle: "Незапазено разписание",
+  unsavedScheduleMsg: "Имаш разписание, което не е запазено. Ако продължиш, разпределението на задачите ще бъде изгубено.",
+  saveAndContinue: "Запази и продължи",
+  discardAndContinue: "Откажи и продължи",
   scheduleDeleteError: "Грешка при изтриване.",
   scheduleAllDoneHeadline: "Сесията е завършена!",
   scheduleAllDoneBody:
