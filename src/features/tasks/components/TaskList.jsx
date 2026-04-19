@@ -1,26 +1,39 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 
 const PAGE_SIZE = 8;
 
+function SortableTaskCard({ id, ...props }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  return (
+    <div ref={setNodeRef} style={style}>
+      <TaskCard {...props} dragging={isDragging} dragHandleListeners={listeners} dragHandleAttributes={attributes} />
+    </div>
+  );
+}
+
 function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder }) {
   const { t } = useLang();
   const [page, setPage] = useState(0);
-  const [draggedId, setDraggedId] = useState(null);
-  const dragOverRef = useRef(null);
 
   useEffect(() => { setPage(0); }, [tasks.length]);
 
-  const handleDragStart = (id) => { setDraggedId(id); dragOverRef.current = id; };
-  const handleDragEnter = (id) => {
-    if (!draggedId || id === dragOverRef.current) return;
-    dragOverRef.current = id;
-    onReorder?.(draggedId, id);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    onReorder?.(active.id, over.id);
   };
-  const handleDragEnd = () => { setDraggedId(null); dragOverRef.current = null; };
-  const handleDragOver = (e) => e.preventDefault();
 
   const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
   const paginated = tasks.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -76,28 +89,28 @@ function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurri
         </div>
       ) : (
         <>
-          <div className={isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "flex flex-col gap-6"}>
-            {paginated.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                onStopRecurring={onStopRecurring}
-                selected={showSelectionControls ? !excludedTaskIds.has(task.id) : true}
-                onToggleSelect={onToggleSelect}
-                onOpenTimer={onOpenTimer}
-                onSaveToBank={onSaveToBank}
-                isInList={savedListTexts ? savedListTexts.has(task.text) : false}
-                dragging={draggedId === task.id}
-                onDragStart={onReorder ? handleDragStart : undefined}
-                onDragEnter={onReorder ? handleDragEnter : undefined}
-                onDragEnd={onReorder ? handleDragEnd : undefined}
-                onDragOver={onReorder ? handleDragOver : undefined}
-              />
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={paginated.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+              <div className={isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "flex flex-col gap-6"}>
+                {paginated.map((task) => (
+                  <SortableTaskCard
+                    key={task.id}
+                    id={task.id}
+                    task={task}
+                    onToggle={onToggle}
+                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    onStopRecurring={onStopRecurring}
+                    selected={showSelectionControls ? !excludedTaskIds.has(task.id) : true}
+                    onToggleSelect={onToggleSelect}
+                    onOpenTimer={onOpenTimer}
+                    onSaveToBank={onSaveToBank}
+                    isInList={savedListTexts ? savedListTexts.has(task.text) : false}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
           <Pagination
             page={page}
             totalPages={totalPages}

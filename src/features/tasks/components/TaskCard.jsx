@@ -2,7 +2,7 @@ import { useState } from "react";
 import { recurrenceLabel } from "../hooks/useRecurringTasks";
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, onDragStart, onDragEnter, onDragEnd, onDragOver }) {
+function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, dragHandleListeners, dragHandleAttributes }) {
   const { t } = useLang();
   const isDone = !!task.done;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -10,11 +10,6 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
 
   return (
     <div
-      draggable={!!(onDragStart)}
-      onDragStart={onDragStart ? () => onDragStart(task.id) : undefined}
-      onDragEnter={onDragEnter ? () => onDragEnter(task.id) : undefined}
-      onDragEnd={onDragEnd}
-      onDragOver={onDragOver}
       className={`p-3 sm:p-5 rounded-xl border flex items-center gap-2 sm:gap-5 transition-all group ${
         dragging ? "opacity-30" : ""
       } ${
@@ -29,8 +24,12 @@ function TaskCard({ task, onToggle, onDelete, onEdit, onStopRecurring, selected 
           : "border-outline-variant/20 opacity-60"
       }`}
     >
-      {onDragStart && (
-        <span className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 cursor-grab active:cursor-grabbing flex-shrink-0 select-none">
+      {dragHandleListeners && (
+        <span
+          className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 cursor-grab active:cursor-grabbing flex-shrink-0 select-none touch-none"
+          {...dragHandleAttributes}
+          {...dragHandleListeners}
+        >
           drag_indicator
         </span>
       )}
