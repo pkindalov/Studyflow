@@ -123,6 +123,8 @@ export const en = {
   totalUnit: "total",
   tasksCompletedFn: (n) => `${n} task${n === 1 ? "" : "s"} completed`,
   last6Months: "Last 6 months",
+  selectedDayLabel: "Selected day",
+  selectedDayTasksFn: (n) => `${n} task${n === 1 ? "" : "s"} done`,
 
   // ── Music panel ───────────────────────────────────────────────────────────────
   focusMusicLabel: "Focus Music",

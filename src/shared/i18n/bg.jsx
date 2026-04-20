@@ -127,6 +127,9 @@ export const bg = {
   tasksCompletedFn: (n) =>
     `${n} ${n === 1 ? "задача завършена" : "задачи завършени"}`,
   last6Months: "Последните 6 месеца",
+  selectedDayLabel: "Избран ден",
+  selectedDayTasksFn: (n) =>
+    `${n} ${n === 1 ? "задача" : "задачи"} завършени`,
 
   // ── Music panel ───────────────────────────────────────────────────────────────
   focusMusicLabel: "Музика за фокус",

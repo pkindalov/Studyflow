@@ -56,7 +56,7 @@ function formatTooltip(date, count) {
   return `${label} · ${count} task${count === 1 ? "" : "s"} done`;
 }
 
-function ActivityHeatmap({ heatmap }) {
+function ActivityHeatmap({ heatmap, selectedDate, onSelectDate }) {
   const { weeks, today } = useMemo(buildGrid, []);
   const monthLabels = useMemo(() => buildMonthLabels(weeks), [weeks]);
 
@@ -88,11 +88,18 @@ function ActivityHeatmap({ heatmap }) {
               const isFuture = date > today;
               const dateStr = date.toLocaleDateString("en-CA");
               const count = heatmap[dateStr] || 0;
+              const isSelected = selectedDate === dateStr;
               return (
                 <div
                   key={dIdx}
                   title={isFuture ? "" : formatTooltip(date, count)}
-                  className={`w-2 h-2 rounded-[2px] flex-shrink-0 transition-opacity ${cellClass(count, isFuture)}`}
+                  onClick={!isFuture && onSelectDate ? () => onSelectDate(isSelected ? null : dateStr) : undefined}
+                  className={[
+                    "w-2 h-2 rounded-[2px] flex-shrink-0 transition-opacity",
+                    cellClass(count, isFuture),
+                    !isFuture && onSelectDate ? "cursor-pointer hover:opacity-80" : "",
+                    isSelected ? "ring-1 ring-primary ring-offset-[1px] ring-offset-surface-container" : "",
+                  ].join(" ")}
                 />
               );
             })}
