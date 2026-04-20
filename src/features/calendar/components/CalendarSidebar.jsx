@@ -29,7 +29,7 @@ function CalendarSidebar({
   showCompletion,
   onToggleCompletion,
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   return (
     <aside className="flex flex-col p-5 sm:p-6 gap-5 rounded-3xl bg-surface-container border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
@@ -75,6 +75,7 @@ function CalendarSidebar({
         onChange={setSelectedDate}
         value={selectedDate}
         tileContent={markDateWithTasks}
+        locale={lang === "bg" ? "bg-BG" : "en-US"}
         className="react-calendar-custom"
       />
     </aside>
