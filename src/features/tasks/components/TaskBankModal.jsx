@@ -22,6 +22,7 @@ function TaskBankModal({
   const [editText, setEditText] = useState("");
   const [editPriority, setEditPriority] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState("manual");
   const [dragOverId, setDragOverId] = useState(null);
 
   const importDateTasks = useMemo(() => {
@@ -47,9 +48,12 @@ function TaskBankModal({
 
   const filteredBank = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return taskBank;
-    return taskBank.filter((task) => task.text.toLowerCase().includes(q));
-  }, [taskBank, searchQuery]);
+    const base = q ? taskBank.filter((task) => task.text.toLowerCase().includes(q)) : [...taskBank];
+    if (sortOrder === "priority") return base.sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
+    if (sortOrder === "az") return base.sort((a, b) => a.text.localeCompare(b.text));
+    if (sortOrder === "za") return base.sort((a, b) => b.text.localeCompare(a.text));
+    return base;
+  }, [taskBank, searchQuery, sortOrder]);
 
   const handleConfirm = () => {
     if (selectedIds.size === 0) return;
@@ -133,6 +137,26 @@ function TaskBankModal({
           {tab === "list" ? (
             <div className="flex flex-col gap-2 pt-2 pb-2">
               {taskBank.length > 0 && (
+                <div className="flex gap-2 mb-1">
+                  {["manual", "priority", "az", "za"].map((opt) => {
+                    const labels = { manual: t.sortManual, priority: t.sortPriority, az: t.sortAZ, za: t.sortZA };
+                    return (
+                      <button
+                        key={opt}
+                        onClick={() => setSortOrder(opt)}
+                        className={`flex-1 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                          sortOrder === opt
+                            ? "bg-primary/15 text-primary border border-primary/40"
+                            : "bg-surface-container-highest text-on-surface-variant border border-outline/30 hover:border-outline/60"
+                        }`}
+                      >
+                        {labels[opt]}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {taskBank.length > 0 && (
                 <div className="relative mb-1">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base text-on-surface-variant/50 pointer-events-none">search</span>
                   <input
@@ -192,7 +216,7 @@ function TaskBankModal({
                   /* ── Display row ── */
                   <label
                     key={task.id}
-                    draggable={!searchQuery}
+                    draggable={!searchQuery && sortOrder === "manual"}
                     onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", task.id); }}
                     onDragOver={(e) => { e.preventDefault(); setDragOverId(task.id); }}
                     onDragLeave={() => setDragOverId(null)}
@@ -204,7 +228,7 @@ function TaskBankModal({
                         : "bg-surface-container-low border-outline-variant/50 hover:bg-surface-container-high"
                     }`}
                   >
-                    {!searchQuery && (
+                    {!searchQuery && sortOrder === "manual" && (
                       <span className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 flex-shrink-0 cursor-grab active:cursor-grabbing transition-colors">
                         drag_indicator
                       </span>
