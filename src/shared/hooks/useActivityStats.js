@@ -53,17 +53,16 @@ export function useActivityStats(tasks) {
   let todayFocusSeconds = 0;
   try {
     const todayKey = new Date().toLocaleDateString("en-CA");
-    Object.keys(localStorage)
-      .filter((k) => k.startsWith("schedule_timers_"))
-      .forEach((k) => {
-        const timers = JSON.parse(localStorage.getItem(k) || "{}");
-        const daySeconds = Object.values(timers).reduce(
-          (sum, sec) => sum + (typeof sec === "number" && sec > 0 ? sec : 0),
-          0,
-        );
-        totalFocusSeconds += daySeconds;
-        if (k === `schedule_timers_${todayKey}`) todayFocusSeconds = daySeconds;
-      });
+    const allTimers = JSON.parse(localStorage.getItem("studyflow_schedule_timers") || "{}");
+    Object.entries(allTimers).forEach(([dateKey, timers]) => {
+      if (typeof timers !== "object" || timers === null) return;
+      const daySeconds = Object.values(timers).reduce(
+        (sum, sec) => sum + (typeof sec === "number" && sec > 0 ? sec : 0),
+        0,
+      );
+      totalFocusSeconds += daySeconds;
+      if (dateKey === todayKey) todayFocusSeconds = daySeconds;
+    });
   } catch {
     // localStorage not available
   }
