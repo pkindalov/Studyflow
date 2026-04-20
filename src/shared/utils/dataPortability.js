@@ -2,6 +2,8 @@ const STATIC_KEYS = [
   "studyflow_tasks",
   "studyflow_recurring",
   "studyflow_task_bank",
+  "studyflow_schedules",
+  "studyflow_schedule_timers",
   "studyflow_theme",
   "studyflow_calendar_completion",
   "studyflow_column_layout",
@@ -83,7 +85,7 @@ export function readBackupFile(file) {
 export function applyBackup(rawData) {
   // Remove existing app keys
   const keysToRemove = Object.keys(localStorage).filter(
-    (k) => STATIC_KEYS.includes(k) || k.startsWith("schedule_")
+    (k) => STATIC_KEYS.includes(k) || k.startsWith("schedule_") || k.startsWith("studyflow_schedule")
   );
   keysToRemove.forEach((k) => localStorage.removeItem(k));
 
