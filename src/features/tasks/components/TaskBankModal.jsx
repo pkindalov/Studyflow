@@ -9,6 +9,7 @@ function TaskBankModal({
   onRemoveFromBank,
   onAddToBank,
   onUpdateInBank,
+  onReorderBank,
   withGenerate = false,
 }) {
   const { t } = useLang();
@@ -21,6 +22,7 @@ function TaskBankModal({
   const [editText, setEditText] = useState("");
   const [editPriority, setEditPriority] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dragOverId, setDragOverId] = useState(null);
 
   const importDateTasks = useMemo(() => {
     if (!importDate) return [];
@@ -190,8 +192,23 @@ function TaskBankModal({
                   /* ── Display row ── */
                   <label
                     key={task.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 cursor-pointer hover:bg-surface-container-high transition-colors group"
+                    draggable={!searchQuery}
+                    onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", task.id); }}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverId(task.id); }}
+                    onDragLeave={() => setDragOverId(null)}
+                    onDrop={(e) => { e.preventDefault(); const fromId = e.dataTransfer.getData("text/plain"); onReorderBank(fromId, task.id); setDragOverId(null); }}
+                    onDragEnd={() => setDragOverId(null)}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-colors group cursor-pointer ${
+                      dragOverId === task.id
+                        ? "bg-primary/10 border-primary/40"
+                        : "bg-surface-container-low border-outline-variant/50 hover:bg-surface-container-high"
+                    }`}
                   >
+                    {!searchQuery && (
+                      <span className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 flex-shrink-0 cursor-grab active:cursor-grabbing transition-colors">
+                        drag_indicator
+                      </span>
+                    )}
                     <input
                       type="checkbox"
                       checked={selectedIds.has(task.id)}

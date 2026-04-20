@@ -210,7 +210,7 @@ function App() {
 
   const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, clearAllRecurring } = useRecurringTasks();
-  const { taskBank, addToBank, removeFromBank, updateInBank } = useTaskBank();
+  const { taskBank, addToBank, removeFromBank, updateInBank, reorderBank } = useTaskBank();
   const music = useMusicPlayer();
 
   const [showTaskBankModal, setShowTaskBankModal] = useState(false);
@@ -1243,6 +1243,7 @@ function App() {
           onRemoveFromBank={removeFromBank}
           onAddToBank={addToBank}
           onUpdateInBank={updateInBank}
+          onReorderBank={reorderBank}
           withGenerate={taskBankModalAutoGenerate}
           onConfirm={(selectedTasks) => {
             selectedTasks.forEach(({ text, priority, imageUrl }) =>

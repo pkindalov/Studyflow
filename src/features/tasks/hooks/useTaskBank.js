@@ -38,5 +38,17 @@ export function useTaskBank() {
     setTaskBank((prev) => prev.map((t) => t.id === id ? { ...t, text: trimmed, priority: !!priority } : t));
   }, []);
 
-  return { taskBank, addToBank, removeFromBank, updateInBank };
+  const reorderBank = useCallback((fromId, toId) => {
+    setTaskBank((prev) => {
+      const arr = [...prev];
+      const fromIdx = arr.findIndex((t) => t.id === fromId);
+      const toIdx = arr.findIndex((t) => t.id === toId);
+      if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return prev;
+      const [item] = arr.splice(fromIdx, 1);
+      arr.splice(toIdx, 0, item);
+      return arr;
+    });
+  }, []);
+
+  return { taskBank, addToBank, removeFromBank, updateInBank, reorderBank };
 }
