@@ -18,7 +18,7 @@ function formatTime(seconds, hms) {
 }
 
 function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onMarkDone, music,
-  pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0 }) {
+  pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0, pomodoroBreakCount = 0 }) {
   const { t } = useLang();
   const [hmsMode, setHmsMode] = useState(false);
   const [showAllTracks, setShowAllTracks] = useState(false);
@@ -235,9 +235,8 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
 
                 {elapsedSeconds > 0 && (() => {
                   const pomSec = pomodoroMinutes * 60;
-                  const elapsedInPom = Math.max(0, elapsedSeconds - pomodoroResetAt);
-                  const cycle = Math.floor(elapsedInPom / pomSec) + 1;
-                  const timeInCycle = elapsedInPom % pomSec;
+                  const cycle = pomodoroBreakCount + 1;
+                  const timeInCycle = Math.max(0, elapsedSeconds - pomodoroResetAt) % pomSec;
                   const untilBreak = pomSec - timeInCycle;
                   return (
                     <div className="flex items-center justify-between bg-error/8 border border-error/20 rounded-lg px-3 py-1.5">

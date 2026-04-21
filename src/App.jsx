@@ -206,6 +206,7 @@ function App() {
     try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? 25; } catch { return 25; }
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
+  const [pomodoroBreakCount, setPomodoroBreakCount] = useState(0);
   const musicWasPlayingRef = useRef(false);
 
   const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
@@ -437,6 +438,8 @@ function App() {
     }
     const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
     if (pomodoroSeconds > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomodoroSeconds === 0) {
+      setPomodoroResetAt(elapsed);
+      setPomodoroBreakCount((n) => n + 1);
       setRunningTaskId(null);
       music.pause();
     }
@@ -499,9 +502,13 @@ function App() {
     setTaskAllocations((prev) => ({ ...prev, [task.id]: task.scheduledMinutes }));
     const elapsed = scheduleTimers[task.id] || 0;
     if (elapsed < task.scheduledMinutes * 60) {
+      const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
+      if (pomSec > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomSec === 0) {
+        setPomodoroResetAt(elapsed);
+      }
       setRunningTaskId(task.id);
     }
-  }, [scheduleTimers]);
+  }, [scheduleTimers, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
 
   const openTimerForTask = useCallback((task) => {
     if (task.scheduledMinutes) {
@@ -538,6 +545,7 @@ function App() {
     if (!timerTask) return;
     setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: 0 }));
     setPomodoroResetAt(0);
+    setPomodoroBreakCount(0);
     toggleTask(dateKey, timerTask.id); // task was force-marked done; toggle it back to undone
     setRunningTaskId(timerTask.id);
     music.play();
@@ -568,6 +576,7 @@ function App() {
   const handleSetPomodoroMinutes = useCallback((val) => {
     const currentElapsed = timerTask ? (scheduleTimers[timerTask.id] || 0) : 0;
     setPomodoroResetAt(currentElapsed);
+    setPomodoroBreakCount(0);
     setPomodoroMinutes(val);
   }, [timerTask, scheduleTimers]);
 
@@ -1180,6 +1189,7 @@ function App() {
           pomodoroMinutes={pomodoroMinutes}
           setPomodoroMinutes={handleSetPomodoroMinutes}
           pomodoroResetAt={pomodoroResetAt}
+          pomodoroBreakCount={pomodoroBreakCount}
         />
       )}
       {/* Quick-timer prompt for unscheduled tasks */}
