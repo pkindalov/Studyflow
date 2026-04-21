@@ -3,7 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, onMarkDone, onRemove, t }) {
   const total = task.scheduledMinutes * 60;
-  const isFinished = total > 0 && elapsed >= total;
+  const isFinished = task.done || (total > 0 && elapsed >= total);
   const hasProgress = elapsed > 0 && !isFinished;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });

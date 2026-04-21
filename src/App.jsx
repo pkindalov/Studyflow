@@ -234,7 +234,7 @@ function App() {
 
   const allScheduleDone = useMemo(() =>
     !!schedule && schedule.length > 0 && schedule.every((task) =>
-      (scheduleTimers[task.id] || 0) >= task.scheduledMinutes * 60
+      task.done || (scheduleTimers[task.id] || 0) >= task.scheduledMinutes * 60
     ),
   [schedule, scheduleTimers]);
 
@@ -529,7 +529,7 @@ function App() {
     if (!timerTask) return;
     setRunningTaskId(null);
     markTaskDone(dateKey, timerTask.id);
-    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: timerTask.scheduledMinutes * 60 }));
+    setSchedule((prev) => prev?.map((t) => t.id === timerTask.id ? { ...t, done: true } : t) ?? null);
     music.pause();
     setTimerTask(null);
   }, [timerTask, dateKey, markTaskDone, music]);
@@ -703,7 +703,7 @@ function App() {
     if (!task) return;
     if (runningTaskId === taskId) setRunningTaskId(null);
     markTaskDone(dateKey, taskId);
-    setScheduleTimers((prev) => ({ ...prev, [taskId]: task.scheduledMinutes * 60 }));
+    setSchedule((prev) => prev?.map((t) => t.id === taskId ? { ...t, done: true } : t) ?? null);
   }, [schedule, runningTaskId, markTaskDone, dateKey]);
 
   const handleRemoveScheduleItem = useCallback((taskId) => {
