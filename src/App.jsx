@@ -534,6 +534,13 @@ function App() {
     }
     const elapsed = scheduleTimers[task.id] || 0;
     const allocated = taskAllocations[task.id];
+    if (task.done) {
+      const scheduleTask = schedule?.find((s) => s.id === task.id);
+      const minutes = scheduleTask?.scheduledMinutes || allocated || 25;
+      setScheduleTimers((prev) => ({ ...prev, [task.id]: minutes * 60 }));
+      openTimer({ ...task, scheduledMinutes: minutes });
+      return;
+    }
     if (elapsed > 0 && allocated) {
       // Resume previous session with the same allocation
       openTimer({ ...task, scheduledMinutes: allocated });
@@ -541,7 +548,7 @@ function App() {
       setPendingTimerTask(task);
       setPendingTimerMinutes(25);
     }
-  }, [openTimer, scheduleTimers, taskAllocations]);
+  }, [openTimer, scheduleTimers, taskAllocations, schedule]);
 
   const closeTimer = useCallback(() => {
     setRunningTaskId(null);
@@ -555,6 +562,7 @@ function App() {
     setRunningTaskId(null);
     markTaskDone(dateKey, timerTask.id);
     setSchedule((prev) => prev?.map((t) => t.id === timerTask.id ? { ...t, done: true } : t) ?? null);
+    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: timerTask.scheduledMinutes * 60 }));
     music.pause();
     setTimerTask(null);
   }, [timerTask, dateKey, markTaskDone, music]);
@@ -564,7 +572,8 @@ function App() {
     setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: 0 }));
     setPomodoroResetAt(0);
     setPomodoroBreakCount(0);
-    toggleTask(dateKey, timerTask.id); // task was force-marked done; toggle it back to undone
+    toggleTask(dateKey, timerTask.id); // toggle back to undone
+    setSchedule((prev) => prev?.map((t) => t.id === timerTask.id ? { ...t, done: false } : t) ?? null);
     setRunningTaskId(timerTask.id);
     music.play();
     musicStartedFromTimerRef.current = true;
@@ -748,6 +757,7 @@ function App() {
     if (runningTaskId === taskId) setRunningTaskId(null);
     markTaskDone(dateKey, taskId);
     setSchedule((prev) => prev?.map((t) => t.id === taskId ? { ...t, done: true } : t) ?? null);
+    setScheduleTimers((prev) => ({ ...prev, [taskId]: task.scheduledMinutes * 60 }));
   }, [schedule, runningTaskId, markTaskDone, dateKey]);
 
   const handleRemoveScheduleItem = useCallback((taskId) => {
