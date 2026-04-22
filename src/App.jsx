@@ -208,6 +208,7 @@ function App() {
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
   const [pomodoroBreakCount, setPomodoroBreakCount] = useState(0);
   const musicWasPlayingRef = useRef(false);
+  const musicStartedFromTimerRef = useRef(false);
 
   const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, clearAllRecurring } = useRecurringTasks();
@@ -434,6 +435,10 @@ function App() {
     if (elapsed >= totalSeconds) {
       setRunningTaskId(null);
       markTaskDone(dateKey, runningTaskId);
+      if (musicStartedFromTimerRef.current) {
+        music.pause();
+        musicStartedFromTimerRef.current = false;
+      }
       return;
     }
     const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
@@ -530,6 +535,7 @@ function App() {
     setRunningTaskId(null);
     setTimerTask(null);
     music.pause();
+    musicStartedFromTimerRef.current = false;
   }, [music]);
 
   const markTimerTaskDone = useCallback(() => {
@@ -549,6 +555,7 @@ function App() {
     toggleTask(dateKey, timerTask.id); // task was force-marked done; toggle it back to undone
     setRunningTaskId(timerTask.id);
     music.play();
+    musicStartedFromTimerRef.current = true;
   }, [timerTask, dateKey, toggleTask, music]);
 
   const toggleTimer = useCallback(() => {
@@ -568,10 +575,26 @@ function App() {
         }
         setRunningTaskId(timerTask.id);
         // On fresh start always play; on resume only if music was playing before pause.
-        if (elapsed === 0 || musicWasPlayingRef.current) music.play();
+        if (elapsed === 0 || musicWasPlayingRef.current) {
+          music.play();
+          musicStartedFromTimerRef.current = true;
+        }
       }
     }
   }, [timerTask, runningTaskId, scheduleTimers, music, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
+
+  // ─── Music origin tracking — differentiates timer vs main-page play ─────────
+  const handleTimerMusicToggle = useCallback(() => {
+    if (!music.isPlaying) musicStartedFromTimerRef.current = true;
+    music.togglePlay();
+  }, [music]);
+
+  const handleMainMusicToggle = useCallback(() => {
+    if (!music.isPlaying) musicStartedFromTimerRef.current = false;
+    music.togglePlay();
+  }, [music]);
+
+  const timerMusic = useMemo(() => ({ ...music, togglePlay: handleTimerMusicToggle }), [music, handleTimerMusicToggle]);
 
   const handleSetPomodoroMinutes = useCallback((val) => {
     const currentElapsed = timerTask ? (scheduleTimers[timerTask.id] || 0) : 0;
@@ -900,7 +923,7 @@ function App() {
         onSelectTrack={music.selectTrack}
         onAddTrack={music.addTrack}
         onRemoveTrack={music.removeTrack}
-        onTogglePlay={music.togglePlay}
+        onTogglePlay={handleMainMusicToggle}
         onSetVolume={music.setVolume}
         onClearPlaybackError={music.clearPlaybackError}
       />
@@ -1183,7 +1206,7 @@ function App() {
           onClose={closeTimer}
           onRestart={restartTimer}
           onMarkDone={markTimerTaskDone}
-          music={music}
+          music={timerMusic}
           pomodoroEnabled={pomodoroEnabled}
           setPomodoroEnabled={setPomodoroEnabled}
           pomodoroMinutes={pomodoroMinutes}
