@@ -1028,7 +1028,15 @@ function App() {
             excludedTaskIds={excludedTaskIds}
             onToggleSelect={toggleTaskSelection}
             onOpenTimer={openTimerForTask}
-            onSaveToBank={(task) => { addToBank(task.text, task.priority); showNotification(t.saveToList); }}
+            onSaveToBank={(task) => {
+              if (savedListTexts.has(task.text)) {
+                const bankTask = taskBank.find((bt) => bt.text === task.text);
+                if (bankTask) removeFromBank(bankTask.id);
+              } else {
+                addToBank(task.text, task.priority);
+                showNotification(t.saveToList);
+              }
+            }}
             onOpenSavedList={() => { setTaskBankModalAutoGenerate(false); setShowTaskBankModal(true); }}
             savedListTexts={savedListTexts}
             onReorder={(draggedId, targetId) => reorderTasks(dateKey, draggedId, targetId)}
