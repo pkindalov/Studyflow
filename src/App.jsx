@@ -193,6 +193,7 @@ function App() {
   // Refs for wall-clock timer (survive tab-switch throttling)
   const scheduleTimersRef = useRef({});
   const timerStartRef = useRef(null); // { startedAt, baseElapsed, taskId, totalSeconds }
+  const lastTimerTaskIdRef = useRef(null);
 
   // Quick-timer prompt for unscheduled tasks
   const [pendingTimerTask, setPendingTimerTask] = useState(null);
@@ -503,17 +504,28 @@ function App() {
 
   // ─── Timer controls ─────────────────────────────────────────────────────────
   const openTimer = useCallback((task) => {
+    if (lastTimerTaskIdRef.current !== task.id) {
+      // Derive pomodoro state from this task's actual elapsed time so that
+      // returning to a previously-started task restores the correct cycle count.
+      const elapsed = scheduleTimers[task.id] || 0;
+      const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
+      if (pomSec > 0 && elapsed > 0) {
+        const breakCount = Math.floor(elapsed / pomSec);
+        setPomodoroBreakCount(breakCount);
+        setPomodoroResetAt(breakCount * pomSec);
+      } else {
+        setPomodoroResetAt(0);
+        setPomodoroBreakCount(0);
+      }
+      lastTimerTaskIdRef.current = task.id;
+    }
     setTimerTask(task);
     setTaskAllocations((prev) => ({ ...prev, [task.id]: task.scheduledMinutes }));
     const elapsed = scheduleTimers[task.id] || 0;
     if (elapsed < task.scheduledMinutes * 60) {
-      const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
-      if (pomSec > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomSec === 0) {
-        setPomodoroResetAt(elapsed);
-      }
       setRunningTaskId(task.id);
     }
-  }, [scheduleTimers, pomodoroEnabled, pomodoroMinutes, pomodoroResetAt]);
+  }, [scheduleTimers, pomodoroEnabled, pomodoroMinutes]);
 
   const openTimerForTask = useCallback((task) => {
     if (task.scheduledMinutes) {
