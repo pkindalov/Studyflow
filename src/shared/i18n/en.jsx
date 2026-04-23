@@ -64,6 +64,14 @@ export const en = {
   noTasksMessage: "No tasks for this day.",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
+  switchTaskTitle: "Switch task?",
+  switchTaskFrom: "Currently tracking",
+  switchTaskTo: "Switch to",
+  switchBtn: "Switch",
+  minimize: "Minimize",
+  expandTimer: "Expand timer",
+  pauseTimerTitle: "Pause",
+  playTimerTitle: "Resume",
   priorityBadge: "Priority",
   remainingLabel: "remaining",
   elapsedLabel: "elapsed",

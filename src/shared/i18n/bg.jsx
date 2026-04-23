@@ -67,6 +67,14 @@ export const bg = {
   noTasksMessage: "Няма задачи за този ден.",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
+  switchTaskTitle: "Смяна на задача?",
+  switchTaskFrom: "В момента следи",
+  switchTaskTo: "Смяна към",
+  switchBtn: "Смени",
+  minimize: "Минимизирай",
+  expandTimer: "Разшири таймера",
+  pauseTimerTitle: "Пауза",
+  playTimerTitle: "Продължи",
   priorityBadge: "Приоритет",
   remainingLabel: "остават",
   elapsedLabel: "изминали",
