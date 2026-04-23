@@ -8,6 +8,7 @@ import "react-calendar/dist/Calendar.css";
 import TaskList from "./features/tasks/components/TaskList";
 import TaskModal from "./features/tasks/components/TaskModal";
 import TimerModal from "./features/schedule/components/TimerModal";
+import MinimizedTimer from "./features/schedule/components/MinimizedTimer";
 import CalendarSidebar from "./features/calendar/components/CalendarSidebar";
 import SummaryCard from "./features/schedule/components/SummaryCard";
 import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "./features/dashboard/components/RightSidebar";
@@ -185,6 +186,7 @@ function App() {
 
   // Timer state
   const [timerTask, setTimerTask] = useState(null);
+  const [isTimerMinimized, setIsTimerMinimized] = useState(false);
   const [runningTaskId, setRunningTaskId] = useState(null);
   const [scheduleTimers, setScheduleTimers] = useState({});
   // Maps taskId → scheduledMinutes so RightSidebar can show live progress
@@ -194,6 +196,9 @@ function App() {
   const scheduleTimersRef = useRef({});
   const timerStartRef = useRef(null); // { startedAt, baseElapsed, taskId, totalSeconds }
   const lastTimerTaskIdRef = useRef(null);
+  const timerTaskRef = useRef(null);
+  const timerOriginDateKeyRef = useRef(null);
+  const dateKeyRef = useRef(dateKey);
 
   // Quick-timer prompt for unscheduled tasks
   const [pendingTimerTask, setPendingTimerTask] = useState(null);
@@ -357,9 +362,18 @@ function App() {
     setScheduleUnsaved(false);
     const allTimers = readAllTimers();
     skipTimerPersistRef.current = true;
-    setScheduleTimers(allTimers[dateKey] || {});
-    setRunningTaskId(null);
-    setTimerTask(null);
+    setScheduleTimers((prev) => {
+      const next = allTimers[dateKey] || {};
+      const active = timerTaskRef.current;
+      if (active && prev[active.id] !== undefined) {
+        return { ...next, [active.id]: prev[active.id] };
+      }
+      return next;
+    });
+    if (!timerTaskRef.current) {
+      setRunningTaskId(null);
+      setTimerTask(null);
+    }
   }, [dateKey]);
 
   useEffect(() => {
@@ -367,12 +381,23 @@ function App() {
       skipTimerPersistRef.current = false;
       return;
     }
-    writeTimersForDate(dateKey, scheduleTimers);
+    const active = timerTaskRef.current;
+    const originKey = timerOriginDateKeyRef.current;
+    if (active && originKey && originKey !== dateKey) {
+      const allT = readAllTimers();
+      writeTimersForDate(originKey, { ...(allT[originKey] || {}), [active.id]: scheduleTimers[active.id] || 0 });
+      const { [active.id]: _dropped, ...rest } = scheduleTimers;
+      writeTimersForDate(dateKey, rest);
+    } else {
+      writeTimersForDate(dateKey, scheduleTimers);
+    }
   }, [scheduleTimers, dateKey]);
 
   // ─── Keep a ref in sync so the interval can read current elapsed without
   //     listing scheduleTimers as a dependency (which would reset the clock).
   useEffect(() => { scheduleTimersRef.current = scheduleTimers; }, [scheduleTimers]);
+  useEffect(() => { timerTaskRef.current = timerTask; }, [timerTask]);
+  useEffect(() => { dateKeyRef.current = dateKey; }, [dateKey]);
 
   // ─── Countdown interval — wall-clock based, survives tab throttling ─────────
   useEffect(() => {
@@ -435,7 +460,7 @@ function App() {
     const elapsed = scheduleTimers[runningTaskId] || 0;
     if (elapsed >= totalSeconds) {
       setRunningTaskId(null);
-      markTaskDone(dateKey, runningTaskId);
+      markTaskDone(timerOriginDateKeyRef.current || dateKey, runningTaskId);
       if (musicStartedFromTimerRef.current) {
         music.pause();
         musicStartedFromTimerRef.current = false;
@@ -503,7 +528,19 @@ function App() {
   }, [tasks, dateKey, toggleTask, schedule]);
 
   // ─── Timer controls ─────────────────────────────────────────────────────────
+  const [pendingSwitchTask, setPendingSwitchTask] = useState(null);
+
   const openTimer = useCallback((task) => {
+    // Clicking the already-tracked task re-expands it (works for minimized too)
+    if (timerTask && timerTask.id === task.id) {
+      setIsTimerMinimized(false);
+      return;
+    }
+    // A different task is already tracked — ask the user to confirm the switch
+    if (timerTask) {
+      setPendingSwitchTask(task);
+      return;
+    }
     if (lastTimerTaskIdRef.current !== task.id) {
       // Derive pomodoro state from this task's actual elapsed time so that
       // returning to a previously-started task restores the correct cycle count.
@@ -519,13 +556,47 @@ function App() {
       }
       lastTimerTaskIdRef.current = task.id;
     }
+    timerOriginDateKeyRef.current = dateKeyRef.current;
     setTimerTask(task);
+    setIsTimerMinimized(false);
     setTaskAllocations((prev) => ({ ...prev, [task.id]: task.scheduledMinutes }));
     const elapsed = scheduleTimers[task.id] || 0;
     if (elapsed < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
     }
-  }, [scheduleTimers, pomodoroEnabled, pomodoroMinutes]);
+  }, [scheduleTimers, pomodoroEnabled, pomodoroMinutes, timerTask]);
+
+  // Confirmed switch: stop current task, start the pending one.
+  // Inlines openTimer core logic to avoid the stale-closure guard check.
+  const confirmSwitchTask = useCallback(() => {
+    if (!pendingSwitchTask) return;
+    const next = pendingSwitchTask;
+    setPendingSwitchTask(null);
+    setRunningTaskId(null);
+    setTimerTask(null);
+    setIsTimerMinimized(false);
+    music.pause();
+    musicStartedFromTimerRef.current = false;
+    const elapsed = scheduleTimers[next.id] || 0;
+    if (lastTimerTaskIdRef.current !== next.id) {
+      const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
+      if (pomSec > 0 && elapsed > 0) {
+        const breakCount = Math.floor(elapsed / pomSec);
+        setPomodoroBreakCount(breakCount);
+        setPomodoroResetAt(breakCount * pomSec);
+      } else {
+        setPomodoroResetAt(0);
+        setPomodoroBreakCount(0);
+      }
+      lastTimerTaskIdRef.current = next.id;
+    }
+    timerOriginDateKeyRef.current = dateKeyRef.current;
+    setTimerTask(next);
+    setTaskAllocations((prev) => ({ ...prev, [next.id]: next.scheduledMinutes }));
+    if (elapsed < next.scheduledMinutes * 60) {
+      setRunningTaskId(next.id);
+    }
+  }, [pendingSwitchTask, scheduleTimers, pomodoroEnabled, pomodoroMinutes, music]);
 
   const openTimerForTask = useCallback((task) => {
     if (task.scheduledMinutes) {
@@ -551,8 +622,10 @@ function App() {
   }, [openTimer, scheduleTimers, taskAllocations, schedule]);
 
   const closeTimer = useCallback(() => {
+    timerOriginDateKeyRef.current = null;
     setRunningTaskId(null);
     setTimerTask(null);
+    setIsTimerMinimized(false);
     music.pause();
     musicStartedFromTimerRef.current = false;
   }, [music]);
@@ -560,7 +633,8 @@ function App() {
   const markTimerTaskDone = useCallback(() => {
     if (!timerTask) return;
     setRunningTaskId(null);
-    markTaskDone(dateKey, timerTask.id);
+    markTaskDone(timerOriginDateKeyRef.current || dateKey, timerTask.id);
+    timerOriginDateKeyRef.current = null;
     setSchedule((prev) => prev?.map((t) => t.id === timerTask.id ? { ...t, done: true } : t) ?? null);
     setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: timerTask.scheduledMinutes * 60 }));
     music.pause();
@@ -572,7 +646,7 @@ function App() {
     setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: 0 }));
     setPomodoroResetAt(0);
     setPomodoroBreakCount(0);
-    toggleTask(dateKey, timerTask.id); // toggle back to undone
+    toggleTask(timerOriginDateKeyRef.current || dateKey, timerTask.id); // toggle back to undone
     setSchedule((prev) => prev?.map((t) => t.id === timerTask.id ? { ...t, done: false } : t) ?? null);
     setRunningTaskId(timerTask.id);
     music.play();
@@ -1227,7 +1301,7 @@ function App() {
         </button>
       </div>
       {/* Timer Modal */}
-      {timerTask && (
+      {timerTask && !isTimerMinimized && (
         <TimerModal
           task={timerTask}
           elapsedSeconds={scheduleTimers[timerTask.id] || 0}
@@ -1236,6 +1310,7 @@ function App() {
           onClose={closeTimer}
           onRestart={restartTimer}
           onMarkDone={markTimerTaskDone}
+          onMinimize={() => setIsTimerMinimized(true)}
           music={timerMusic}
           pomodoroEnabled={pomodoroEnabled}
           setPomodoroEnabled={setPomodoroEnabled}
@@ -1243,6 +1318,16 @@ function App() {
           setPomodoroMinutes={handleSetPomodoroMinutes}
           pomodoroResetAt={pomodoroResetAt}
           pomodoroBreakCount={pomodoroBreakCount}
+        />
+      )}
+      {/* Minimized timer pill */}
+      {timerTask && isTimerMinimized && (
+        <MinimizedTimer
+          task={timerTask}
+          elapsedSeconds={scheduleTimers[timerTask.id] || 0}
+          isRunning={runningTaskId === timerTask.id}
+          onExpand={() => setIsTimerMinimized(false)}
+          onPlayPause={toggleTimer}
         />
       )}
       {/* Quick-timer prompt for unscheduled tasks */}
@@ -1420,6 +1505,46 @@ function App() {
                 className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold hover:opacity-90 transition-all text-sm"
               >
                 {t.restore}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Switch task confirmation */}
+      {pendingSwitchTask && timerTask && (
+        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
+            <div className="flex flex-col gap-3">
+              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">swap_horiz</span>
+                {t.switchTaskTitle}
+              </h3>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-0.5 bg-surface-container-high rounded-xl px-3 py-2.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/60">{t.switchTaskFrom}</span>
+                  <span className="text-sm font-semibold text-on-surface line-clamp-1">{timerTask.text}</span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <span className="material-symbols-outlined text-on-surface-variant/40">arrow_downward</span>
+                </div>
+                <div className="flex flex-col gap-0.5 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">{t.switchTaskTo}</span>
+                  <span className="text-sm font-semibold text-on-surface line-clamp-1">{pendingSwitchTask.text}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPendingSwitchTask(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={confirmSwitchTask}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all"
+              >
+                {t.switchBtn}
               </button>
             </div>
           </div>
