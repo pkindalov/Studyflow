@@ -17,7 +17,7 @@ function formatTime(seconds, hms) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onMarkDone, music,
+function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onMarkDone, onMinimize, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0, pomodoroBreakCount = 0 }) {
   const { t } = useLang();
   const [hmsMode, setHmsMode] = useState(false);
@@ -36,14 +36,26 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-8 flex flex-col items-center gap-5">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
-          aria-label={t.close}
-        >
-          <span className="material-symbols-outlined text-xl">close</span>
-        </button>
+        {/* Minimize + Close buttons */}
+        <div className="absolute top-4 right-4 flex items-center gap-1">
+          {onMinimize && (
+            <button
+              onClick={onMinimize}
+              className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
+              aria-label={t.minimize}
+              title={t.minimize}
+            >
+              <span className="material-symbols-outlined text-xl">minimize</span>
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
+            aria-label={t.close}
+          >
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
 
         {/* Task name */}
         <div className="text-center w-full px-8">
