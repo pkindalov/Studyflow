@@ -54,12 +54,18 @@ export function useActivityStats(tasks) {
   try {
     const todayKey = new Date().toLocaleDateString("en-CA");
     const allTimers = JSON.parse(localStorage.getItem("studyflow_schedule_timers") || "{}");
-    Object.entries(allTimers).forEach(([dateKey, timers]) => {
-      if (typeof timers !== "object" || timers === null) return;
-      const daySeconds = Object.values(timers).reduce(
-        (sum, sec) => sum + (typeof sec === "number" && sec > 0 ? sec : 0),
-        0,
-      );
+    const allExtra = JSON.parse(localStorage.getItem("studyflow_focus_extra") || "{}");
+    const allDates = new Set([...Object.keys(allTimers), ...Object.keys(allExtra)]);
+    allDates.forEach((dateKey) => {
+      const timers = allTimers[dateKey] || {};
+      const extra = allExtra[dateKey] || {};
+      const allTaskIds = new Set([...Object.keys(timers), ...Object.keys(extra)]);
+      let daySeconds = 0;
+      allTaskIds.forEach((taskId) => {
+        const t = typeof timers[taskId] === "number" && timers[taskId] > 0 ? timers[taskId] : 0;
+        const e = typeof extra[taskId] === "number" && extra[taskId] > 0 ? extra[taskId] : 0;
+        daySeconds += t + e;
+      });
       totalFocusSeconds += daySeconds;
       if (dateKey === todayKey) todayFocusSeconds = daySeconds;
     });

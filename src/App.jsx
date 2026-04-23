@@ -653,6 +653,33 @@ function App() {
     musicStartedFromTimerRef.current = true;
   }, [timerTask, dateKey, toggleTask, music]);
 
+  // "Start Again" — resets the display timer but accumulates elapsed time in the
+  // activity panel so prior focus time is not lost.
+  const startAgainTimer = useCallback(() => {
+    if (!timerTask) return;
+    const originKey = timerOriginDateKeyRef.current || dateKey;
+    const currentElapsed = scheduleTimers[timerTask.id] || 0;
+    if (currentElapsed > 0) {
+      try {
+        const allExtra = JSON.parse(localStorage.getItem("studyflow_focus_extra") || "{}");
+        const dayExtra = allExtra[originKey] || {};
+        const prev = typeof dayExtra[timerTask.id] === "number" ? dayExtra[timerTask.id] : 0;
+        localStorage.setItem("studyflow_focus_extra", JSON.stringify({
+          ...allExtra,
+          [originKey]: { ...dayExtra, [timerTask.id]: prev + currentElapsed },
+        }));
+      } catch { /* localStorage not available */ }
+    }
+    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: 0 }));
+    setPomodoroResetAt(0);
+    setPomodoroBreakCount(0);
+    toggleTask(originKey, timerTask.id);
+    setSchedule((prev) => prev?.map((t) => t.id === timerTask.id ? { ...t, done: false } : t) ?? null);
+    setRunningTaskId(timerTask.id);
+    music.play();
+    musicStartedFromTimerRef.current = true;
+  }, [timerTask, dateKey, scheduleTimers, toggleTask, music]);
+
   const toggleTimer = useCallback(() => {
     if (!timerTask) return;
     if (runningTaskId === timerTask.id) {
@@ -1309,6 +1336,7 @@ function App() {
           onPlayPause={toggleTimer}
           onClose={closeTimer}
           onRestart={restartTimer}
+          onStartAgain={startAgainTimer}
           onMarkDone={markTimerTaskDone}
           onMinimize={() => setIsTimerMinimized(true)}
           music={timerMusic}

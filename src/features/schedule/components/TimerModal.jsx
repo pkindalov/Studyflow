@@ -17,7 +17,7 @@ function formatTime(seconds, hms) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onMarkDone, onMinimize, music,
+function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onStartAgain, onMarkDone, onMinimize, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0, pomodoroBreakCount = 0 }) {
   const { t } = useLang();
   const [hmsMode, setHmsMode] = useState(false);
@@ -151,20 +151,33 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
 
         {/* Play / Pause / Restart buttons */}
         {isFinished ? (
-          <div className="flex gap-2 w-full">
-            <button
-              onClick={onRestart}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-outline-variant/50 text-on-surface-variant rounded-xl font-semibold hover:bg-surface-container-high transition-all"
-            >
-              <span className="material-symbols-outlined text-base">restart_alt</span>
-              {t.restart}
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-semibold hover:opacity-90 transition-all"
-            >
-              {t.close}
-            </button>
+          <div className="flex flex-col gap-2 w-full">
+            <div className="flex gap-2 w-full">
+              {onStartAgain && (
+                <button
+                  onClick={onStartAgain}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-semibold hover:opacity-90 transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">replay</span>
+                  {t.startAgain}
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 border border-outline-variant/50 text-on-surface-variant rounded-xl font-semibold hover:bg-surface-container-high transition-all"
+              >
+                {t.close}
+              </button>
+            </div>
+            {onRestart && (
+              <button
+                onClick={onRestart}
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs text-on-surface-variant/60 hover:text-on-surface-variant transition-colors"
+              >
+                <span className="material-symbols-outlined text-sm">restart_alt</span>
+                {t.restart}
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3">
