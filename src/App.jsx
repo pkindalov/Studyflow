@@ -2,8 +2,13 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import ScheduleItem from "./features/schedule/components/ScheduleItem";
 import "react-calendar/dist/Calendar.css";
+import SchedulePanel from "./features/schedule/components/SchedulePanel";
+import QuickTimerPrompt from "./features/schedule/components/QuickTimerPrompt";
+import SwitchTaskDialog from "./features/schedule/components/SwitchTaskDialog";
+import UnsavedScheduleWarning from "./features/schedule/components/UnsavedScheduleWarning";
+import ClearAllConfirm from "./shared/components/ClearAllConfirm";
+import ImportConfirmDialog from "./shared/components/ImportConfirmDialog";
 import TaskList from "./features/tasks/components/TaskList";
 import TaskModal from "./features/tasks/components/TaskModal";
 import TimerModal from "./features/schedule/components/TimerModal";
@@ -667,57 +672,20 @@ function App() {
             </div>
           )}
           {schedule && (
-            <>
-              <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-emerald-700/80 border-emerald-500/40" : "bg-surface-container border-outline-variant/50"}`}>
-                {allScheduleDone ? (
-                  <div className="flex flex-col items-center gap-3 py-4 text-center">
-                    <span className="material-symbols-outlined text-5xl text-emerald-200" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-                    <h3 className="font-headline font-bold text-2xl text-white">{t.scheduleAllDoneHeadline}</h3>
-                    <p className="text-sm text-emerald-100 max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
-                  </div>
-                ) : (
-                  <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
-                    <span className="material-symbols-outlined text-primary">schedule</span>
-                    {t.todaysSchedule}
-                  </h3>
-                )}
-                <DndContext sensors={scheduleSensors} collisionDetection={closestCenter} onDragEnd={handleScheduleDragEnd}>
-                  <SortableContext items={schedule.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-                    <ul className="flex flex-col gap-3">
-                      {schedule.map((task) => (
-                        <ScheduleItem
-                          key={task.id}
-                          task={task}
-                          elapsed={scheduleTimers[task.id] || 0}
-                          isRunning={runningTaskId === task.id}
-                          runningTaskId={runningTaskId}
-                          onOpenTimer={openTimer}
-                          onMarkDone={handleMarkScheduleItemDone}
-                          onRemove={handleRemoveScheduleItem}
-                          t={t}
-                        />
-                      ))}
-                    </ul>
-                  </SortableContext>
-                </DndContext>
-              </div>
-              <div className="flex gap-3 justify-end mt-4 flex-wrap">
-                <button
-                  className="flex-1 sm:flex-none px-5 py-2.5 bg-secondary/15 text-secondary border border-secondary/30 rounded-xl font-semibold hover:bg-secondary/25 transition-all flex items-center justify-center gap-2 text-sm"
-                  onClick={saveSchedule}
-                >
-                  <span className="material-symbols-outlined text-base">save</span>
-                  {t.saveSchedule}
-                </button>
-                <button
-                  className="flex-1 sm:flex-none px-5 py-2.5 bg-error/10 text-error border border-error/20 rounded-xl font-semibold hover:bg-error/20 transition-all flex items-center justify-center gap-2 text-sm"
-                  onClick={deleteSchedule}
-                >
-                  <span className="material-symbols-outlined text-base">delete</span>
-                  {t.delete}
-                </button>
-              </div>
-            </>
+            <SchedulePanel
+              schedule={schedule}
+              allScheduleDone={allScheduleDone}
+              scheduleTimers={scheduleTimers}
+              runningTaskId={runningTaskId}
+              scheduleSensors={scheduleSensors}
+              onScheduleDragEnd={handleScheduleDragEnd}
+              onOpenTimer={openTimer}
+              onMarkDone={handleMarkScheduleItemDone}
+              onRemove={handleRemoveScheduleItem}
+              onSave={saveSchedule}
+              onDelete={deleteSchedule}
+              t={t}
+            />
           )}
         </div>
         {/* Right Sidebar */}
@@ -824,43 +792,18 @@ function App() {
       )}
       {/* Quick-timer prompt for unscheduled tasks */}
       {pendingTimerTask && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-xs p-6 flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <h3 className="font-headline font-bold text-on-surface text-base leading-tight line-clamp-2">{pendingTimerTask.text}</h3>
-              <p className="text-xs text-on-surface-variant">{t.howManyMinutes}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="number" min="1" max="480" value={pendingTimerMinutes}
-                onChange={(e) => setPendingTimerMinutes(Math.max(1, Math.min(480, Number(e.target.value))))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setScheduleTimers((prev) => ({ ...prev, [pendingTimerTask.id]: 0 }));
-                    openTimer({ ...pendingTimerTask, scheduledMinutes: pendingTimerMinutes });
-                    setPendingTimerTask(null);
-                  } else if (e.key === "Escape") {
-                    setPendingTimerTask(null);
-                  }
-                }}
-                autoFocus
-                className="flex-1 bg-surface-container-highest border border-outline/60 rounded-xl px-3 py-2 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-              <span className="text-sm text-on-surface-variant">{t.minUnit}</span>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setPendingTimerTask(null)} className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all">{t.cancel}</button>
-              <button
-                onClick={() => {
-                  setScheduleTimers((prev) => ({ ...prev, [pendingTimerTask.id]: 0 }));
-                  openTimer({ ...pendingTimerTask, scheduledMinutes: pendingTimerMinutes });
-                  setPendingTimerTask(null);
-                }}
-                className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all"
-              >{t.startTimerBtn}</button>
-            </div>
-          </div>
-        </div>
+        <QuickTimerPrompt
+          task={pendingTimerTask}
+          minutes={pendingTimerMinutes}
+          onChangeMinutes={setPendingTimerMinutes}
+          onConfirm={() => {
+            setScheduleTimers((prev) => ({ ...prev, [pendingTimerTask.id]: 0 }));
+            openTimer({ ...pendingTimerTask, scheduledMinutes: pendingTimerMinutes });
+            setPendingTimerTask(null);
+          }}
+          onCancel={() => setPendingTimerTask(null)}
+          t={t}
+        />
       )}
       {/* Task Bank Modal */}
       {showTaskBankModal && (
@@ -929,103 +872,40 @@ function App() {
       )}
       {/* Import confirmation modal */}
       {pendingImport && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">restore</span>
-                {t.restoreBackupTitle}
-              </h3>
-              <p className="text-sm text-on-surface-variant">
-                {t.restoreConfirmFn(
-                  pendingImport.exportedAt
-                    ? new Date(pendingImport.exportedAt).toLocaleDateString(lang === "bg" ? "bg-BG" : "en-US", { dateStyle: "medium" })
-                    : t.unknownDate
-                )}
-              </p>
-            </div>
-            <div className="flex gap-3 justify-end">
-              <button onClick={() => setPendingImport(null)} className="px-5 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-all text-sm">{t.cancel}</button>
-              <button onClick={handleImportConfirm} className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold hover:opacity-90 transition-all text-sm">{t.restore}</button>
-            </div>
-          </div>
-        </div>
+        <ImportConfirmDialog
+          exportedAt={pendingImport.exportedAt}
+          lang={lang}
+          onCancel={() => setPendingImport(null)}
+          onConfirm={handleImportConfirm}
+          t={t}
+        />
       )}
       {/* Switch task confirmation */}
       {pendingSwitchTask && timerTask && (
-        <div className="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
-            <div className="flex flex-col gap-3">
-              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-xl">swap_horiz</span>
-                {t.switchTaskTitle}
-              </h3>
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-0.5 bg-surface-container-high rounded-xl px-3 py-2.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/60">{t.switchTaskFrom}</span>
-                  <span className="text-sm font-semibold text-on-surface line-clamp-1">{timerTask.text}</span>
-                </div>
-                <div className="flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-surface-variant/40">arrow_downward</span>
-                </div>
-                <div className="flex flex-col gap-0.5 bg-primary/10 border border-primary/20 rounded-xl px-3 py-2.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">{t.switchTaskTo}</span>
-                  <span className="text-sm font-semibold text-on-surface line-clamp-1">{pendingSwitchTask.text}</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setPendingSwitchTask(null)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all">{t.cancel}</button>
-              <button onClick={confirmSwitchTask} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all">{t.switchBtn}</button>
-            </div>
-          </div>
-        </div>
+        <SwitchTaskDialog
+          fromTask={timerTask}
+          toTask={pendingSwitchTask}
+          onConfirm={confirmSwitchTask}
+          onCancel={() => setPendingSwitchTask(null)}
+          t={t}
+        />
       )}
       {/* Unsaved schedule warning */}
       {showUnsavedWarning && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
-                <span className="material-symbols-outlined text-xl" style={{ color: "var(--color-warning, #f59e0b)" }}>warning</span>
-                {t.unsavedScheduleTitle}
-              </h3>
-              <p className="text-sm text-on-surface-variant">{t.unsavedScheduleMsg}</p>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <button onClick={handleUnsavedCancel} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all">{t.cancel}</button>
-              <button onClick={handleUnsavedDiscard} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error/10 text-error border border-error/20 hover:bg-error/20 transition-all">{t.discardAndContinue}</button>
-              <button onClick={handleUnsavedSaveAndContinue} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all">{t.saveAndContinue}</button>
-            </div>
-          </div>
-        </div>
+        <UnsavedScheduleWarning
+          onCancel={handleUnsavedCancel}
+          onDiscard={handleUnsavedDiscard}
+          onSaveAndContinue={handleUnsavedSaveAndContinue}
+          t={t}
+        />
       )}
       {/* Clear all data — confirmation */}
       {showClearConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
-                <span className="material-symbols-outlined text-error text-xl">warning</span>
-                {t.clearAllDataTitle}
-              </h3>
-              <p className="text-sm text-on-surface-variant">{t.clearWarningMsg}</p>
-              <ul className="text-sm text-on-surface-variant flex flex-col gap-1 pl-2">
-                {[t.clearItem1, t.clearItem2, t.clearItem3, t.clearItem4].map((item) => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-error/60 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-error/80 bg-error/8 border border-error/20 rounded-xl px-3 py-2 mt-1">{t.cannotUndo}</p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setShowClearConfirm(false)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all">{t.cancel}</button>
-              <button onClick={handleClearAll} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error text-white hover:opacity-90 transition-all">{t.clearConfirmBtn}</button>
-            </div>
-          </div>
-        </div>
+        <ClearAllConfirm
+          onCancel={() => setShowClearConfirm(false)}
+          onConfirm={handleClearAll}
+          t={t}
+        />
       )}
     </div>
   );
