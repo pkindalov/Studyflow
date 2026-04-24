@@ -49,6 +49,7 @@ export function useSchedule({
       const to = prev.findIndex((t) => t.id === over.id);
       return arrayMove(prev, from, to);
     });
+    setScheduleUnsaved(true);
   }, []);
 
   // ─── Core generation logic — delegates math to the pure util ─────────────────

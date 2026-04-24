@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 
 export const DEFAULT_LAYOUT = {
@@ -70,7 +70,10 @@ export function useColumnLayout() {
 
   const resetLayout = useCallback(() => setColumnLayout(DEFAULT_LAYOUT), []);
 
-  const isCustomLayout = JSON.stringify(columnLayout) !== JSON.stringify(DEFAULT_LAYOUT);
+  const isCustomLayout = useMemo(
+    () => JSON.stringify(columnLayout) !== JSON.stringify(DEFAULT_LAYOUT),
+    [columnLayout],
+  );
 
   return {
     columnLayout,

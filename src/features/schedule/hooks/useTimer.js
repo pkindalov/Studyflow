@@ -158,7 +158,7 @@ export function useTimer({ dateKey, music, markTaskDone }) {
       return;
     }
     if (lastTimerTaskIdRef.current !== task.id) {
-      const elapsed = scheduleTimers[task.id] || 0;
+      const elapsed = scheduleTimersRef.current[task.id] || 0;
       const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
       if (pomSec > 0 && elapsed > 0) {
         const breakCount = Math.floor(elapsed / pomSec);
@@ -174,10 +174,10 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     setTimerTask(task);
     setIsTimerMinimized(false);
     setTaskAllocations((prev) => ({ ...prev, [task.id]: task.scheduledMinutes }));
-    if ((scheduleTimers[task.id] || 0) < task.scheduledMinutes * 60) {
+    if ((scheduleTimersRef.current[task.id] || 0) < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
     }
-  }, [scheduleTimers, pomodoroEnabled, pomodoroMinutes, timerTask]);
+  }, [pomodoroEnabled, pomodoroMinutes, timerTask]);
 
   const confirmSwitchTask = useCallback(() => {
     if (!pendingSwitchTask) return;
@@ -188,7 +188,7 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     setIsTimerMinimized(false);
     music.pause();
     musicStartedFromTimerRef.current = false;
-    const elapsed = scheduleTimers[next.id] || 0;
+    const elapsed = scheduleTimersRef.current[next.id] || 0;
     if (lastTimerTaskIdRef.current !== next.id) {
       const pomSec = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
       if (pomSec > 0 && elapsed > 0) {
@@ -207,7 +207,7 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     if (elapsed < next.scheduledMinutes * 60) {
       setRunningTaskId(next.id);
     }
-  }, [pendingSwitchTask, scheduleTimers, pomodoroEnabled, pomodoroMinutes, music]);
+  }, [pendingSwitchTask, pomodoroEnabled, pomodoroMinutes, music]);
 
   const closeTimer = useCallback(() => {
     timerOriginDateKeyRef.current = null;

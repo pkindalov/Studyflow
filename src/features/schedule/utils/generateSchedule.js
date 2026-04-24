@@ -18,7 +18,7 @@ export function generateSchedule({ tasksForDay, excludedTaskIds, totalStudyTime,
   if (priorityTasks.length === 0) {
     nonPriorityMinutes = totalMinutes;
     priorityMinutes = 0;
-  } else if (priorityTasks.length === tasksForDay.length) {
+  } else if (priorityTasks.length === selectedTasks.length) {
     priorityMinutes = totalMinutes;
     nonPriorityMinutes = 0;
   }
