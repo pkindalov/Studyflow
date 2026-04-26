@@ -3,18 +3,7 @@ import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import "react-calendar/dist/Calendar.css";
-import SchedulePanel from "./features/schedule/components/SchedulePanel";
-import QuickTimerPrompt from "./features/schedule/components/QuickTimerPrompt";
-import SwitchTaskDialog from "./features/schedule/components/SwitchTaskDialog";
-import UnsavedScheduleWarning from "./features/schedule/components/UnsavedScheduleWarning";
-import ClearAllConfirm from "./shared/components/ClearAllConfirm";
-import ImportConfirmDialog from "./shared/components/ImportConfirmDialog";
-import TaskList from "./features/tasks/components/TaskList";
-import TaskModal from "./features/tasks/components/TaskModal";
-import TimerModal from "./features/schedule/components/TimerModal";
-import MinimizedTimer from "./features/schedule/components/MinimizedTimer";
 import CalendarSidebar from "./features/calendar/components/CalendarSidebar";
-import SummaryCard from "./features/schedule/components/SummaryCard";
 import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "./features/dashboard/components/RightSidebar";
 import { ActivityPanel } from "./features/dashboard/components/ActivityPanel";
 import MusicPanel from "./features/music/components/MusicPanel";
@@ -23,9 +12,6 @@ import { useMusicPlayer } from "./features/music/hooks/useMusicPlayer";
 import { useRecurringTasks, appliesToDate } from "./features/tasks/hooks/useRecurringTasks";
 import { markDateWithTasks } from "./features/calendar/utils/markDateWithTasks";
 import { generateId } from "./shared/utils/id";
-import HelpModal from "./shared/components/HelpModal";
-import Confetti from "./shared/components/Confetti";
-import TaskBankModal from "./features/tasks/components/TaskBankModal";
 import { useTaskBank } from "./features/tasks/hooks/useTaskBank";
 import { exportData } from "./shared/utils/dataPortability";
 import { useLang } from "./shared/i18n/LangContext";
@@ -35,6 +21,10 @@ import { useSchedule } from "./features/schedule/hooks/useSchedule";
 import { SCHEDULES_KEY, TIMERS_KEY } from "./features/schedule/utils/scheduleStorage";
 import { useTaskModal } from "./features/tasks/hooks/useTaskModal";
 import { useDataPortability } from "./shared/hooks/useDataPortability";
+import TopBar from "./layout/TopBar";
+import BottomBar from "./layout/BottomBar";
+import MainContent from "./layout/MainContent";
+import AppModals from "./layout/AppModals";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -388,6 +378,31 @@ function App() {
     setShowClearConfirm(false);
   }, [clearAllTasks, clearAllRecurring, clearSchedule, resetTimer, resetLayout]);
 
+  // ─── TaskList inline handlers extracted for prop passing ────────────────────
+  const handleStopRecurring = useCallback((recurringId) => {
+    deleteRecurring(recurringId);
+    deleteAllByRecurringId(recurringId);
+  }, [deleteRecurring, deleteAllByRecurringId]);
+
+  const handleSaveToBank = useCallback((task) => {
+    if (savedListTexts.has(task.text)) {
+      const bankTask = taskBank.find((bt) => bt.text === task.text);
+      if (bankTask) removeFromBank(bankTask.id);
+    } else {
+      addToBank(task.text, task.priority);
+      showNotification(t.saveToList);
+    }
+  }, [savedListTexts, taskBank, removeFromBank, addToBank, showNotification, t.saveToList]);
+
+  const handleOpenSavedList = useCallback(() => {
+    setTaskBankModalAutoGenerate(false);
+    setShowTaskBankModal(true);
+  }, []);
+
+  const handleReorder = useCallback((draggedId, targetId) => {
+    reorderTasks(dateKey, draggedId, targetId);
+  }, [reorderTasks, dateKey]);
+
   // ─── Render helpers ─────────────────────────────────────────────────────────
   const SECTION_JSX = {
     calendar: (
@@ -445,40 +460,14 @@ function App() {
           {notification}
         </div>
       )}
-      {/* Mobile-only top toolbar */}
-      <div className="flex lg:hidden items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={() => setShowHelp(true)}
-            className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high shadow-sm transition-all"
-            title={t.howStudyflowWorks}
-            aria-label="Help"
-          >
-            <span className="material-symbols-outlined text-base">help_outline</span>
-          </button>
-          <div className="flex items-center bg-surface-container border border-outline-variant/50 rounded-xl shadow-sm overflow-hidden">
-            <button
-              onClick={() => setLang("en")}
-              className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "en" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
-            >EN</button>
-            <button
-              onClick={() => setLang("bg")}
-              className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "bg" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
-            >БГ</button>
-          </div>
-          <button
-            onClick={() => setTheme((prev) => prev === "dark" ? "light" : "dark")}
-            className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all"
-            title={theme === "dark" ? t.switchToLight : t.switchToDark}
-          >
-            <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {theme === "dark" ? "light_mode" : "dark_mode"}
-            </span>
-            {theme === "dark" ? t.lightMode : t.darkMode}
-          </button>
-        </div>
-      </div>
-
+      <TopBar
+        onShowHelp={() => setShowHelp(true)}
+        lang={lang}
+        setLang={setLang}
+        theme={theme}
+        setTheme={setTheme}
+        t={t}
+      />
       <DndContext
         sensors={sectionSensors}
         collisionDetection={closestCenter}
@@ -486,292 +475,125 @@ function App() {
         onDragOver={handleSectionDragOver}
         onDragEnd={handleSectionDragEnd}
       >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-        {/* Left Sidebar */}
-        <div className={sideColClass}>
-          <SortableContext items={columnLayout.left} strategy={verticalListSortingStrategy}>
-            {columnLayout.left.map((id) => (
-              <SortableSection key={id} id={id} t={t}>{SECTION_JSX[id]}</SortableSection>
-            ))}
-          </SortableContext>
-        </div>
-        {/* Main Content */}
-        <div className="lg:col-span-6 flex flex-col gap-6">
-          <SummaryCard
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+          {/* Left Sidebar */}
+          <div className={sideColClass}>
+            <SortableContext items={columnLayout.left} strategy={verticalListSortingStrategy}>
+              {columnLayout.left.map((id) => (
+                <SortableSection key={id} id={id} t={t}>{SECTION_JSX[id]}</SortableSection>
+              ))}
+            </SortableContext>
+          </div>
+          <MainContent
             total={totalTasks}
             completed={completedTasks}
             remaining={remainingTasks}
             progress={progress}
-          />
-          <TaskList
             tasks={tasksForDay}
             onToggle={handleToggleTask}
             onDelete={handleDeleteTask}
-            onStopRecurring={(recurringId) => { deleteRecurring(recurringId); deleteAllByRecurringId(recurringId); }}
+            onStopRecurring={handleStopRecurring}
             excludedTaskIds={excludedTaskIds}
             onToggleSelect={toggleTaskSelection}
             onOpenTimer={openTimerForTask}
-            onSaveToBank={(task) => {
-              if (savedListTexts.has(task.text)) {
-                const bankTask = taskBank.find((bt) => bt.text === task.text);
-                if (bankTask) removeFromBank(bankTask.id);
-              } else {
-                addToBank(task.text, task.priority);
-                showNotification(t.saveToList);
-              }
-            }}
-            onOpenSavedList={() => { setTaskBankModalAutoGenerate(false); setShowTaskBankModal(true); }}
+            onSaveToBank={handleSaveToBank}
+            onOpenSavedList={handleOpenSavedList}
             savedListTexts={savedListTexts}
-            onReorder={(draggedId, targetId) => reorderTasks(dateKey, draggedId, targetId)}
-            onEdit={(task) => editModal.open(task)}
+            onReorder={handleReorder}
+            onEdit={editModal.open}
+            onGenerateSchedule={handleGenerateSchedule}
+            schedule={schedule}
+            allScheduleDone={allScheduleDone}
+            scheduleTimers={scheduleTimers}
+            runningTaskId={runningTaskId}
+            scheduleSensors={scheduleSensors}
+            onScheduleDragEnd={handleScheduleDragEnd}
+            onOpenScheduleTimer={openTimer}
+            onMarkScheduleDone={handleMarkScheduleItemDone}
+            onRemoveScheduleItem={handleRemoveScheduleItem}
+            onSaveSchedule={saveSchedule}
+            onDeleteSchedule={deleteSchedule}
+            t={t}
           />
-          {tasksForDay.length > 0 && (
-            <div className="flex gap-4 justify-end mt-2">
-              <button
-                className="flex-1 sm:flex-none px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                onClick={handleGenerateSchedule}
-              >
-                <span className="material-symbols-outlined">play_circle</span>
-                {t.generateSchedule}
-              </button>
-            </div>
-          )}
-          {schedule && (
-            <SchedulePanel
-              schedule={schedule}
-              allScheduleDone={allScheduleDone}
-              scheduleTimers={scheduleTimers}
-              runningTaskId={runningTaskId}
-              scheduleSensors={scheduleSensors}
-              onScheduleDragEnd={handleScheduleDragEnd}
-              onOpenTimer={openTimer}
-              onMarkDone={handleMarkScheduleItemDone}
-              onRemove={handleRemoveScheduleItem}
-              onSave={saveSchedule}
-              onDelete={deleteSchedule}
-              t={t}
-            />
-          )}
+          {/* Right Sidebar */}
+          <div className={sideColClass}>
+            <SortableContext items={columnLayout.right} strategy={verticalListSortingStrategy}>
+              {columnLayout.right.map((id) => (
+                <SortableSection key={id} id={id} t={t}>{SECTION_JSX[id]}</SortableSection>
+              ))}
+            </SortableContext>
+          </div>
         </div>
-        {/* Right Sidebar */}
-        <div className={sideColClass}>
-          <SortableContext items={columnLayout.right} strategy={verticalListSortingStrategy}>
-            {columnLayout.right.map((id) => (
-              <SortableSection key={id} id={id} t={t}>{SECTION_JSX[id]}</SortableSection>
-            ))}
-          </SortableContext>
-        </div>
-      </div>
       </DndContext>
-
-      {/* Mobile-only bottom toolbar */}
-      <div className="flex lg:hidden items-center justify-between gap-2 mt-4 flex-wrap">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <button onClick={exportData} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all" title={t.exportTitle}>
-            <span className="material-symbols-outlined text-sm">backup</span>
-            {t.exportBtn}
-          </button>
-          <button onClick={() => importFileRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all" title={t.importTitle}>
-            <span className="material-symbols-outlined text-sm">restore</span>
-            {t.importBtn}
-          </button>
-          <button onClick={() => setShowClearConfirm(true)} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-sm transition-all" title={t.clearTitle}>
-            <span className="material-symbols-outlined text-sm">delete_sweep</span>
-            {t.clearBtn}
-          </button>
-        </div>
-        {isCustomLayout && (
-          <button onClick={resetLayout} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all">
-            <span className="material-symbols-outlined text-sm">restart_alt</span>
-            {t.resetLayoutBtn}
-          </button>
-        )}
-      </div>
-
-      {/* Theme toggle + language + Help — desktop fixed top-right */}
-      <div className="hidden lg:flex fixed top-5 right-5 z-40 items-center gap-2">
-        <button onClick={() => setShowHelp(true)} className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high shadow-lg transition-all" title={t.howStudyflowWorks} aria-label="Help">
-          <span className="material-symbols-outlined text-base">help_outline</span>
-        </button>
-        <div className="flex items-center bg-surface-container border border-outline-variant/50 rounded-xl shadow-lg overflow-hidden">
-          <button onClick={() => setLang("en")} className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "en" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}>EN</button>
-          <button onClick={() => setLang("bg")} className={`px-3 py-2 text-xs font-semibold transition-colors ${lang === "bg" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}>БГ</button>
-        </div>
-        <button
-          onClick={() => setTheme((prev) => prev === "dark" ? "light" : "dark")}
-          className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
-          title={theme === "dark" ? t.switchToLight : t.switchToDark}
-        >
-          <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
-            {theme === "dark" ? "light_mode" : "dark_mode"}
-          </span>
-          {theme === "dark" ? t.lightMode : t.darkMode}
-        </button>
-      </div>
-
-      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
-      <Confetti active={showConfetti} />
-
-      {/* Reset layout — desktop fixed bottom-right */}
-      <div className="hidden lg:flex fixed bottom-6 right-6 z-40">
-        <button
-          onClick={resetLayout}
-          disabled={!isCustomLayout}
-          className={`flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold shadow-lg transition-all ${isCustomLayout ? "hover:bg-surface-container-high" : "opacity-40 cursor-not-allowed"}`}
-        >
-          <span className="material-symbols-outlined text-sm">restart_alt</span>
-          {t.resetLayoutBtn}
-        </button>
-      </div>
-
-      {/* Timer Modal */}
-      {timerTask && !isTimerMinimized && (
-        <TimerModal
-          task={timerTask}
-          elapsedSeconds={scheduleTimers[timerTask.id] || 0}
-          isRunning={runningTaskId === timerTask.id}
-          onPlayPause={toggleTimer}
-          onClose={closeTimer}
-          onRestart={restartTimer}
-          onStartAgain={startAgainTimer}
-          onMarkDone={markTimerTaskDone}
-          onMinimize={() => setIsTimerMinimized(true)}
-          music={timerMusic}
-          pomodoroEnabled={pomodoroEnabled}
-          setPomodoroEnabled={setPomodoroEnabled}
-          pomodoroMinutes={pomodoroMinutes}
-          setPomodoroMinutes={handleSetPomodoroMinutes}
-          pomodoroResetAt={pomodoroResetAt}
-          pomodoroBreakCount={pomodoroBreakCount}
-        />
-      )}
-      {/* Minimized timer pill */}
-      {timerTask && isTimerMinimized && (
-        <MinimizedTimer
-          task={timerTask}
-          elapsedSeconds={scheduleTimers[timerTask.id] || 0}
-          isRunning={runningTaskId === timerTask.id}
-          onExpand={() => setIsTimerMinimized(false)}
-          onPlayPause={toggleTimer}
-        />
-      )}
-      {/* Quick-timer prompt for unscheduled tasks */}
-      {pendingTimerTask && (
-        <QuickTimerPrompt
-          task={pendingTimerTask}
-          minutes={pendingTimerMinutes}
-          onChangeMinutes={setPendingTimerMinutes}
-          onConfirm={() => {
-            setScheduleTimers((prev) => ({ ...prev, [pendingTimerTask.id]: 0 }));
-            openTimer({ ...pendingTimerTask, scheduledMinutes: pendingTimerMinutes });
-            setPendingTimerTask(null);
-          }}
-          onCancel={() => setPendingTimerTask(null)}
-          t={t}
-        />
-      )}
-      {/* Task Bank Modal */}
-      {showTaskBankModal && (
-        <TaskBankModal
-          taskBank={taskBank}
-          tasks={tasks}
-          onClose={() => setShowTaskBankModal(false)}
-          onRemoveFromBank={removeFromBank}
-          onAddToBank={addToBank}
-          onUpdateInBank={updateInBank}
-          onReorderBank={reorderBank}
-          withGenerate={taskBankModalAutoGenerate}
-          onConfirm={(selectedTasks) => {
-            selectedTasks.forEach(({ text, priority, imageUrl }) =>
-              addTaskDirect(dateKey, { id: generateId(), text, priority: !!priority, imageUrl: imageUrl || "", done: false })
-            );
-            setShowTaskBankModal(false);
-            if (taskBankModalAutoGenerate) setTimeout(handleGenerateSchedule, 0);
-          }}
-        />
-      )}
-      {/* Task Modal */}
-      <TaskModal
-        isOpen={addModal.isOpen || editModal.isOpen}
-        onClose={() => { isEditing ? editModal.reset() : addModal.reset(); }}
-        onSave={isEditing ? editModal.handleSubmit : addModal.handleSubmit}
-        text={isEditing ? editModal.text : addModal.text}
-        setText={isEditing ? editModal.setText : addModal.setText}
-        image={isEditing ? editModal.image : addModal.image}
-        setImage={isEditing ? editModal.setImage : addModal.setImage}
-        priority={isEditing ? editModal.priority : addModal.priority}
-        setPriority={isEditing ? editModal.setPriority : addModal.setPriority}
-        recurrence={isEditing ? editModal.recurrence : addModal.recurrence}
-        setRecurrence={isEditing ? editModal.setRecurrence : addModal.setRecurrence}
-        startDate={isEditing ? editModal.startDate : addModal.startDate}
-        setStartDate={isEditing ? editModal.setStartDate : addModal.setStartDate}
-        endDate={isEditing ? editModal.endDate : addModal.endDate}
-        setEndDate={isEditing ? editModal.setEndDate : addModal.setEndDate}
-        monthsAhead={isEditing ? editModal.monthsAhead : addModal.monthsAhead}
-        setMonthsAhead={isEditing ? editModal.setMonthsAhead : addModal.setMonthsAhead}
-        yearsAhead={isEditing ? editModal.yearsAhead : addModal.yearsAhead}
-        setYearsAhead={isEditing ? editModal.setYearsAhead : addModal.setYearsAhead}
-        isRecurringInstance={isEditing ? editModal.isRecurringInstance : false}
-        moveToDate={isEditing && !editModal.isRecurringInstance ? editModal.targetDate : undefined}
-        setMoveToDate={isEditing && !editModal.isRecurringInstance ? editModal.setTargetDate : undefined}
-        title={isEditing ? t.editTaskTitle : t.addTaskTitle}
+      <BottomBar
+        onExport={exportData}
+        onImport={() => importFileRef.current?.click()}
+        onShowClearConfirm={() => setShowClearConfirm(true)}
+        isCustomLayout={isCustomLayout}
+        onResetLayout={resetLayout}
+        t={t}
       />
-      {/* Bottom-left actions — desktop only */}
-      <div className="hidden lg:flex fixed bottom-6 left-6 z-40 items-center gap-2">
-        <button onClick={exportData} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all" title={t.exportTitle}>
-          <span className="material-symbols-outlined text-sm">backup</span>
-          {t.exportBtn}
-        </button>
-        <button onClick={() => importFileRef.current?.click()} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all" title={t.importTitle}>
-          <span className="material-symbols-outlined text-sm">restore</span>
-          {t.importBtn}
-        </button>
-        <button onClick={() => setShowClearConfirm(true)} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-lg transition-all" title={t.clearTitle}>
-          <span className="material-symbols-outlined text-sm">delete_sweep</span>
-          {t.clearBtn}
-        </button>
-      </div>
-      <input ref={importFileRef} type="file" accept=".json" className="hidden" onChange={handleImportFileChange} />
-      {importError && (
-        <div className="fixed bottom-20 left-6 z-50 bg-error text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold max-w-xs">{importError}</div>
-      )}
-      {/* Import confirmation modal */}
-      {pendingImport && (
-        <ImportConfirmDialog
-          exportedAt={pendingImport.exportedAt}
-          lang={lang}
-          onCancel={() => setPendingImport(null)}
-          onConfirm={handleImportConfirm}
-          t={t}
-        />
-      )}
-      {/* Switch task confirmation */}
-      {pendingSwitchTask && timerTask && (
-        <SwitchTaskDialog
-          fromTask={timerTask}
-          toTask={pendingSwitchTask}
-          onConfirm={confirmSwitchTask}
-          onCancel={() => setPendingSwitchTask(null)}
-          t={t}
-        />
-      )}
-      {/* Unsaved schedule warning */}
-      {showUnsavedWarning && (
-        <UnsavedScheduleWarning
-          onCancel={handleUnsavedCancel}
-          onDiscard={handleUnsavedDiscard}
-          onSaveAndContinue={handleUnsavedSaveAndContinue}
-          t={t}
-        />
-      )}
-      {/* Clear all data — confirmation */}
-      {showClearConfirm && (
-        <ClearAllConfirm
-          onCancel={() => setShowClearConfirm(false)}
-          onConfirm={handleClearAll}
-          t={t}
-        />
-      )}
+      <AppModals
+        timerTask={timerTask}
+        isTimerMinimized={isTimerMinimized}
+        setIsTimerMinimized={setIsTimerMinimized}
+        scheduleTimers={scheduleTimers}
+        runningTaskId={runningTaskId}
+        toggleTimer={toggleTimer}
+        closeTimer={closeTimer}
+        restartTimer={restartTimer}
+        startAgainTimer={startAgainTimer}
+        markTimerTaskDone={markTimerTaskDone}
+        timerMusic={timerMusic}
+        pomodoroEnabled={pomodoroEnabled}
+        setPomodoroEnabled={setPomodoroEnabled}
+        pomodoroMinutes={pomodoroMinutes}
+        handleSetPomodoroMinutes={handleSetPomodoroMinutes}
+        pomodoroResetAt={pomodoroResetAt}
+        pomodoroBreakCount={pomodoroBreakCount}
+        pendingTimerTask={pendingTimerTask}
+        setPendingTimerTask={setPendingTimerTask}
+        pendingTimerMinutes={pendingTimerMinutes}
+        setPendingTimerMinutes={setPendingTimerMinutes}
+        setScheduleTimers={setScheduleTimers}
+        openTimer={openTimer}
+        showTaskBankModal={showTaskBankModal}
+        setShowTaskBankModal={setShowTaskBankModal}
+        taskBank={taskBank}
+        tasks={tasks}
+        removeFromBank={removeFromBank}
+        addToBank={addToBank}
+        updateInBank={updateInBank}
+        reorderBank={reorderBank}
+        taskBankModalAutoGenerate={taskBankModalAutoGenerate}
+        addTaskDirect={addTaskDirect}
+        dateKey={dateKey}
+        onGenerateSchedule={handleGenerateSchedule}
+        addModal={addModal}
+        editModal={editModal}
+        isEditing={isEditing}
+        showHelp={showHelp}
+        setShowHelp={setShowHelp}
+        showConfetti={showConfetti}
+        pendingImport={pendingImport}
+        setPendingImport={setPendingImport}
+        importError={importError}
+        importFileRef={importFileRef}
+        handleImportFileChange={handleImportFileChange}
+        handleImportConfirm={handleImportConfirm}
+        lang={lang}
+        pendingSwitchTask={pendingSwitchTask}
+        setPendingSwitchTask={setPendingSwitchTask}
+        confirmSwitchTask={confirmSwitchTask}
+        showUnsavedWarning={showUnsavedWarning}
+        handleUnsavedCancel={handleUnsavedCancel}
+        handleUnsavedDiscard={handleUnsavedDiscard}
+        handleUnsavedSaveAndContinue={handleUnsavedSaveAndContinue}
+        showClearConfirm={showClearConfirm}
+        setShowClearConfirm={setShowClearConfirm}
+        handleClearAll={handleClearAll}
+        t={t}
+      />
     </div>
   );
 }
