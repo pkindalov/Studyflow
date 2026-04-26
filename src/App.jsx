@@ -27,13 +27,14 @@ import HelpModal from "./shared/components/HelpModal";
 import Confetti from "./shared/components/Confetti";
 import TaskBankModal from "./features/tasks/components/TaskBankModal";
 import { useTaskBank } from "./features/tasks/hooks/useTaskBank";
-import { exportData, readBackupFile, applyBackup } from "./shared/utils/dataPortability";
+import { exportData } from "./shared/utils/dataPortability";
 import { useLang } from "./shared/i18n/LangContext";
 import { useColumnLayout } from "./features/dashboard/hooks/useColumnLayout";
 import { useTimer } from "./features/schedule/hooks/useTimer";
 import { useSchedule } from "./features/schedule/hooks/useSchedule";
-import { computeRecurringEndDate } from "./features/tasks/utils/recurrence";
-import { SCHEDULES_KEY, TIMERS_KEY, readAllTimers, writeTimersForDate } from "./features/schedule/utils/scheduleStorage";
+import { SCHEDULES_KEY, TIMERS_KEY } from "./features/schedule/utils/scheduleStorage";
+import { useTaskModal } from "./features/tasks/hooks/useTaskModal";
+import { useDataPortability } from "./shared/hooks/useDataPortability";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -96,40 +97,11 @@ function App() {
   const [totalStudyTime, setTotalStudyTime] = useState(4);
   const [excludedTaskIds, setExcludedTaskIds] = useState(new Set());
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newTaskText, setNewTaskText] = useState("");
-  const [newTaskImage, setNewTaskImage] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState(false);
-  const [newTaskRecurrence, setNewTaskRecurrence] = useState("none");
-  const [newTaskStartDate, setNewTaskStartDate] = useState("");
-  const [newTaskEndDate, setNewTaskEndDate] = useState("");
-  const [newTaskMonthsAhead, setNewTaskMonthsAhead] = useState("3");
-  const [newTaskYearsAhead, setNewTaskYearsAhead] = useState("2");
-
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editTaskId, setEditTaskId] = useState(null);
-  const [editTaskText, setEditTaskText] = useState("");
-  const [editTaskImage, setEditTaskImage] = useState("");
-  const [editTaskPriority, setEditTaskPriority] = useState(false);
-  const [editTaskRecurrence, setEditTaskRecurrence] = useState("none");
-  const [editTaskStartDate, setEditTaskStartDate] = useState("");
-  const [editTaskEndDate, setEditTaskEndDate] = useState("");
-  const [editTaskMonthsAhead, setEditTaskMonthsAhead] = useState("3");
-  const [editTaskYearsAhead, setEditTaskYearsAhead] = useState("2");
-  const [editTaskIsRecurringInstance, setEditTaskIsRecurringInstance] = useState(false);
-  const [editTaskTargetDate, setEditTaskTargetDate] = useState("");
-
-  const isEditing = isEditModalOpen;
   const dateKey = formatDateKey(selectedDate);
 
   const [showConfetti, setShowConfetti] = useState(false);
   const prevAllScheduleDoneRef = useRef(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-
-  // Import backup state
-  const [pendingImport, setPendingImport] = useState(null);
-  const [importError, setImportError] = useState("");
-  const importFileRef = useRef(null);
 
   const [showTaskBankModal, setShowTaskBankModal] = useState(false);
   const [taskBankModalAutoGenerate, setTaskBankModalAutoGenerate] = useState(false);
@@ -237,6 +209,16 @@ function App() {
     handleUnsavedCancel,
     clearSchedule,
   } = scheduleHook;
+
+  const addModal = useTaskModal({ mode: "add", dateKey, addTask, addRecurring });
+  const editModal = useTaskModal({
+    mode: "edit", dateKey, tasks, recurringTasks,
+    editTask, moveTask, updateRecurring, addRecurring,
+    linkRecurring, deleteRecurring, deleteAllByRecurringId,
+    removeTaskFromSchedule, setScheduleTimers,
+  });
+  const isEditing = editModal.isOpen;
+  const { pendingImport, setPendingImport, importError, importFileRef, handleImportFileChange, handleImportConfirm } = useDataPortability();
 
   // ─── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -383,47 +365,7 @@ function App() {
     });
   }, [generateSchedule, tasksForDay, showNotification, t]);
 
-  // ─── Modal resets ───────────────────────────────────────────────────────────
-  const resetAddModal = useCallback(() => {
-    setIsModalOpen(false);
-    setNewTaskText("");
-    setNewTaskImage("");
-    setNewTaskPriority(false);
-    setNewTaskRecurrence("none");
-    setNewTaskStartDate("");
-    setNewTaskEndDate("");
-    setNewTaskMonthsAhead("3");
-    setNewTaskYearsAhead("2");
-  }, []);
-
-  const resetEditModal = useCallback(() => {
-    setIsEditModalOpen(false);
-    setEditTaskId(null);
-    setEditTaskText("");
-    setEditTaskImage("");
-    setEditTaskPriority(false);
-    setEditTaskRecurrence("none");
-    setEditTaskStartDate("");
-    setEditTaskEndDate("");
-    setEditTaskMonthsAhead("3");
-    setEditTaskYearsAhead("2");
-    setEditTaskIsRecurringInstance(false);
-    setEditTaskTargetDate("");
-  }, []);
-
   // ─── Task CRUD handlers ─────────────────────────────────────────────────────
-  const handleAddTask = useCallback(() => {
-    const startDate = newTaskStartDate || dateKey;
-    if (newTaskRecurrence !== "none") {
-      const actualRecurrence = newTaskRecurrence === "custom" ? "daily" : newTaskRecurrence;
-      const endDate = computeRecurringEndDate(newTaskRecurrence, startDate, newTaskMonthsAhead, newTaskYearsAhead, newTaskEndDate);
-      addRecurring(newTaskText, newTaskImage, newTaskPriority, actualRecurrence, startDate, endDate);
-    } else {
-      addTask(dateKey, newTaskText, newTaskImage, newTaskPriority);
-    }
-    resetAddModal();
-  }, [newTaskRecurrence, newTaskStartDate, dateKey, newTaskMonthsAhead, newTaskYearsAhead, newTaskEndDate, newTaskText, newTaskImage, newTaskPriority, addRecurring, addTask, resetAddModal]);
-
   const handleDeleteTask = useCallback((id) => {
     const task = (tasks[dateKey] || []).find((t) => t.id === id);
     if (task?.recurringId) {
@@ -436,42 +378,6 @@ function App() {
     }
   }, [tasks, dateKey, deleteRecurring, deleteAllByRecurringId, deleteTask, removeTaskFromSchedule]);
 
-  const handleEditTask = useCallback(() => {
-    editTask(dateKey, editTaskId, editTaskText, editTaskImage, editTaskPriority);
-    if (editTaskTargetDate && editTaskTargetDate !== dateKey) {
-      moveTask(dateKey, editTaskTargetDate, editTaskId);
-      removeTaskFromSchedule((t) => t.id === editTaskId);
-      setScheduleTimers((prev) => {
-        const next = { ...prev };
-        delete next[editTaskId];
-        return next;
-      });
-      try {
-        const allTimers = readAllTimers();
-        const targetTimers = { ...(allTimers[editTaskTargetDate] || {}) };
-        delete targetTimers[editTaskId];
-        writeTimersForDate(editTaskTargetDate, targetTimers);
-      } catch { /* ignore */ }
-    }
-    const task = (tasks[dateKey] || []).find((t) => t.id === editTaskId);
-    const startDate = editTaskStartDate || dateKey;
-    if (editTaskRecurrence !== "none") {
-      const actualRecurrence = editTaskRecurrence === "custom" ? "daily" : editTaskRecurrence;
-      const endDate = computeRecurringEndDate(editTaskRecurrence, startDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate);
-      if (task?.recurringId) {
-        updateRecurring(task.recurringId, editTaskText, editTaskImage, editTaskPriority, actualRecurrence, startDate, endDate);
-      } else {
-        const newId = addRecurring(editTaskText, editTaskImage, editTaskPriority, actualRecurrence, startDate, endDate);
-        linkRecurring(dateKey, editTaskId, newId);
-      }
-    } else if (task?.recurringId) {
-      deleteRecurring(task.recurringId);
-      deleteAllByRecurringId(task.recurringId);
-      linkRecurring(dateKey, editTaskId, null);
-    }
-    resetEditModal();
-  }, [editTaskId, editTaskText, editTaskImage, editTaskPriority, editTaskRecurrence, editTaskStartDate, editTaskMonthsAhead, editTaskYearsAhead, editTaskEndDate, editTaskTargetDate, tasks, dateKey, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, resetEditModal, removeTaskFromSchedule, setScheduleTimers]);
-
   const handleClearAll = useCallback(() => {
     clearAllTasks();
     clearAllRecurring();
@@ -482,27 +388,6 @@ function App() {
     setShowClearConfirm(false);
   }, [clearAllTasks, clearAllRecurring, clearSchedule, resetTimer, resetLayout]);
 
-  // ─── Import / Export handlers ───────────────────────────────────────────────
-  const handleImportFileChange = useCallback(async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    e.target.value = "";
-    setImportError("");
-    try {
-      const summary = await readBackupFile(file);
-      setPendingImport(summary);
-    } catch (err) {
-      setImportError(err.message);
-    }
-  }, []);
-
-  const handleImportConfirm = useCallback(() => {
-    if (!pendingImport) return;
-    applyBackup(pendingImport.rawData);
-    setPendingImport(null);
-    window.location.reload();
-  }, [pendingImport]);
-
   // ─── Render helpers ─────────────────────────────────────────────────────────
   const SECTION_JSX = {
     calendar: (
@@ -510,7 +395,7 @@ function App() {
         selectedDate={selectedDate}
         setSelectedDate={handleDateChange}
         markDateWithTasks={markDateWithTasksFn}
-        onAddClick={() => { setNewTaskStartDate(dateKey); setIsModalOpen(true); }}
+        onAddClick={() => addModal.open({ startDate: dateKey })}
         showCompletion={showCalendarCompletion}
         onToggleCompletion={() => setShowCalendarCompletion((v) => !v)}
       />
@@ -638,27 +523,7 @@ function App() {
             onOpenSavedList={() => { setTaskBankModalAutoGenerate(false); setShowTaskBankModal(true); }}
             savedListTexts={savedListTexts}
             onReorder={(draggedId, targetId) => reorderTasks(dateKey, draggedId, targetId)}
-            onEdit={(task) => {
-              setEditTaskId(task.id);
-              setEditTaskText(task.text);
-              setEditTaskImage(task.imageUrl || "");
-              setEditTaskPriority(task.priority);
-              if (task.recurringId) {
-                const tpl = recurringTasks.find((r) => r.id === task.recurringId);
-                setEditTaskRecurrence(tpl?.recurrence || "none");
-                setEditTaskStartDate(tpl?.startDate || dateKey);
-                setEditTaskEndDate(tpl?.endDate || "");
-                setEditTaskIsRecurringInstance(true);
-                setEditTaskTargetDate("");
-              } else {
-                setEditTaskRecurrence("none");
-                setEditTaskStartDate(dateKey);
-                setEditTaskEndDate("");
-                setEditTaskIsRecurringInstance(false);
-                setEditTaskTargetDate(dateKey);
-              }
-              setIsEditModalOpen(true);
-            }}
+            onEdit={(task) => editModal.open(task)}
           />
           {tasksForDay.length > 0 && (
             <div className="flex gap-4 justify-end mt-2">
@@ -706,7 +571,7 @@ function App() {
             <span className="material-symbols-outlined text-sm">backup</span>
             {t.exportBtn}
           </button>
-          <button onClick={() => { setImportError(""); importFileRef.current?.click(); }} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all" title={t.importTitle}>
+          <button onClick={() => importFileRef.current?.click()} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all" title={t.importTitle}>
             <span className="material-symbols-outlined text-sm">restore</span>
             {t.importBtn}
           </button>
@@ -827,28 +692,28 @@ function App() {
       )}
       {/* Task Modal */}
       <TaskModal
-        isOpen={isModalOpen || isEditModalOpen}
-        onClose={() => { isEditing ? resetEditModal() : resetAddModal(); }}
-        onSave={isEditing ? handleEditTask : handleAddTask}
-        text={isEditing ? editTaskText : newTaskText}
-        setText={isEditing ? setEditTaskText : setNewTaskText}
-        image={isEditing ? editTaskImage : newTaskImage}
-        setImage={isEditing ? setEditTaskImage : setNewTaskImage}
-        priority={isEditing ? editTaskPriority : newTaskPriority}
-        setPriority={isEditing ? setEditTaskPriority : setNewTaskPriority}
-        recurrence={isEditing ? editTaskRecurrence : newTaskRecurrence}
-        setRecurrence={isEditing ? setEditTaskRecurrence : setNewTaskRecurrence}
-        startDate={isEditing ? editTaskStartDate : newTaskStartDate}
-        setStartDate={isEditing ? setEditTaskStartDate : setNewTaskStartDate}
-        endDate={isEditing ? editTaskEndDate : newTaskEndDate}
-        setEndDate={isEditing ? setEditTaskEndDate : setNewTaskEndDate}
-        monthsAhead={isEditing ? editTaskMonthsAhead : newTaskMonthsAhead}
-        setMonthsAhead={isEditing ? setEditTaskMonthsAhead : setNewTaskMonthsAhead}
-        yearsAhead={isEditing ? editTaskYearsAhead : newTaskYearsAhead}
-        setYearsAhead={isEditing ? setEditTaskYearsAhead : setNewTaskYearsAhead}
-        isRecurringInstance={isEditing ? editTaskIsRecurringInstance : false}
-        moveToDate={isEditing && !editTaskIsRecurringInstance ? editTaskTargetDate : undefined}
-        setMoveToDate={isEditing && !editTaskIsRecurringInstance ? setEditTaskTargetDate : undefined}
+        isOpen={addModal.isOpen || editModal.isOpen}
+        onClose={() => { isEditing ? editModal.reset() : addModal.reset(); }}
+        onSave={isEditing ? editModal.handleSubmit : addModal.handleSubmit}
+        text={isEditing ? editModal.text : addModal.text}
+        setText={isEditing ? editModal.setText : addModal.setText}
+        image={isEditing ? editModal.image : addModal.image}
+        setImage={isEditing ? editModal.setImage : addModal.setImage}
+        priority={isEditing ? editModal.priority : addModal.priority}
+        setPriority={isEditing ? editModal.setPriority : addModal.setPriority}
+        recurrence={isEditing ? editModal.recurrence : addModal.recurrence}
+        setRecurrence={isEditing ? editModal.setRecurrence : addModal.setRecurrence}
+        startDate={isEditing ? editModal.startDate : addModal.startDate}
+        setStartDate={isEditing ? editModal.setStartDate : addModal.setStartDate}
+        endDate={isEditing ? editModal.endDate : addModal.endDate}
+        setEndDate={isEditing ? editModal.setEndDate : addModal.setEndDate}
+        monthsAhead={isEditing ? editModal.monthsAhead : addModal.monthsAhead}
+        setMonthsAhead={isEditing ? editModal.setMonthsAhead : addModal.setMonthsAhead}
+        yearsAhead={isEditing ? editModal.yearsAhead : addModal.yearsAhead}
+        setYearsAhead={isEditing ? editModal.setYearsAhead : addModal.setYearsAhead}
+        isRecurringInstance={isEditing ? editModal.isRecurringInstance : false}
+        moveToDate={isEditing && !editModal.isRecurringInstance ? editModal.targetDate : undefined}
+        setMoveToDate={isEditing && !editModal.isRecurringInstance ? editModal.setTargetDate : undefined}
         title={isEditing ? t.editTaskTitle : t.addTaskTitle}
       />
       {/* Bottom-left actions — desktop only */}
@@ -857,7 +722,7 @@ function App() {
           <span className="material-symbols-outlined text-sm">backup</span>
           {t.exportBtn}
         </button>
-        <button onClick={() => { setImportError(""); importFileRef.current?.click(); }} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all" title={t.importTitle}>
+        <button onClick={() => importFileRef.current?.click()} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all" title={t.importTitle}>
           <span className="material-symbols-outlined text-sm">restore</span>
           {t.importBtn}
         </button>
