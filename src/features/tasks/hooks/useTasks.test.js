@@ -181,6 +181,18 @@ describe('useTasks', () => {
       act(() => result.current.moveTask(DATE, DATE2, 'nonexistent'))
       expect(result.current.tasks[DATE]).toHaveLength(1)
     })
+
+    it('appends to existing tasks on the destination date', () => {
+      const { result } = renderHook(() => useTasks())
+      act(() => {
+        result.current.addTask(DATE, 'Source task')
+        result.current.addTask(DATE2, 'Existing on target')
+      })
+      const sourceId = result.current.tasks[DATE][0].id
+      act(() => result.current.moveTask(DATE, DATE2, sourceId))
+      expect(result.current.tasks[DATE2]).toHaveLength(2)
+      expect(result.current.tasks[DATE2][1].text).toBe('Source task')
+    })
   })
 
   describe('reorderTasks', () => {

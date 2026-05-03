@@ -61,4 +61,14 @@ describe('runMigrations', () => {
     expect(localStorage.getItem(SCHEDULES_KEY)).toBeNull()
     expect(localStorage.getItem(TIMERS_KEY)).toBeNull()
   })
+
+  it('is idempotent — calling runMigrations twice does not corrupt data', () => {
+    localStorage.setItem('schedule_2024-01-01', JSON.stringify([{ id: 'a' }]))
+    runMigrations()
+    runMigrations()
+    const schedules = JSON.parse(localStorage.getItem(SCHEDULES_KEY))
+    expect(schedules['2024-01-01']).toEqual([{ id: 'a' }])
+    // Legacy key is already gone after first run, so second run is a no-op
+    expect(localStorage.getItem('schedule_2024-01-01')).toBeNull()
+  })
 })

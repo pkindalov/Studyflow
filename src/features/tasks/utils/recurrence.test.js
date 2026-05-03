@@ -30,6 +30,10 @@ describe('computeRecurringEndDate', () => {
       const result = computeRecurringEndDate('monthly', '2024-01-01', 0)
       expect(result).toBe('2024-04-01')
     })
+
+    it('crosses a year boundary correctly (December + 3 months)', () => {
+      expect(computeRecurringEndDate('monthly', '2024-12-15', 3)).toBe('2025-03-15')
+    })
   })
 
   describe('yearly', () => {

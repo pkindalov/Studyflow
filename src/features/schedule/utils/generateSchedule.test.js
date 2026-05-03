@@ -67,6 +67,21 @@ describe('generateSchedule', () => {
       expect(totalMinutes(result)).toBe(60)
     })
 
+    it('priority tasks are excluded when priorityPercent is 0', () => {
+      // priorityPercent=0 means no budget for priority tasks → they get 0 min and are filtered out
+      const tasks = [task({ id: 'p', priority: true }), task({ id: 'n', priority: false })]
+      const result = run(tasks, { totalStudyTime: 1, priorityPercent: 0 })
+      expect(result.find((t) => t.priority)).toBeUndefined()
+      expect(result.find((t) => !t.priority).scheduledMinutes).toBe(60)
+    })
+
+    it('non-priority tasks are excluded when priorityPercent is 100', () => {
+      const tasks = [task({ id: 'p', priority: true }), task({ id: 'n', priority: false })]
+      const result = run(tasks, { totalStudyTime: 1, priorityPercent: 100 })
+      expect(result.find((t) => !t.priority)).toBeUndefined()
+      expect(result.find((t) => t.priority).scheduledMinutes).toBe(60)
+    })
+
     it('tasks with 0 scheduledMinutes are filtered out', () => {
       // Many tasks, small time — last task may get 0 minutes
       const tasks = Array.from({ length: 100 }, (_, i) => task({ id: String(i) }))

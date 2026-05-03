@@ -142,5 +142,24 @@ describe('useActivityStats', () => {
       const { result } = renderHook(() => useActivityStats({}))
       expect(result.current.totalFocusSeconds).toBe(0)
     })
+
+    it('includes studyflow_focus_extra seconds in totalFocusSeconds', () => {
+      localStorage.setItem(
+        'studyflow_schedule_timers',
+        JSON.stringify({ [YESTERDAY]: { taskA: 300 } })
+      )
+      localStorage.setItem(
+        'studyflow_focus_extra',
+        JSON.stringify({ [YESTERDAY]: { taskA: 120 } })
+      )
+      const { result } = renderHook(() => useActivityStats({}))
+      expect(result.current.totalFocusSeconds).toBe(420)
+    })
+
+    it('falls back to 0 when studyflow_schedule_timers contains invalid JSON', () => {
+      localStorage.setItem('studyflow_schedule_timers', 'not-valid-json')
+      const { result } = renderHook(() => useActivityStats({}))
+      expect(result.current.totalFocusSeconds).toBe(0)
+    })
   })
 })

@@ -109,6 +109,18 @@ describe('useTimerActions', () => {
       act(() => result.current.openTimerForTask(TASK))
       expect(setPendingTimerTask).toHaveBeenCalledWith(TASK)
     })
+
+    it('shows the quick-timer prompt when elapsed is 0 but allocation exists', () => {
+      // Condition is elapsed > 0 AND allocated — zero elapsed must not open the timer
+      const setPendingTimerTask = vi.fn()
+      const openTimer = vi.fn()
+      const { result } = renderHook(() =>
+        useTimerActions(makeProps({ setPendingTimerTask, openTimer, scheduleTimers: {}, taskAllocations: { ta: 40 } }))
+      )
+      act(() => result.current.openTimerForTask(TASK))
+      expect(setPendingTimerTask).toHaveBeenCalledWith(TASK)
+      expect(openTimer).not.toHaveBeenCalled()
+    })
   })
 
   describe('restartTimer', () => {
@@ -257,6 +269,7 @@ describe('useTimerActions', () => {
       )
       act(() => result.current.startAgainTimer())
       expect(resetPomodoroState).toHaveBeenCalled()
+      expect(toggleTask).toHaveBeenCalledWith(DATE, 'ta')
       expect(markScheduleItemUndone).toHaveBeenCalledWith('ta')
       expect(setRunningTaskId).toHaveBeenCalledWith('ta')
       expect(music.play).toHaveBeenCalled()

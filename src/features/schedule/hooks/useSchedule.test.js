@@ -306,6 +306,16 @@ describe('useSchedule', () => {
       act(() => result.current.handleMarkScheduleItemDone('nonexistent'))
       expect(markTaskDone).not.toHaveBeenCalled()
     })
+
+    it('clears runningTaskId when the running task is marked done', () => {
+      writeScheduleForDate(DATE, [SCHED_A])
+      const setRunningTaskId = vi.fn()
+      const { result } = renderHook(() =>
+        useSchedule(makeProps({ runningTaskId: 'ta', setRunningTaskId }))
+      )
+      act(() => result.current.handleMarkScheduleItemDone('ta'))
+      expect(setRunningTaskId).toHaveBeenCalledWith(null)
+    })
   })
 
   describe('handleRemoveScheduleItem', () => {
@@ -409,9 +419,10 @@ describe('useSchedule', () => {
     }
 
     it('handleUnsavedSaveAndContinue saves, calls proceed, and closes the dialog', () => {
-      const { result, showNotification } = setupWithUnsavedWarning()
+      const { result, showNotification, callback } = setupWithUnsavedWarning()
       act(() => result.current.handleUnsavedSaveAndContinue())
       expect(showNotification).toHaveBeenCalledWith(T.scheduleSaved)
+      expect(callback).toHaveBeenCalled()
       expect(result.current.showUnsavedWarning).toBe(false)
     })
 

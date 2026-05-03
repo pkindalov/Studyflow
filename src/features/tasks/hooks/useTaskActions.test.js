@@ -39,6 +39,14 @@ describe('useTaskActions', () => {
       expect(deleteTask).toHaveBeenCalledWith(DATE, 'ta')
     })
 
+    it('still calls deleteTask when task id does not exist in the list', () => {
+      // task lookup returns undefined → non-recurring branch → deleteTask is still called
+      const deleteTask = vi.fn()
+      const { result } = renderHook(() => useTaskActions(makeProps({ deleteTask })))
+      act(() => result.current.handleDeleteTask('nonexistent'))
+      expect(deleteTask).toHaveBeenCalledWith(DATE, 'nonexistent')
+    })
+
     it('removes task from schedule by id', () => {
       const removeTaskFromSchedule = vi.fn()
       const { result } = renderHook(() => useTaskActions(makeProps({ removeTaskFromSchedule })))
