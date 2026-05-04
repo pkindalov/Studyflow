@@ -68,4 +68,10 @@ describe('reset layout button', () => {
     render(<BottomBar onExport={onExport} onImport={onImport} onShowClearConfirm={onShowClearConfirm} isCustomLayout={true} onResetLayout={onResetLayout} t={t} />)
     expect(screen.getAllByText('Reset layout')).toHaveLength(2)
   })
+
+  it('does not call onResetLayout when the desktop button is disabled', () => {
+    render(<BottomBar onExport={onExport} onImport={onImport} onShowClearConfirm={onShowClearConfirm} isCustomLayout={false} onResetLayout={onResetLayout} t={t} />)
+    fireEvent.click(screen.getByRole('button', { name: /Reset layout/ }))
+    expect(onResetLayout).not.toHaveBeenCalled()
+  })
 })

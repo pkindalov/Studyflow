@@ -53,7 +53,7 @@ describe('task rendering', () => {
 // ── selection controls ────────────────────────────────────────────────────────
 
 describe('selection controls', () => {
-  it('shows "Select all" when onToggleSelect is provided and no task is excluded', () => {
+  it('shows "Deselect all" when onToggleSelect is provided and no task is excluded', () => {
     const tasks = [makeTask(1), makeTask(2)]
     wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={vi.fn()} excludedTaskIds={new Set()} />)
     expect(screen.getByText('Deselect all')).toBeTruthy()
@@ -75,6 +75,16 @@ describe('selection controls', () => {
     wrap(<TaskList tasks={[makeTask(1)]} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} />)
     expect(screen.queryByText('Select all')).toBeNull()
     expect(screen.queryByText('Deselect all')).toBeNull()
+  })
+
+  it('clicking "Deselect all" calls onToggleSelect for each non-excluded task', () => {
+    const onToggleSelect = vi.fn()
+    const tasks = [makeTask(1), makeTask(2)]
+    wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={onToggleSelect} excludedTaskIds={new Set()} />)
+    fireEvent.click(screen.getByText('Deselect all'))
+    expect(onToggleSelect).toHaveBeenCalledTimes(2)
+    expect(onToggleSelect).toHaveBeenCalledWith('t1')
+    expect(onToggleSelect).toHaveBeenCalledWith('t2')
   })
 })
 
@@ -99,5 +109,15 @@ describe('pagination', () => {
     expect(screen.queryByText('Task 9')).toBeNull()
     fireEvent.click(screen.getByText('Next'))
     expect(screen.getByText('Task 9')).toBeTruthy()
+  })
+
+  it('Prev button navigates back to page 1', () => {
+    const tasks = Array.from({ length: 9 }, (_, i) => makeTask(i + 1))
+    wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} />)
+    fireEvent.click(screen.getByText('Next'))
+    expect(screen.getByText('Task 9')).toBeTruthy()
+    fireEvent.click(screen.getByText('Prev'))
+    expect(screen.queryByText('Task 9')).toBeNull()
+    expect(screen.getByText('Task 1')).toBeTruthy()
   })
 })

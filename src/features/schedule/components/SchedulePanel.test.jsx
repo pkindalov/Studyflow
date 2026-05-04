@@ -112,4 +112,26 @@ describe('item callbacks', () => {
     fireEvent.click(screen.getAllByTitle('Remove from schedule')[1])
     expect(defaultProps.onRemove).toHaveBeenCalledWith('s2')
   })
+
+  it('calls onOpenTimer with the correct task when timer button on first item is clicked', () => {
+    render(<SchedulePanel {...defaultProps} />)
+    fireEvent.click(screen.getAllByTitle('Start timer')[0])
+    expect(defaultProps.onOpenTimer).toHaveBeenCalledWith(schedule[0])
+  })
+})
+
+// ── edge cases ────────────────────────────────────────────────────────────────
+
+describe('edge cases', () => {
+  it('renders heading and action buttons when schedule is empty', () => {
+    render(<SchedulePanel {...defaultProps} schedule={[]} />)
+    expect(screen.getByText("Today's Schedule")).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Save Schedule/i })).toBeTruthy()
+    expect(screen.queryByTitle('Start timer')).toBeNull()
+  })
+
+  it('passes scheduleTimers elapsed to items — running item shows "Running" title', () => {
+    render(<SchedulePanel {...defaultProps} scheduleTimers={{ s1: 300 }} runningTaskId='s1' />)
+    expect(screen.getByTitle('Running — click to view')).toBeTruthy()
+  })
 })

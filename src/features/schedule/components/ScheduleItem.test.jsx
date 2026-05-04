@@ -79,6 +79,11 @@ describe('timer button title', () => {
     render(<ScheduleItem task={base} elapsed={300} isRunning={true} runningTaskId='s1' onOpenTimer={onOpenTimer} onMarkDone={onMarkDone} onRemove={onRemove} t={t} />)
     expect(screen.getByTitle('Running — click to view')).toBeTruthy()
   })
+
+  it('shows "Running" title when isRunning is true even with no elapsed time', () => {
+    render(<ScheduleItem task={base} elapsed={0} isRunning={true} runningTaskId='s1' onOpenTimer={onOpenTimer} onMarkDone={onMarkDone} onRemove={onRemove} t={t} />)
+    expect(screen.getByTitle('Running — click to view')).toBeTruthy()
+  })
 })
 
 // ── callbacks ─────────────────────────────────────────────────────────────────
@@ -133,5 +138,10 @@ describe('progress bar', () => {
   it('hides progress bar when elapsed is 0', () => {
     const { container } = render(<ScheduleItem task={base} elapsed={0} isRunning={false} runningTaskId={null} onOpenTimer={onOpenTimer} onMarkDone={onMarkDone} onRemove={onRemove} t={t} />)
     expect(container.querySelector('.absolute.bottom-0')).toBeNull()
+  })
+
+  it('shows progress bar when task.done is true regardless of elapsed', () => {
+    const { container } = render(<ScheduleItem task={{ ...base, done: true }} elapsed={0} isRunning={false} runningTaskId={null} onOpenTimer={onOpenTimer} onMarkDone={onMarkDone} onRemove={onRemove} t={t} />)
+    expect(container.querySelector('.absolute.bottom-0')).toBeTruthy()
   })
 })

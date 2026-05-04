@@ -141,4 +141,24 @@ describe('optional buttons', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Saved to list!' }))
     expect(onSaveToBank).toHaveBeenCalledWith(base)
   })
+
+  it('calls onSaveToBank when isInList is true', () => {
+    const onSaveToBank = vi.fn()
+    wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onSaveToBank={onSaveToBank} isInList={true} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Saved to list!' }))
+    expect(onSaveToBank).toHaveBeenCalledWith(base)
+  })
+
+  it('calls onToggleSelect with task id when selection button is clicked', () => {
+    const onToggleSelect = vi.fn()
+    wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onToggleSelect={onToggleSelect} />)
+    fireEvent.click(screen.getByTitle('Exclude from schedule'))
+    expect(onToggleSelect).toHaveBeenCalledWith('t1')
+  })
+
+  it('omits selection button when onToggleSelect is not provided', () => {
+    wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />)
+    expect(screen.queryByTitle('Exclude from schedule')).toBeNull()
+    expect(screen.queryByTitle('Include in schedule')).toBeNull()
+  })
 })
