@@ -11,6 +11,7 @@ import { useTaskModal } from './features/tasks/hooks/useTaskModal'
 import { useDataPortability } from './shared/hooks/useDataPortability'
 import { useTimerActions } from './features/schedule/hooks/useTimerActions'
 import { useTaskActions } from './features/tasks/hooks/useTaskActions'
+import { buildSidebarSections } from './layout/sidebarSections'
 
 // ── dnd-kit stubs ──────────────────────────────────────────────────────────────
 vi.mock('@dnd-kit/core', () => ({
@@ -37,7 +38,7 @@ vi.mock('./layout/AppModals', () => ({
 vi.mock('./layout/SortableSection', () => ({
   default: ({ children }) => children ?? null,
 }))
-vi.mock('./layout/sidebarSections', () => ({ buildSidebarSections: () => ({}) }))
+vi.mock('./layout/sidebarSections', () => ({ buildSidebarSections: vi.fn(() => ({})) }))
 
 // ── utility stubs ──────────────────────────────────────────────────────────────
 vi.mock('./shared/utils/dataPortability', () => ({ exportData: vi.fn() }))
@@ -99,7 +100,8 @@ const mkTimer = (o = {}) => ({
   timerOriginDateKeyRef: { current: null }, ...o,
 })
 const mkSchedule = (o = {}) => ({
-  schedule: null, showUnsavedWarning: false, allScheduleDone: false,
+  schedule: null, setSchedule: vi.fn(), scheduleUnsaved: false,
+  showUnsavedWarning: false, allScheduleDone: false,
   scheduleSensors: [], handleScheduleDragEnd: vi.fn(),
   generateSchedule: vi.fn(), checkUnsaved: vi.fn((cb) => cb()),
   saveSchedule: vi.fn(), deleteSchedule: vi.fn(),
@@ -114,12 +116,14 @@ const mkColumnLayout = (o = {}) => ({
   handleSectionDragEnd: vi.fn(), resetLayout: vi.fn(), isCustomLayout: false, ...o,
 })
 const mkModal = () => ({
-  isOpen: false, open: vi.fn(), reset: vi.fn(),
+  isOpen: false, setIsOpen: vi.fn(), open: vi.fn(), reset: vi.fn(),
   text: '', setText: vi.fn(), priority: false, setPriority: vi.fn(),
   recurrence: 'none', setRecurrence: vi.fn(),
   startDate: '', setStartDate: vi.fn(), endDate: '', setEndDate: vi.fn(),
+  monthsAhead: 1, setMonthsAhead: vi.fn(), yearsAhead: 0, setYearsAhead: vi.fn(),
+  taskId: null, isRecurringInstance: false,
   targetDate: '', setTargetDate: vi.fn(),
-  isRecurringInstance: false, image: '', setImage: vi.fn(), handleSubmit: vi.fn(),
+  image: '', setImage: vi.fn(), handleSubmit: vi.fn(),
 })
 
 beforeEach(() => {
@@ -331,6 +335,33 @@ describe('recurring task auto-injection', () => {
     )
   })
 
+  it('injects when skippedDates is an empty array', () => {
+    const addTaskDirect = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({
+      recurringTasks: [{ id: 'r1', text: 'Habit', priority: false, skippedDates: [] }],
+    }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    expect(addTaskDirect).toHaveBeenCalledTimes(1)
+  })
+
+  it('passes priority from template to addTaskDirect', () => {
+    const addTaskDirect = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({
+      recurringTasks: [{ id: 'r1', text: 'Important', priority: true }],
+    }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    expect(addTaskDirect).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ priority: true }),
+    )
+  })
+
   it('injects all templates when all pass appliesToDate', () => {
     const addTaskDirect = vi.fn()
     const t1 = { id: 'r1', text: 'Habit A', priority: false }
@@ -443,6 +474,20 @@ describe('handleToggleTask', () => {
 
     expect(toggleTask).toHaveBeenCalledWith(TODAY, 'ghost-id')
     expect(setScheduleTimers).not.toHaveBeenCalled()
+  })
+
+  it('sets timer to 0 when scheduledMinutes is 0 for an undone task', () => {
+    const setScheduleTimers = vi.fn()
+    const task = { id: 't1', text: 'Math', done: false, priority: false }
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [task] } }))
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers }))
+    useSchedule.mockReturnValue(mkSchedule({ schedule: [{ id: 't1', scheduledMinutes: 0 }] }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onToggle('t1'))
+
+    const updater = setScheduleTimers.mock.calls[0][0]
+    expect(updater({})).toEqual({ t1: 0 })
   })
 
   it('preserves existing timer entries when updating a specific task', () => {
@@ -654,6 +699,14 @@ describe('toggleTaskSelection', () => {
     render(<App />)
     expect(lastMainContentProps.excludedTaskIds.size).toBe(0)
   })
+
+  it('is present after an odd number of toggles (three)', () => {
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-abc'))
+    act(() => lastMainContentProps.onToggleSelect('task-abc'))
+    act(() => lastMainContentProps.onToggleSelect('task-abc'))
+    expect(lastMainContentProps.excludedTaskIds.has('task-abc')).toBe(true)
+  })
 })
 
 // ── showCalendarCompletion persistence ─────────────────────────────────────────
@@ -668,5 +721,144 @@ describe('showCalendarCompletion persistence', () => {
     localStorage.setItem('studyflow_calendar_completion', 'true')
     render(<App />)
     expect(localStorage.getItem('studyflow_calendar_completion')).toBe('true')
+  })
+})
+
+// ── progress metrics forwarded to MainContent ──────────────────────────────────
+
+describe('progress metrics forwarded to MainContent', () => {
+  it('reports all zeros when there are no tasks for today', () => {
+    render(<App />)
+    expect(lastMainContentProps.total).toBe(0)
+    expect(lastMainContentProps.completed).toBe(0)
+    expect(lastMainContentProps.remaining).toBe(0)
+    expect(lastMainContentProps.progress).toBe(0)
+  })
+
+  it('computes totals correctly for a mix of done and undone tasks', () => {
+    useTasks.mockReturnValue(mkTasks({
+      tasks: { [TODAY]: [{ id: 't1', done: true }, { id: 't2', done: false }, { id: 't3', done: false }] },
+    }))
+    render(<App />)
+    expect(lastMainContentProps.total).toBe(3)
+    expect(lastMainContentProps.completed).toBe(1)
+    expect(lastMainContentProps.remaining).toBe(2)
+  })
+
+  it('computes 100% progress and 0 remaining when all tasks are done', () => {
+    useTasks.mockReturnValue(mkTasks({
+      tasks: { [TODAY]: [{ id: 't1', done: true }, { id: 't2', done: true }] },
+    }))
+    render(<App />)
+    expect(lastMainContentProps.progress).toBe(100)
+    expect(lastMainContentProps.remaining).toBe(0)
+  })
+
+  it('rounds progress to the nearest integer', () => {
+    useTasks.mockReturnValue(mkTasks({
+      tasks: { [TODAY]: [{ id: 't1', done: true }, { id: 't2', done: false }, { id: 't3', done: false }] },
+    }))
+    render(<App />)
+    expect(lastMainContentProps.progress).toBe(33) // Math.round(1/3 * 100)
+  })
+
+  it('rounds up correctly at the halfway point (2/3 → 67)', () => {
+    useTasks.mockReturnValue(mkTasks({
+      tasks: { [TODAY]: [{ id: 't1', done: true }, { id: 't2', done: true }, { id: 't3', done: false }] },
+    }))
+    render(<App />)
+    expect(lastMainContentProps.progress).toBe(67) // Math.round(2/3 * 100)
+  })
+
+  it('does not count tasks from other dates', () => {
+    useTasks.mockReturnValue(mkTasks({
+      tasks: {
+        [TODAY]: [{ id: 't1', done: false }],
+        '2000-01-01': [{ id: 't2', done: true }, { id: 't3', done: true }],
+      },
+    }))
+    render(<App />)
+    expect(lastMainContentProps.total).toBe(1)
+    expect(lastMainContentProps.completed).toBe(0)
+    expect(lastMainContentProps.progress).toBe(0)
+  })
+})
+
+// ── savedListTexts forwarded to MainContent ────────────────────────────────────
+
+describe('savedListTexts forwarded to MainContent', () => {
+  it('is an empty Set when taskBank is empty', () => {
+    render(<App />)
+    expect(lastMainContentProps.savedListTexts).toBeInstanceOf(Set)
+    expect(lastMainContentProps.savedListTexts.size).toBe(0)
+  })
+
+  it('contains every text from taskBank', () => {
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }, { text: 'Science' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    render(<App />)
+    expect(lastMainContentProps.savedListTexts.has('Math')).toBe(true)
+    expect(lastMainContentProps.savedListTexts.has('Science')).toBe(true)
+    expect(lastMainContentProps.savedListTexts.size).toBe(2)
+  })
+
+  it('deduplicates identical bank item texts', () => {
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }, { text: 'Math' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    render(<App />)
+    expect(lastMainContentProps.savedListTexts.size).toBe(1)
+  })
+})
+
+// ── root background class ──────────────────────────────────────────────────────
+
+describe('root background class', () => {
+  it('applies dark background class by default', () => {
+    const { container } = render(<App />)
+    expect(container.firstChild.className).toContain('bg-[#0c0c1a]')
+  })
+
+  it('applies light background class when theme is light', () => {
+    localStorage.setItem('studyflow_theme', 'light')
+    const { container } = render(<App />)
+    expect(container.firstChild.className).toContain('bg-[#f0eeff]')
+  })
+
+  it('does not apply light class when theme is dark', () => {
+    const { container } = render(<App />)
+    expect(container.firstChild.className).not.toContain('bg-[#f0eeff]')
+  })
+})
+
+// ── excludedTaskIds resets on date change ──────────────────────────────────────
+
+describe('excludedTaskIds resets on date change', () => {
+  it('clears all excluded ids when the selected date changes', () => {
+    render(<App />)
+
+    act(() => lastMainContentProps.onToggleSelect('task-a'))
+    act(() => lastMainContentProps.onToggleSelect('task-b'))
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(2)
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(0)
+  })
+
+  it('does not clear excluded ids when the same date is reselected', () => {
+    render(<App />)
+
+    act(() => lastMainContentProps.onToggleSelect('task-a'))
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(1)
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date())) // same day → same dateKey → effect doesn't re-run
+
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(1)
   })
 })
