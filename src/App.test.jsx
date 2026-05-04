@@ -1242,3 +1242,417 @@ describe('buildSidebarSections receives correct props', () => {
     expect(props.dateKey).toBe(TODAY)
   })
 })
+
+// ── useTaskActions callbacks forwarded to MainContent ─────────────────────────
+
+describe('useTaskActions callbacks forwarded to MainContent', () => {
+  it('forwards handleDeleteTask as onDelete', () => {
+    const handleDeleteTask = vi.fn()
+    useTaskActions.mockReturnValue({
+      handleDeleteTask, handleStopRecurring: vi.fn(),
+      handleSaveToBank: vi.fn(), handleOpenSavedList: vi.fn(), handleReorder: vi.fn(),
+    })
+    render(<App />)
+    expect(lastMainContentProps.onDelete).toBe(handleDeleteTask)
+  })
+
+  it('forwards handleStopRecurring as onStopRecurring', () => {
+    const handleStopRecurring = vi.fn()
+    useTaskActions.mockReturnValue({
+      handleDeleteTask: vi.fn(), handleStopRecurring,
+      handleSaveToBank: vi.fn(), handleOpenSavedList: vi.fn(), handleReorder: vi.fn(),
+    })
+    render(<App />)
+    expect(lastMainContentProps.onStopRecurring).toBe(handleStopRecurring)
+  })
+
+  it('forwards handleSaveToBank as onSaveToBank', () => {
+    const handleSaveToBank = vi.fn()
+    useTaskActions.mockReturnValue({
+      handleDeleteTask: vi.fn(), handleStopRecurring: vi.fn(),
+      handleSaveToBank, handleOpenSavedList: vi.fn(), handleReorder: vi.fn(),
+    })
+    render(<App />)
+    expect(lastMainContentProps.onSaveToBank).toBe(handleSaveToBank)
+  })
+
+  it('forwards handleOpenSavedList as onOpenSavedList', () => {
+    const handleOpenSavedList = vi.fn()
+    useTaskActions.mockReturnValue({
+      handleDeleteTask: vi.fn(), handleStopRecurring: vi.fn(),
+      handleSaveToBank: vi.fn(), handleOpenSavedList, handleReorder: vi.fn(),
+    })
+    render(<App />)
+    expect(lastMainContentProps.onOpenSavedList).toBe(handleOpenSavedList)
+  })
+
+  it('forwards handleReorder as onReorder', () => {
+    const handleReorder = vi.fn()
+    useTaskActions.mockReturnValue({
+      handleDeleteTask: vi.fn(), handleStopRecurring: vi.fn(),
+      handleSaveToBank: vi.fn(), handleOpenSavedList: vi.fn(), handleReorder,
+    })
+    render(<App />)
+    expect(lastMainContentProps.onReorder).toBe(handleReorder)
+  })
+})
+
+// ── useTimerActions callbacks forwarded to MainContent and AppModals ──────────
+
+describe('useTimerActions callbacks forwarded to MainContent and AppModals', () => {
+  it('forwards openTimerForTask as onOpenTimer to MainContent', () => {
+    const openTimerForTask = vi.fn()
+    useTimerActions.mockReturnValue({ openTimerForTask, restartTimer: vi.fn(), startAgainTimer: vi.fn() })
+    render(<App />)
+    expect(lastMainContentProps.onOpenTimer).toBe(openTimerForTask)
+  })
+
+  it('forwards restartTimer to AppModals', () => {
+    const restartTimer = vi.fn()
+    useTimerActions.mockReturnValue({ openTimerForTask: vi.fn(), restartTimer, startAgainTimer: vi.fn() })
+    render(<App />)
+    expect(lastAppModalsProps.restartTimer).toBe(restartTimer)
+  })
+
+  it('forwards startAgainTimer to AppModals', () => {
+    const startAgainTimer = vi.fn()
+    useTimerActions.mockReturnValue({ openTimerForTask: vi.fn(), restartTimer: vi.fn(), startAgainTimer })
+    render(<App />)
+    expect(lastAppModalsProps.startAgainTimer).toBe(startAgainTimer)
+  })
+})
+
+// ── useDataPortability props forwarded to AppModals ───────────────────────────
+
+describe('useDataPortability props forwarded to AppModals', () => {
+  it('forwards pendingImport: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pendingImport).toBeNull()
+  })
+
+  it('forwards a non-null pendingImport object', () => {
+    const pendingImport = { tasks: {}, recurringTasks: [] }
+    useDataPortability.mockReturnValue({
+      pendingImport, setPendingImport: vi.fn(),
+      importError: '', importFileRef: { current: null },
+      handleImportFileChange: vi.fn(), handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.pendingImport).toBe(pendingImport)
+  })
+
+  it('forwards setPendingImport', () => {
+    const setPendingImport = vi.fn()
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport,
+      importError: '', importFileRef: { current: null },
+      handleImportFileChange: vi.fn(), handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.setPendingImport).toBe(setPendingImport)
+  })
+
+  it('forwards a non-empty importError string', () => {
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport: vi.fn(),
+      importError: 'Corrupt file', importFileRef: { current: null },
+      handleImportFileChange: vi.fn(), handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.importError).toBe('Corrupt file')
+  })
+
+  it('forwards importFileRef by reference', () => {
+    const importFileRef = { current: null }
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport: vi.fn(),
+      importError: '', importFileRef,
+      handleImportFileChange: vi.fn(), handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.importFileRef).toBe(importFileRef)
+  })
+
+  it('forwards handleImportFileChange', () => {
+    const handleImportFileChange = vi.fn()
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport: vi.fn(),
+      importError: '', importFileRef: { current: null },
+      handleImportFileChange, handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.handleImportFileChange).toBe(handleImportFileChange)
+  })
+
+  it('forwards handleImportConfirm', () => {
+    const handleImportConfirm = vi.fn()
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport: vi.fn(),
+      importError: '', importFileRef: { current: null },
+      handleImportFileChange: vi.fn(), handleImportConfirm,
+    })
+    render(<App />)
+    expect(lastAppModalsProps.handleImportConfirm).toBe(handleImportConfirm)
+  })
+})
+
+// ── timer action callbacks forwarded to AppModals ─────────────────────────────
+
+describe('timer action callbacks forwarded to AppModals', () => {
+  it('forwards closeTimer', () => {
+    const closeTimer = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ closeTimer }))
+    render(<App />)
+    expect(lastAppModalsProps.closeTimer).toBe(closeTimer)
+  })
+
+  it('forwards toggleTimer', () => {
+    const toggleTimer = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ toggleTimer }))
+    render(<App />)
+    expect(lastAppModalsProps.toggleTimer).toBe(toggleTimer)
+  })
+
+  it('forwards markTimerTaskDone', () => {
+    const markTimerTaskDone = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ markTimerTaskDone }))
+    render(<App />)
+    expect(lastAppModalsProps.markTimerTaskDone).toBe(markTimerTaskDone)
+  })
+
+  it('forwards isTimerMinimized: false by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.isTimerMinimized).toBe(false)
+  })
+
+  it('forwards isTimerMinimized: true', () => {
+    useTimer.mockReturnValue(mkTimer({ isTimerMinimized: true }))
+    render(<App />)
+    expect(lastAppModalsProps.isTimerMinimized).toBe(true)
+  })
+
+  it('forwards setIsTimerMinimized', () => {
+    const setIsTimerMinimized = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ setIsTimerMinimized }))
+    render(<App />)
+    expect(lastAppModalsProps.setIsTimerMinimized).toBe(setIsTimerMinimized)
+  })
+
+  it('forwards confirmSwitchTask', () => {
+    const confirmSwitchTask = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ confirmSwitchTask }))
+    render(<App />)
+    expect(lastAppModalsProps.confirmSwitchTask).toBe(confirmSwitchTask)
+  })
+
+  it('forwards openTimer to AppModals', () => {
+    const openTimer = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ openTimer }))
+    render(<App />)
+    expect(lastAppModalsProps.openTimer).toBe(openTimer)
+  })
+
+  it('forwards handleSetPomodoroMinutes', () => {
+    const handleSetPomodoroMinutes = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ handleSetPomodoroMinutes }))
+    render(<App />)
+    expect(lastAppModalsProps.handleSetPomodoroMinutes).toBe(handleSetPomodoroMinutes)
+  })
+
+  it('forwards setPomodoroEnabled', () => {
+    const setPomodoroEnabled = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ setPomodoroEnabled }))
+    render(<App />)
+    expect(lastAppModalsProps.setPomodoroEnabled).toBe(setPomodoroEnabled)
+  })
+
+  it('forwards setPendingTimerTask', () => {
+    const setPendingTimerTask = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ setPendingTimerTask }))
+    render(<App />)
+    expect(lastAppModalsProps.setPendingTimerTask).toBe(setPendingTimerTask)
+  })
+
+  it('forwards setPendingTimerMinutes', () => {
+    const setPendingTimerMinutes = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ setPendingTimerMinutes }))
+    render(<App />)
+    expect(lastAppModalsProps.setPendingTimerMinutes).toBe(setPendingTimerMinutes)
+  })
+
+  it('forwards setPendingSwitchTask', () => {
+    const setPendingSwitchTask = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ setPendingSwitchTask }))
+    render(<App />)
+    expect(lastAppModalsProps.setPendingSwitchTask).toBe(setPendingSwitchTask)
+  })
+
+  it('forwards setScheduleTimers to AppModals', () => {
+    const setScheduleTimers = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers }))
+    render(<App />)
+    expect(lastAppModalsProps.setScheduleTimers).toBe(setScheduleTimers)
+  })
+})
+
+// ── unsaved-warning props forwarded to AppModals ──────────────────────────────
+
+describe('unsaved-warning props forwarded to AppModals', () => {
+  it('forwards showUnsavedWarning: false by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.showUnsavedWarning).toBe(false)
+  })
+
+  it('forwards showUnsavedWarning: true', () => {
+    useSchedule.mockReturnValue(mkSchedule({ showUnsavedWarning: true }))
+    render(<App />)
+    expect(lastAppModalsProps.showUnsavedWarning).toBe(true)
+  })
+
+  it('forwards handleUnsavedSaveAndContinue', () => {
+    const handleUnsavedSaveAndContinue = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ handleUnsavedSaveAndContinue }))
+    render(<App />)
+    expect(lastAppModalsProps.handleUnsavedSaveAndContinue).toBe(handleUnsavedSaveAndContinue)
+  })
+
+  it('forwards handleUnsavedDiscard', () => {
+    const handleUnsavedDiscard = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ handleUnsavedDiscard }))
+    render(<App />)
+    expect(lastAppModalsProps.handleUnsavedDiscard).toBe(handleUnsavedDiscard)
+  })
+
+  it('forwards handleUnsavedCancel', () => {
+    const handleUnsavedCancel = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ handleUnsavedCancel }))
+    render(<App />)
+    expect(lastAppModalsProps.handleUnsavedCancel).toBe(handleUnsavedCancel)
+  })
+})
+
+// ── modal objects forwarded to MainContent and AppModals ──────────────────────
+
+describe('modal objects forwarded to MainContent and AppModals', () => {
+  it('forwards editModal.open as onEdit to MainContent', () => {
+    const open = vi.fn()
+    useTaskModal.mockImplementation(({ mode }) =>
+      mode === 'edit' ? { ...mkModal(), open } : mkModal()
+    )
+    render(<App />)
+    expect(lastMainContentProps.onEdit).toBe(open)
+  })
+
+  it('forwards the addModal object to AppModals', () => {
+    const addModal = mkModal()
+    useTaskModal.mockImplementation(({ mode }) =>
+      mode === 'add' ? addModal : mkModal()
+    )
+    render(<App />)
+    expect(lastAppModalsProps.addModal).toBe(addModal)
+  })
+
+  it('forwards the editModal object to AppModals', () => {
+    const editModal = mkModal()
+    useTaskModal.mockImplementation(({ mode }) =>
+      mode === 'edit' ? editModal : mkModal()
+    )
+    render(<App />)
+    expect(lastAppModalsProps.editModal).toBe(editModal)
+  })
+})
+
+// ── AppModals task/bank props forwarded ───────────────────────────────────────
+
+describe('AppModals task/bank props forwarded', () => {
+  it('forwards the full tasks object', () => {
+    const tasks = { [TODAY]: [{ id: 't1', done: false }] }
+    useTasks.mockReturnValue(mkTasks({ tasks }))
+    render(<App />)
+    expect(lastAppModalsProps.tasks).toBe(tasks)
+  })
+
+  it('forwards addTaskDirect from useTasks', () => {
+    const addTaskDirect = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect }))
+    render(<App />)
+    expect(lastAppModalsProps.addTaskDirect).toBe(addTaskDirect)
+  })
+
+  it('forwards taskBank from useTaskBank', () => {
+    const taskBank = [{ text: 'Math' }, { text: 'Science' }]
+    useTaskBank.mockReturnValue({
+      taskBank, addToBank: vi.fn(), removeFromBank: vi.fn(),
+      updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.taskBank).toBe(taskBank)
+  })
+
+  it('forwards removeFromBank from useTaskBank', () => {
+    const removeFromBank = vi.fn()
+    useTaskBank.mockReturnValue({
+      taskBank: [], addToBank: vi.fn(), removeFromBank,
+      updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.removeFromBank).toBe(removeFromBank)
+  })
+
+  it('forwards addToBank from useTaskBank', () => {
+    const addToBank = vi.fn()
+    useTaskBank.mockReturnValue({
+      taskBank: [], addToBank, removeFromBank: vi.fn(),
+      updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.addToBank).toBe(addToBank)
+  })
+
+  it('forwards updateInBank from useTaskBank', () => {
+    const updateInBank = vi.fn()
+    useTaskBank.mockReturnValue({
+      taskBank: [], addToBank: vi.fn(), removeFromBank: vi.fn(),
+      updateInBank, reorderBank: vi.fn(),
+    })
+    render(<App />)
+    expect(lastAppModalsProps.updateInBank).toBe(updateInBank)
+  })
+
+  it('forwards reorderBank from useTaskBank', () => {
+    const reorderBank = vi.fn()
+    useTaskBank.mockReturnValue({
+      taskBank: [], addToBank: vi.fn(), removeFromBank: vi.fn(),
+      updateInBank: vi.fn(), reorderBank,
+    })
+    render(<App />)
+    expect(lastAppModalsProps.reorderBank).toBe(reorderBank)
+  })
+
+  it('forwards lang from useLang', () => {
+    render(<App />)
+    expect(lastAppModalsProps.lang).toBe('en')
+  })
+
+  it('forwards dateKey derived from the selected date', () => {
+    render(<App />)
+    expect(lastAppModalsProps.dateKey).toBe(TODAY)
+  })
+})
+
+// ── buildSidebarSections receives showCalendarCompletion ──────────────────────
+
+describe('buildSidebarSections receives showCalendarCompletion', () => {
+  it('receives false by default', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.showCalendarCompletion).toBe(false)
+  })
+
+  it('receives true when localStorage has studyflow_calendar_completion = "true"', () => {
+    localStorage.setItem('studyflow_calendar_completion', 'true')
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.showCalendarCompletion).toBe(true)
+  })
+})
