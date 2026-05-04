@@ -862,3 +862,383 @@ describe('excludedTaskIds resets on date change', () => {
     expect(lastMainContentProps.excludedTaskIds.size).toBe(1)
   })
 })
+
+// ── schedule props forwarded to MainContent ────────────────────────────────────
+
+describe('schedule props forwarded to MainContent', () => {
+  it('forwards null schedule by default', () => {
+    render(<App />)
+    expect(lastMainContentProps.schedule).toBeNull()
+  })
+
+  it('forwards a non-empty schedule array', () => {
+    const schedule = [{ id: 't1', scheduledMinutes: 30 }, { id: 't2', scheduledMinutes: 15 }]
+    useSchedule.mockReturnValue(mkSchedule({ schedule }))
+    render(<App />)
+    expect(lastMainContentProps.schedule).toEqual(schedule)
+  })
+
+  it('forwards an empty schedule array', () => {
+    useSchedule.mockReturnValue(mkSchedule({ schedule: [] }))
+    render(<App />)
+    expect(lastMainContentProps.schedule).toEqual([])
+  })
+
+  it('forwards allScheduleDone: false by default', () => {
+    render(<App />)
+    expect(lastMainContentProps.allScheduleDone).toBe(false)
+  })
+
+  it('forwards allScheduleDone: true', () => {
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: true }))
+    render(<App />)
+    expect(lastMainContentProps.allScheduleDone).toBe(true)
+  })
+
+  it('forwards empty scheduleTimers by default', () => {
+    render(<App />)
+    expect(lastMainContentProps.scheduleTimers).toEqual({})
+  })
+
+  it('forwards scheduleTimers with entries from useTimer', () => {
+    const scheduleTimers = { t1: 600, t2: 300 }
+    useTimer.mockReturnValue(mkTimer({ scheduleTimers }))
+    render(<App />)
+    expect(lastMainContentProps.scheduleTimers).toEqual(scheduleTimers)
+  })
+
+  it('forwards runningTaskId: null by default', () => {
+    render(<App />)
+    expect(lastMainContentProps.runningTaskId).toBeNull()
+  })
+
+  it('forwards a non-null runningTaskId', () => {
+    useTimer.mockReturnValue(mkTimer({ runningTaskId: 'task-99' }))
+    render(<App />)
+    expect(lastMainContentProps.runningTaskId).toBe('task-99')
+  })
+
+  it('forwards saveSchedule as onSaveSchedule', () => {
+    const saveSchedule = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ saveSchedule }))
+    render(<App />)
+    expect(lastMainContentProps.onSaveSchedule).toBe(saveSchedule)
+  })
+
+  it('forwards deleteSchedule as onDeleteSchedule', () => {
+    const deleteSchedule = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ deleteSchedule }))
+    render(<App />)
+    expect(lastMainContentProps.onDeleteSchedule).toBe(deleteSchedule)
+  })
+
+  it('forwards handleMarkScheduleItemDone as onMarkScheduleDone', () => {
+    const handleMarkScheduleItemDone = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ handleMarkScheduleItemDone }))
+    render(<App />)
+    expect(lastMainContentProps.onMarkScheduleDone).toBe(handleMarkScheduleItemDone)
+  })
+
+  it('forwards handleRemoveScheduleItem as onRemoveScheduleItem', () => {
+    const handleRemoveScheduleItem = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ handleRemoveScheduleItem }))
+    render(<App />)
+    expect(lastMainContentProps.onRemoveScheduleItem).toBe(handleRemoveScheduleItem)
+  })
+
+  it('forwards scheduleSensors from useSchedule', () => {
+    const scheduleSensors = ['sensor-a', 'sensor-b']
+    useSchedule.mockReturnValue(mkSchedule({ scheduleSensors }))
+    render(<App />)
+    expect(lastMainContentProps.scheduleSensors).toBe(scheduleSensors)
+  })
+
+  it('forwards handleScheduleDragEnd as onScheduleDragEnd', () => {
+    const handleScheduleDragEnd = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ handleScheduleDragEnd }))
+    render(<App />)
+    expect(lastMainContentProps.onScheduleDragEnd).toBe(handleScheduleDragEnd)
+  })
+
+  it('forwards openTimer as onOpenScheduleTimer', () => {
+    const openTimer = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ openTimer }))
+    render(<App />)
+    expect(lastMainContentProps.onOpenScheduleTimer).toBe(openTimer)
+  })
+})
+
+// ── timer props forwarded to AppModals ────────────────────────────────────────
+
+describe('timer props forwarded to AppModals', () => {
+  it('forwards timerTask: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.timerTask).toBeNull()
+  })
+
+  it('forwards a non-null timerTask', () => {
+    const timerTask = { id: 't1', text: 'Math' }
+    useTimer.mockReturnValue(mkTimer({ timerTask }))
+    render(<App />)
+    expect(lastAppModalsProps.timerTask).toEqual(timerTask)
+  })
+
+  it('forwards pendingTimerTask: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pendingTimerTask).toBeNull()
+  })
+
+  it('forwards a non-null pendingTimerTask', () => {
+    const pendingTimerTask = { id: 't2', text: 'Reading' }
+    useTimer.mockReturnValue(mkTimer({ pendingTimerTask }))
+    render(<App />)
+    expect(lastAppModalsProps.pendingTimerTask).toEqual(pendingTimerTask)
+  })
+
+  it('forwards pendingTimerMinutes: 0 by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pendingTimerMinutes).toBe(0)
+  })
+
+  it('forwards a non-zero pendingTimerMinutes', () => {
+    useTimer.mockReturnValue(mkTimer({ pendingTimerMinutes: 45 }))
+    render(<App />)
+    expect(lastAppModalsProps.pendingTimerMinutes).toBe(45)
+  })
+
+  it('forwards pendingSwitchTask: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pendingSwitchTask).toBeNull()
+  })
+
+  it('forwards a non-null pendingSwitchTask', () => {
+    const pendingSwitchTask = { id: 't3', text: 'Physics' }
+    useTimer.mockReturnValue(mkTimer({ pendingSwitchTask }))
+    render(<App />)
+    expect(lastAppModalsProps.pendingSwitchTask).toEqual(pendingSwitchTask)
+  })
+
+  it('forwards pomodoroEnabled: false by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroEnabled).toBe(false)
+  })
+
+  it('forwards pomodoroEnabled: true', () => {
+    useTimer.mockReturnValue(mkTimer({ pomodoroEnabled: true }))
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroEnabled).toBe(true)
+  })
+
+  it('forwards pomodoroMinutes: 25 by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroMinutes).toBe(25)
+  })
+
+  it('forwards a custom pomodoroMinutes value', () => {
+    useTimer.mockReturnValue(mkTimer({ pomodoroMinutes: 50 }))
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroMinutes).toBe(50)
+  })
+
+  it('forwards pomodoroResetAt: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroResetAt).toBeNull()
+  })
+
+  it('forwards a non-null pomodoroResetAt timestamp', () => {
+    useTimer.mockReturnValue(mkTimer({ pomodoroResetAt: 1234567890 }))
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroResetAt).toBe(1234567890)
+  })
+
+  it('forwards pomodoroBreakCount: 0 by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroBreakCount).toBe(0)
+  })
+
+  it('forwards a non-zero pomodoroBreakCount', () => {
+    useTimer.mockReturnValue(mkTimer({ pomodoroBreakCount: 3 }))
+    render(<App />)
+    expect(lastAppModalsProps.pomodoroBreakCount).toBe(3)
+  })
+
+  it('forwards timerMusic: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.timerMusic).toBeNull()
+  })
+
+  it('forwards a non-null timerMusic object', () => {
+    const timerMusic = { src: 'lofi.mp3', playing: true }
+    useTimer.mockReturnValue(mkTimer({ timerMusic }))
+    render(<App />)
+    expect(lastAppModalsProps.timerMusic).toEqual(timerMusic)
+  })
+})
+
+// ── handleDateChange ───────────────────────────────────────────────────────────
+
+describe('handleDateChange', () => {
+  it('delegates to checkUnsaved', () => {
+    const checkUnsaved = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ checkUnsaved }))
+    render(<App />)
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2025-06-15')))
+    expect(checkUnsaved).toHaveBeenCalledWith(expect.any(Function))
+  })
+
+  it('updates dateKey when checkUnsaved invokes its callback', () => {
+    render(<App />) // default mkSchedule checkUnsaved immediately calls cb
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+    expect(lastAppModalsProps.dateKey).toBe('2000-01-01')
+  })
+
+  it('does not update dateKey when checkUnsaved swallows the callback', () => {
+    const checkUnsaved = vi.fn() // never calls cb
+    useSchedule.mockReturnValue(mkSchedule({ checkUnsaved }))
+    render(<App />)
+    const todayKey = new Date().toLocaleDateString('en-CA')
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+    expect(lastAppModalsProps.dateKey).toBe(todayKey)
+  })
+
+  it('resets excludedTaskIds when the date successfully changes', () => {
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-x'))
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(1)
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(0)
+  })
+
+  it('does not reset excludedTaskIds when checkUnsaved blocks the change', () => {
+    const checkUnsaved = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ checkUnsaved }))
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-x'))
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(1)
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(1)
+  })
+})
+
+// ── isEditing derivation ───────────────────────────────────────────────────────
+
+describe('isEditing derivation', () => {
+  it('is false when editModal.isOpen is false', () => {
+    render(<App />)
+    expect(lastAppModalsProps.isEditing).toBe(false)
+  })
+
+  it('is true when editModal.isOpen is true', () => {
+    useTaskModal.mockImplementation(({ mode }) =>
+      mode === 'edit' ? { ...mkModal(), isOpen: true } : mkModal()
+    )
+    render(<App />)
+    expect(lastAppModalsProps.isEditing).toBe(true)
+  })
+
+  it('stays false when only addModal.isOpen is true', () => {
+    useTaskModal.mockImplementation(({ mode }) =>
+      mode === 'add' ? { ...mkModal(), isOpen: true } : mkModal()
+    )
+    render(<App />)
+    expect(lastAppModalsProps.isEditing).toBe(false)
+  })
+})
+
+// ── showHelp state ─────────────────────────────────────────────────────────────
+
+describe('showHelp state', () => {
+  it('starts as false', () => {
+    render(<App />)
+    expect(lastAppModalsProps.showHelp).toBe(false)
+  })
+
+  it('becomes true when setShowHelp(true) is called', () => {
+    render(<App />)
+    act(() => lastAppModalsProps.setShowHelp(true))
+    expect(lastAppModalsProps.showHelp).toBe(true)
+  })
+
+  it('returns to false after setShowHelp(false)', () => {
+    render(<App />)
+    act(() => lastAppModalsProps.setShowHelp(true))
+    act(() => lastAppModalsProps.setShowHelp(false))
+    expect(lastAppModalsProps.showHelp).toBe(false)
+  })
+})
+
+// ── buildSidebarSections receives correct props ────────────────────────────────
+
+describe('buildSidebarSections receives correct props', () => {
+  it('receives default totalStudyTime of 4 and priorityPercent of 40', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.totalStudyTime).toBe(4)
+    expect(props.priorityPercent).toBe(40)
+  })
+
+  it('receives tasksForDay matching today\'s task list', () => {
+    const todayTasks = [{ id: 't1', done: false }, { id: 't2', done: true }]
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: todayTasks } }))
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.tasksForDay).toEqual(todayTasks)
+  })
+
+  it('receives an empty tasksForDay when no tasks exist for today', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.tasksForDay).toEqual([])
+  })
+
+  it('does not include tasks from other dates in tasksForDay', () => {
+    useTasks.mockReturnValue(mkTasks({
+      tasks: {
+        [TODAY]: [{ id: 't1', done: false }],
+        '2000-01-01': [{ id: 't2', done: true }, { id: 't3', done: true }],
+      },
+    }))
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.tasksForDay).toEqual([{ id: 't1', done: false }])
+  })
+
+  it('receives scheduleTimers and taskAllocations from useTimer', () => {
+    const scheduleTimers = { t1: 300 }
+    const taskAllocations = { t1: 5 }
+    useTimer.mockReturnValue(mkTimer({ scheduleTimers, taskAllocations }))
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.scheduleTimers).toEqual(scheduleTimers)
+    expect(props.taskAllocations).toEqual(taskAllocations)
+  })
+
+  it('receives recurringTasks from useRecurringTasks', () => {
+    const recurringTasks = [{ id: 'r1', text: 'Daily habit' }]
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks }))
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.recurringTasks).toEqual(recurringTasks)
+  })
+
+  it('receives handleMainMusicToggle from useTimer', () => {
+    const handleMainMusicToggle = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ handleMainMusicToggle }))
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.handleMainMusicToggle).toBe(handleMainMusicToggle)
+  })
+
+  it('receives dateKey derived from selectedDate', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.dateKey).toBe(TODAY)
+  })
+})
