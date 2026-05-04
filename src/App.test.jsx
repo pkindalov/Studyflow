@@ -211,6 +211,42 @@ describe('confetti trigger', () => {
     act(() => vi.advanceTimersByTime(4500))
     expect(lastAppModalsProps.showConfetti).toBe(false)
   })
+
+  it('confetti does not clear before 4500 ms have elapsed', () => {
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: true }))
+    render(<App />)
+
+    act(() => vi.advanceTimersByTime(4499))
+    expect(lastAppModalsProps.showConfetti).toBe(true)
+  })
+
+  it('refires when allScheduleDone transitions false → true a second time', () => {
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: false }))
+    const { rerender } = render(<App />)
+
+    // first transition: false → true
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: true }))
+    act(() => rerender(<App />))
+    expect(lastAppModalsProps.showConfetti).toBe(true)
+
+    act(() => vi.advanceTimersByTime(4500))
+    expect(lastAppModalsProps.showConfetti).toBe(false)
+
+    // reset: back to false — prevRef must clear
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: false }))
+    act(() => rerender(<App />))
+
+    // second transition: false → true
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: true }))
+    act(() => rerender(<App />))
+    expect(lastAppModalsProps.showConfetti).toBe(true)
+  })
+
+  it('does not fire on initial render when allScheduleDone starts false', () => {
+    useSchedule.mockReturnValue(mkSchedule({ allScheduleDone: false }))
+    render(<App />)
+    expect(lastAppModalsProps.showConfetti).toBe(false)
+  })
 })
 
 // ── recurring task auto-injection ──────────────────────────────────────────────
@@ -263,6 +299,67 @@ describe('recurring task auto-injection', () => {
 
     render(<App />)
     expect(addTaskDirect).not.toHaveBeenCalled()
+  })
+
+  it('passes imageUrl from the template to addTaskDirect', () => {
+    const addTaskDirect = vi.fn()
+    const templateWithImage = { id: 'r2', text: 'Read', priority: false, imageUrl: 'https://example.com/img.png' }
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [templateWithImage] }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    expect(addTaskDirect).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ imageUrl: 'https://example.com/img.png' }),
+    )
+  })
+
+  it('only injects templates that pass appliesToDate when multiple exist', () => {
+    const addTaskDirect = vi.fn()
+    const t1 = { id: 'r1', text: 'Applies', priority: false }
+    const t2 = { id: 'r2', text: 'Skipped', priority: false }
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [t1, t2] }))
+    appliesToDate.mockImplementation((tmpl) => tmpl.id === 'r1')
+
+    render(<App />)
+    expect(addTaskDirect).toHaveBeenCalledTimes(1)
+    expect(addTaskDirect).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ recurringId: 'r1' }),
+    )
+  })
+
+  it('injects all templates when all pass appliesToDate', () => {
+    const addTaskDirect = vi.fn()
+    const t1 = { id: 'r1', text: 'Habit A', priority: false }
+    const t2 = { id: 'r2', text: 'Habit B', priority: false }
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [t1, t2] }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    expect(addTaskDirect).toHaveBeenCalledTimes(2)
+  })
+
+  it('skips a template whose recurringId is already present even among multiple templates', () => {
+    const addTaskDirect = vi.fn()
+    const t1 = { id: 'r1', text: 'Already here', priority: false }
+    const t2 = { id: 'r2', text: 'New one', priority: false }
+    useTasks.mockReturnValue(mkTasks({
+      addTaskDirect,
+      tasks: { [TODAY]: [{ id: 'x', recurringId: 'r1', done: false }] },
+    }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [t1, t2] }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    expect(addTaskDirect).toHaveBeenCalledTimes(1)
+    expect(addTaskDirect).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ recurringId: 'r2' }),
+    )
   })
 })
 
@@ -319,6 +416,48 @@ describe('handleToggleTask', () => {
     act(() => lastMainContentProps.onToggle('t1'))
     expect(setScheduleTimers).not.toHaveBeenCalled()
   })
+
+  it('calls toggleTask but skips scheduleTimers when schedule is null', () => {
+    const toggleTask = vi.fn()
+    const setScheduleTimers = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [task] }, toggleTask }))
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers }))
+    // default mkSchedule() has schedule: null
+
+    render(<App />)
+    act(() => lastMainContentProps.onToggle('t1'))
+
+    expect(toggleTask).toHaveBeenCalledWith(TODAY, 't1')
+    expect(setScheduleTimers).not.toHaveBeenCalled()
+  })
+
+  it('calls toggleTask even when the task id is not found in tasks', () => {
+    const toggleTask = vi.fn()
+    const setScheduleTimers = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [] }, toggleTask }))
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers }))
+    useSchedule.mockReturnValue(mkSchedule({ schedule: [{ id: 'ghost-id', scheduledMinutes: 20 }] }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onToggle('ghost-id'))
+
+    expect(toggleTask).toHaveBeenCalledWith(TODAY, 'ghost-id')
+    expect(setScheduleTimers).not.toHaveBeenCalled()
+  })
+
+  it('preserves existing timer entries when updating a specific task', () => {
+    const setScheduleTimers = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [task] } }))
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers }))
+    useSchedule.mockReturnValue(mkSchedule({ schedule: [{ id: 't1', scheduledMinutes: 10 }] }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onToggle('t1'))
+
+    const updater = setScheduleTimers.mock.calls[0][0]
+    const existing = { other: 999 }
+    expect(updater(existing)).toEqual({ other: 999, t1: 600 })
+  })
 })
 
 // ── handleGenerateSchedule ─────────────────────────────────────────────────────
@@ -358,6 +497,44 @@ describe('handleGenerateSchedule', () => {
 
     expect(screen.queryByText('All done — nothing left!')).toBeNull()
   })
+
+  it('opens the bank modal when tasksForDay is empty (no tasks at all)', () => {
+    const generateSchedule = vi.fn((cb) => cb())
+    useTasks.mockReturnValue(mkTasks({ tasks: {} }))
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onGenerateSchedule())
+
+    // tasksForDay.length === 0 → allDone is false → bank modal, no notification
+    expect(lastAppModalsProps.showTaskBankModal).toBe(true)
+    expect(screen.queryByText('All done — nothing left!')).toBeNull()
+  })
+
+  it('opens the bank modal when only some tasks are done', () => {
+    const generateSchedule = vi.fn((cb) => cb())
+    useTasks.mockReturnValue(mkTasks({
+      tasks: { [TODAY]: [{ id: 't1', done: true }, { id: 't2', done: false }] },
+    }))
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onGenerateSchedule())
+
+    expect(lastAppModalsProps.showTaskBankModal).toBe(true)
+    expect(screen.queryByText('All done — nothing left!')).toBeNull()
+  })
+
+  it('does not open the bank modal when generateSchedule does not call its callback', () => {
+    const generateSchedule = vi.fn() // callback never invoked
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [{ id: 't1', done: false }] } }))
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onGenerateSchedule())
+
+    expect(lastAppModalsProps.showTaskBankModal).toBeFalsy()
+  })
 })
 
 // ── handleClearAll ─────────────────────────────────────────────────────────────
@@ -393,5 +570,103 @@ describe('handleClearAll', () => {
 
     act(() => lastAppModalsProps.handleClearAll())
     expect(lastAppModalsProps.showClearConfirm).toBe(false)
+  })
+
+  it('resets excludedTaskIds to an empty set', () => {
+    render(<App />)
+
+    // populate excludedTaskIds first
+    act(() => lastMainContentProps.onToggleSelect('task-xyz'))
+    expect(lastMainContentProps.excludedTaskIds.has('task-xyz')).toBe(true)
+
+    act(() => lastAppModalsProps.handleClearAll())
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(0)
+  })
+})
+
+// ── notification auto-dismiss ──────────────────────────────────────────────────
+
+describe('notification auto-dismiss', () => {
+  beforeEach(() => { vi.useFakeTimers() })
+  afterEach(() => { vi.useRealTimers() })
+
+  it('removes the notification text after 2500 ms', () => {
+    const generateSchedule = vi.fn((cb) => cb())
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [{ id: 't1', done: true }] } }))
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onGenerateSchedule())
+    expect(screen.getByText('All done — nothing left!')).toBeTruthy()
+
+    act(() => vi.advanceTimersByTime(2500))
+    expect(screen.queryByText('All done — nothing left!')).toBeNull()
+  })
+
+  it('is still visible just before 2500 ms elapses', () => {
+    const generateSchedule = vi.fn((cb) => cb())
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [{ id: 't1', done: true }] } }))
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+
+    render(<App />)
+    act(() => lastMainContentProps.onGenerateSchedule())
+
+    act(() => vi.advanceTimersByTime(2499))
+    expect(screen.getByText('All done — nothing left!')).toBeTruthy()
+  })
+})
+
+// ── toggleTaskSelection / excludedTaskIds ──────────────────────────────────────
+
+describe('toggleTaskSelection', () => {
+  it('adds an id to excludedTaskIds when toggled once', () => {
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-abc'))
+    expect(lastMainContentProps.excludedTaskIds.has('task-abc')).toBe(true)
+  })
+
+  it('removes an id from excludedTaskIds when toggled twice', () => {
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-abc'))
+    act(() => lastMainContentProps.onToggleSelect('task-abc'))
+    expect(lastMainContentProps.excludedTaskIds.has('task-abc')).toBe(false)
+  })
+
+  it('tracks multiple excluded ids independently', () => {
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-1'))
+    act(() => lastMainContentProps.onToggleSelect('task-2'))
+    expect(lastMainContentProps.excludedTaskIds.has('task-1')).toBe(true)
+    expect(lastMainContentProps.excludedTaskIds.has('task-2')).toBe(true)
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(2)
+  })
+
+  it('removing one id does not affect others', () => {
+    render(<App />)
+    act(() => lastMainContentProps.onToggleSelect('task-1'))
+    act(() => lastMainContentProps.onToggleSelect('task-2'))
+    act(() => lastMainContentProps.onToggleSelect('task-1')) // remove task-1
+    expect(lastMainContentProps.excludedTaskIds.has('task-1')).toBe(false)
+    expect(lastMainContentProps.excludedTaskIds.has('task-2')).toBe(true)
+  })
+
+  it('starts with an empty set', () => {
+    render(<App />)
+    expect(lastMainContentProps.excludedTaskIds.size).toBe(0)
+  })
+})
+
+// ── showCalendarCompletion persistence ─────────────────────────────────────────
+
+describe('showCalendarCompletion persistence', () => {
+  it('writes false to localStorage on mount when not previously stored', () => {
+    render(<App />)
+    expect(localStorage.getItem('studyflow_calendar_completion')).toBe('false')
+  })
+
+  it('reads true from localStorage and writes it back on mount', () => {
+    localStorage.setItem('studyflow_calendar_completion', 'true')
+    render(<App />)
+    expect(localStorage.getItem('studyflow_calendar_completion')).toBe('true')
   })
 })
