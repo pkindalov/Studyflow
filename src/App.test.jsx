@@ -1892,6 +1892,16 @@ describe('BottomBar props wired from App', () => {
     act(() => lastBottomBarProps.onImport())
     expect(click).toHaveBeenCalled()
   })
+
+  it('onImport does not throw when importFileRef.current is null', () => {
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport: vi.fn(),
+      importError: '', importFileRef: { current: null },
+      handleImportFileChange: vi.fn(), handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    expect(() => act(() => lastBottomBarProps.onImport())).not.toThrow()
+  })
 })
 
 // ── AppModals remaining props ─────────────────────────────────────────────────
@@ -2165,6 +2175,38 @@ describe('useTaskModal receives correct arguments', () => {
     expect(editArgs.removeTaskFromSchedule).toBe(removeTaskFromSchedule)
     expect(editArgs.setScheduleTimers).toBe(setScheduleTimers)
   })
+
+  it('editModal call receives updateRecurring from useRecurringTasks', () => {
+    const updateRecurring = vi.fn()
+    useRecurringTasks.mockReturnValue(mkRecurring({ updateRecurring }))
+    render(<App />)
+    const editArgs = useTaskModal.mock.calls.find(([a]) => a.mode === 'edit')[0]
+    expect(editArgs.updateRecurring).toBe(updateRecurring)
+  })
+
+  it('editModal call receives addRecurring from useRecurringTasks', () => {
+    const addRecurring = vi.fn()
+    useRecurringTasks.mockReturnValue(mkRecurring({ addRecurring }))
+    render(<App />)
+    const editArgs = useTaskModal.mock.calls.find(([a]) => a.mode === 'edit')[0]
+    expect(editArgs.addRecurring).toBe(addRecurring)
+  })
+
+  it('editModal call receives deleteRecurring from useRecurringTasks', () => {
+    const deleteRecurring = vi.fn()
+    useRecurringTasks.mockReturnValue(mkRecurring({ deleteRecurring }))
+    render(<App />)
+    const editArgs = useTaskModal.mock.calls.find(([a]) => a.mode === 'edit')[0]
+    expect(editArgs.deleteRecurring).toBe(deleteRecurring)
+  })
+
+  it('editModal call receives deleteAllByRecurringId from useTasks', () => {
+    const deleteAllByRecurringId = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ deleteAllByRecurringId }))
+    render(<App />)
+    const editArgs = useTaskModal.mock.calls.find(([a]) => a.mode === 'edit')[0]
+    expect(editArgs.deleteAllByRecurringId).toBe(deleteAllByRecurringId)
+  })
 })
 
 // ── markDateWithTasks receives correct arguments ──────────────────────────────
@@ -2200,5 +2242,18 @@ describe('notification banner conditional rendering', () => {
   it('is absent from the DOM on initial render', () => {
     const { container } = render(<App />)
     expect(container.querySelector('.animate-fade-in')).toBeNull()
+  })
+
+  it('appears with the notification text when a notification is set', () => {
+    const generateSchedule = vi.fn((cb) => cb())
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: [{ id: 't1', done: true }] } }))
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+    const { container } = render(<App />)
+
+    act(() => lastMainContentProps.onGenerateSchedule())
+
+    const banner = container.querySelector('.animate-fade-in')
+    expect(banner).not.toBeNull()
+    expect(banner.textContent).toBe('All done — nothing left!')
   })
 })
