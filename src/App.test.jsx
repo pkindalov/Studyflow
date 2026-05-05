@@ -1922,3 +1922,283 @@ describe('AppModals remaining props', () => {
     expect(lastAppModalsProps.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
   })
 })
+
+// ── useTimer receives correct arguments ───────────────────────────────────────
+
+describe('useTimer receives correct arguments', () => {
+  it('receives dateKey, music, and markTaskDone', () => {
+    const markTaskDone = vi.fn()
+    const music = { playing: false }
+    useTasks.mockReturnValue(mkTasks({ markTaskDone }))
+    useMusicPlayer.mockReturnValue(music)
+    render(<App />)
+    const args = useTimer.mock.calls[0][0]
+    expect(args.dateKey).toBe(TODAY)
+    expect(args.music).toBe(music)
+    expect(args.markTaskDone).toBe(markTaskDone)
+  })
+})
+
+// ── useSchedule receives correct arguments ────────────────────────────────────
+
+describe('useSchedule receives correct arguments', () => {
+  it('receives dateKey, default totalStudyTime (4), and default priorityPercent (40)', () => {
+    render(<App />)
+    const args = useSchedule.mock.calls[0][0]
+    expect(args.dateKey).toBe(TODAY)
+    expect(args.totalStudyTime).toBe(4)
+    expect(args.priorityPercent).toBe(40)
+  })
+
+  it('receives tasksForDay matching today\'s tasks', () => {
+    const todayTasks = [{ id: 't1', done: false }]
+    useTasks.mockReturnValue(mkTasks({ tasks: { [TODAY]: todayTasks } }))
+    render(<App />)
+    expect(useSchedule.mock.calls[0][0].tasksForDay).toEqual(todayTasks)
+  })
+
+  it('receives excludedTaskIds as an empty Set on initial render', () => {
+    render(<App />)
+    const { excludedTaskIds } = useSchedule.mock.calls[0][0]
+    expect(excludedTaskIds).toBeInstanceOf(Set)
+    expect(excludedTaskIds.size).toBe(0)
+  })
+
+  it('receives scheduleTimers, setScheduleTimers, runningTaskId, setRunningTaskId from useTimer', () => {
+    const setScheduleTimers = vi.fn()
+    const setRunningTaskId = vi.fn()
+    useTimer.mockReturnValue(mkTimer({ scheduleTimers: { t1: 300 }, setScheduleTimers, runningTaskId: 'task-1', setRunningTaskId }))
+    render(<App />)
+    const args = useSchedule.mock.calls[0][0]
+    expect(args.scheduleTimers).toEqual({ t1: 300 })
+    expect(args.setScheduleTimers).toBe(setScheduleTimers)
+    expect(args.runningTaskId).toBe('task-1')
+    expect(args.setRunningTaskId).toBe(setRunningTaskId)
+  })
+
+  it('receives markTaskDone from useTasks', () => {
+    const markTaskDone = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ markTaskDone }))
+    render(<App />)
+    expect(useSchedule.mock.calls[0][0].markTaskDone).toBe(markTaskDone)
+  })
+
+  it('receives t from useLang and showNotification as a function', () => {
+    render(<App />)
+    const args = useSchedule.mock.calls[0][0]
+    expect(args.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
+    expect(typeof args.showNotification).toBe('function')
+  })
+
+  it('receives updated totalStudyTime after setTotalStudyTime is called', () => {
+    render(<App />)
+    act(() => buildSidebarSections.mock.calls.at(-1)[0].setTotalStudyTime(8))
+    expect(useSchedule.mock.calls.at(-1)[0].totalStudyTime).toBe(8)
+  })
+
+  it('receives updated priorityPercent after setPriorityPercent is called', () => {
+    render(<App />)
+    act(() => buildSidebarSections.mock.calls.at(-1)[0].setPriorityPercent(60))
+    expect(useSchedule.mock.calls.at(-1)[0].priorityPercent).toBe(60)
+  })
+})
+
+// ── useTimerActions receives correct arguments ────────────────────────────────
+
+describe('useTimerActions receives correct arguments', () => {
+  it('receives dateKey, timerTask, openTimer, and music', () => {
+    const timerTask = { id: 't1', text: 'Math' }
+    const openTimer = vi.fn()
+    const music = { playing: true }
+    useMusicPlayer.mockReturnValue(music)
+    useTimer.mockReturnValue(mkTimer({ timerTask, openTimer }))
+    render(<App />)
+    const args = useTimerActions.mock.calls[0][0]
+    expect(args.dateKey).toBe(TODAY)
+    expect(args.timerTask).toBe(timerTask)
+    expect(args.openTimer).toBe(openTimer)
+    expect(args.music).toBe(music)
+  })
+
+  it('receives schedule, scheduleTimers, and taskAllocations from their hooks', () => {
+    const schedule = [{ id: 't1', scheduledMinutes: 30 }]
+    const scheduleTimers = { t1: 1800 }
+    const taskAllocations = { t1: 30 }
+    useSchedule.mockReturnValue(mkSchedule({ schedule }))
+    useTimer.mockReturnValue(mkTimer({ scheduleTimers, taskAllocations }))
+    render(<App />)
+    const args = useTimerActions.mock.calls[0][0]
+    expect(args.schedule).toBe(schedule)
+    expect(args.scheduleTimers).toBe(scheduleTimers)
+    expect(args.taskAllocations).toBe(taskAllocations)
+  })
+
+  it('receives setter functions and ref from useTimer', () => {
+    const setScheduleTimers = vi.fn()
+    const setPendingTimerTask = vi.fn()
+    const setPendingTimerMinutes = vi.fn()
+    const setRunningTaskId = vi.fn()
+    const resetPomodoroState = vi.fn()
+    const timerOriginDateKeyRef = { current: 'some-date' }
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers, setPendingTimerTask, setPendingTimerMinutes, setRunningTaskId, resetPomodoroState, timerOriginDateKeyRef }))
+    render(<App />)
+    const args = useTimerActions.mock.calls[0][0]
+    expect(args.setScheduleTimers).toBe(setScheduleTimers)
+    expect(args.setPendingTimerTask).toBe(setPendingTimerTask)
+    expect(args.setPendingTimerMinutes).toBe(setPendingTimerMinutes)
+    expect(args.setRunningTaskId).toBe(setRunningTaskId)
+    expect(args.resetPomodoroState).toBe(resetPomodoroState)
+    expect(args.timerOriginDateKeyRef).toBe(timerOriginDateKeyRef)
+  })
+
+  it('receives toggleTask from useTasks and markScheduleItemUndone from useSchedule', () => {
+    const toggleTask = vi.fn()
+    const markScheduleItemUndone = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ toggleTask }))
+    useSchedule.mockReturnValue(mkSchedule({ markScheduleItemUndone }))
+    render(<App />)
+    const args = useTimerActions.mock.calls[0][0]
+    expect(args.toggleTask).toBe(toggleTask)
+    expect(args.markScheduleItemUndone).toBe(markScheduleItemUndone)
+  })
+})
+
+// ── useTaskActions receives correct arguments ─────────────────────────────────
+
+describe('useTaskActions receives correct arguments', () => {
+  it('receives tasks, dateKey, and delete-related functions', () => {
+    const deleteTask = vi.fn()
+    const deleteRecurring = vi.fn()
+    const deleteAllByRecurringId = vi.fn()
+    const tasks = { [TODAY]: [{ id: 't1', done: false }] }
+    useTasks.mockReturnValue(mkTasks({ tasks, deleteTask, deleteAllByRecurringId }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ deleteRecurring }))
+    render(<App />)
+    const args = useTaskActions.mock.calls[0][0]
+    expect(args.tasks).toBe(tasks)
+    expect(args.dateKey).toBe(TODAY)
+    expect(args.deleteTask).toBe(deleteTask)
+    expect(args.deleteRecurring).toBe(deleteRecurring)
+    expect(args.deleteAllByRecurringId).toBe(deleteAllByRecurringId)
+  })
+
+  it('receives removeTaskFromSchedule from useSchedule and reorderTasks from useTasks', () => {
+    const removeTaskFromSchedule = vi.fn()
+    const reorderTasks = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ removeTaskFromSchedule }))
+    useTasks.mockReturnValue(mkTasks({ reorderTasks }))
+    render(<App />)
+    const args = useTaskActions.mock.calls[0][0]
+    expect(args.removeTaskFromSchedule).toBe(removeTaskFromSchedule)
+    expect(args.reorderTasks).toBe(reorderTasks)
+  })
+
+  it('receives taskBank, addToBank, removeFromBank from useTaskBank', () => {
+    const taskBank = [{ text: 'Habit' }]
+    const addToBank = vi.fn()
+    const removeFromBank = vi.fn()
+    useTaskBank.mockReturnValue({ taskBank, addToBank, removeFromBank, updateInBank: vi.fn(), reorderBank: vi.fn() })
+    render(<App />)
+    const args = useTaskActions.mock.calls[0][0]
+    expect(args.taskBank).toBe(taskBank)
+    expect(args.addToBank).toBe(addToBank)
+    expect(args.removeFromBank).toBe(removeFromBank)
+  })
+
+  it('receives savedListTexts as a Set derived from taskBank', () => {
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }, { text: 'Science' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    render(<App />)
+    const { savedListTexts } = useTaskActions.mock.calls[0][0]
+    expect(savedListTexts).toBeInstanceOf(Set)
+    expect(savedListTexts.has('Math')).toBe(true)
+    expect(savedListTexts.has('Science')).toBe(true)
+  })
+
+  it('receives showNotification as a function, t from useLang, and state setters', () => {
+    render(<App />)
+    const args = useTaskActions.mock.calls[0][0]
+    expect(typeof args.showNotification).toBe('function')
+    expect(args.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
+    expect(typeof args.setShowTaskBankModal).toBe('function')
+    expect(typeof args.setTaskBankModalAutoGenerate).toBe('function')
+  })
+})
+
+// ── useTaskModal receives correct arguments ───────────────────────────────────
+
+describe('useTaskModal receives correct arguments', () => {
+  it('addModal call receives mode "add" with dateKey, addTask, addRecurring', () => {
+    const addTask = vi.fn()
+    const addRecurring = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ addTask }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ addRecurring }))
+    render(<App />)
+    const addArgs = useTaskModal.mock.calls.find(([a]) => a.mode === 'add')[0]
+    expect(addArgs.dateKey).toBe(TODAY)
+    expect(addArgs.addTask).toBe(addTask)
+    expect(addArgs.addRecurring).toBe(addRecurring)
+  })
+
+  it('editModal call receives mode "edit" with tasks, recurringTasks, and key functions', () => {
+    const editTask = vi.fn()
+    const moveTask = vi.fn()
+    const linkRecurring = vi.fn()
+    const removeTaskFromSchedule = vi.fn()
+    const setScheduleTimers = vi.fn()
+    const tasks = { [TODAY]: [] }
+    const recurringTasks = [{ id: 'r1', text: 'Habit' }]
+    useTasks.mockReturnValue(mkTasks({ tasks, editTask, moveTask, linkRecurring }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks }))
+    useSchedule.mockReturnValue(mkSchedule({ removeTaskFromSchedule }))
+    useTimer.mockReturnValue(mkTimer({ setScheduleTimers }))
+    render(<App />)
+    const editArgs = useTaskModal.mock.calls.find(([a]) => a.mode === 'edit')[0]
+    expect(editArgs.dateKey).toBe(TODAY)
+    expect(editArgs.tasks).toBe(tasks)
+    expect(editArgs.recurringTasks).toBe(recurringTasks)
+    expect(editArgs.editTask).toBe(editTask)
+    expect(editArgs.moveTask).toBe(moveTask)
+    expect(editArgs.linkRecurring).toBe(linkRecurring)
+    expect(editArgs.removeTaskFromSchedule).toBe(removeTaskFromSchedule)
+    expect(editArgs.setScheduleTimers).toBe(setScheduleTimers)
+  })
+})
+
+// ── markDateWithTasks receives correct arguments ──────────────────────────────
+
+describe('markDateWithTasks receives correct arguments', () => {
+  it('is called with tasks, a date-formatting function, recurringTasks, and showCalendarCompletion', () => {
+    const tasks = { [TODAY]: [{ id: 't1', done: false }] }
+    const recurringTasks = [{ id: 'r1', text: 'Habit' }]
+    useTasks.mockReturnValue(mkTasks({ tasks }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks }))
+    render(<App />)
+    expect(markDateWithTasks).toHaveBeenCalledWith(tasks, expect.any(Function), recurringTasks, false)
+  })
+
+  it('passes showCalendarCompletion: true when stored in localStorage', () => {
+    localStorage.setItem('studyflow_calendar_completion', 'true')
+    render(<App />)
+    expect(markDateWithTasks).toHaveBeenCalledWith(
+      expect.anything(), expect.any(Function), expect.anything(), true,
+    )
+  })
+
+  it('the formatting function converts a Date to an en-CA locale string', () => {
+    render(<App />)
+    const formatFn = markDateWithTasks.mock.calls[0][1]
+    expect(formatFn(new Date('2025-06-15'))).toBe('2025-06-15')
+  })
+})
+
+// ── notification banner conditional rendering ─────────────────────────────────
+
+describe('notification banner conditional rendering', () => {
+  it('is absent from the DOM on initial render', () => {
+    const { container } = render(<App />)
+    expect(container.querySelector('.animate-fade-in')).toBeNull()
+  })
+})
