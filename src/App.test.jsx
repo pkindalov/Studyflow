@@ -12,6 +12,10 @@ import { useDataPortability } from './shared/hooks/useDataPortability'
 import { useTimerActions } from './features/schedule/hooks/useTimerActions'
 import { useTaskActions } from './features/tasks/hooks/useTaskActions'
 import { buildSidebarSections } from './layout/sidebarSections'
+import { useLang } from './shared/i18n/LangContext'
+import { useMusicPlayer } from './features/music/hooks/useMusicPlayer'
+import { markDateWithTasks } from './features/calendar/utils/markDateWithTasks'
+import { exportData } from './shared/utils/dataPortability'
 
 // ── dnd-kit stubs ──────────────────────────────────────────────────────────────
 vi.mock('@dnd-kit/core', () => ({
@@ -26,9 +30,15 @@ vi.mock('@dnd-kit/sortable', () => ({
 // ── layout component stubs — capture props for assertion ──────────────────────
 let lastMainContentProps = {}
 let lastAppModalsProps = {}
+let lastTopBarProps = {}
+let lastBottomBarProps = {}
 
-vi.mock('./layout/TopBar', () => ({ default: () => null }))
-vi.mock('./layout/BottomBar', () => ({ default: () => null }))
+vi.mock('./layout/TopBar', () => ({
+  default: (props) => { lastTopBarProps = props; return null },
+}))
+vi.mock('./layout/BottomBar', () => ({
+  default: (props) => { lastBottomBarProps = props; return null },
+}))
 vi.mock('./layout/MainContent', () => ({
   default: (props) => { lastMainContentProps = props; return null },
 }))
@@ -130,7 +140,11 @@ beforeEach(() => {
   vi.clearAllMocks()
   lastMainContentProps = {}
   lastAppModalsProps = {}
+  lastTopBarProps = {}
+  lastBottomBarProps = {}
   localStorage.clear()
+  useLang.mockReturnValue({ lang: 'en', setLang: vi.fn(), t: { allDoneNothing: 'All done — nothing left!' } })
+  useMusicPlayer.mockReturnValue({})
 
   useTasks.mockReturnValue(mkTasks())
   useRecurringTasks.mockReturnValue(mkRecurring())
@@ -722,6 +736,45 @@ describe('showCalendarCompletion persistence', () => {
     render(<App />)
     expect(localStorage.getItem('studyflow_calendar_completion')).toBe('true')
   })
+
+  it('writes true to localStorage when setShowCalendarCompletion is called with true', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => props.setShowCalendarCompletion(true))
+    expect(localStorage.getItem('studyflow_calendar_completion')).toBe('true')
+  })
+
+  it('writes false to localStorage when setShowCalendarCompletion is called with false', () => {
+    localStorage.setItem('studyflow_calendar_completion', 'true')
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => props.setShowCalendarCompletion(false))
+    expect(localStorage.getItem('studyflow_calendar_completion')).toBe('false')
+  })
+})
+
+// ── tasks list forwarded to MainContent ───────────────────────────────────────
+
+describe('tasks list forwarded to MainContent', () => {
+  it('forwards an empty array when no tasks exist for today', () => {
+    render(<App />)
+    expect(lastMainContentProps.tasks).toEqual([])
+  })
+
+  it('forwards only today\'s tasks, not the full tasks map', () => {
+    const todayTasks = [{ id: 't1', done: false }, { id: 't2', done: true }]
+    useTasks.mockReturnValue(mkTasks({
+      tasks: { [TODAY]: todayTasks, '2000-01-01': [{ id: 't3', done: false }] },
+    }))
+    render(<App />)
+    expect(lastMainContentProps.tasks).toEqual(todayTasks)
+    expect(lastMainContentProps.tasks).toHaveLength(2)
+  })
+
+  it('forwards t from useLang', () => {
+    render(<App />)
+    expect(lastMainContentProps.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
+  })
 })
 
 // ── progress metrics forwarded to MainContent ──────────────────────────────────
@@ -971,6 +1024,29 @@ describe('schedule props forwarded to MainContent', () => {
 // ── timer props forwarded to AppModals ────────────────────────────────────────
 
 describe('timer props forwarded to AppModals', () => {
+  it('forwards scheduleTimers: empty object by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.scheduleTimers).toEqual({})
+  })
+
+  it('forwards scheduleTimers with entries from useTimer', () => {
+    const scheduleTimers = { t1: 600, t2: 300 }
+    useTimer.mockReturnValue(mkTimer({ scheduleTimers }))
+    render(<App />)
+    expect(lastAppModalsProps.scheduleTimers).toEqual(scheduleTimers)
+  })
+
+  it('forwards runningTaskId: null by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.runningTaskId).toBeNull()
+  })
+
+  it('forwards a non-null runningTaskId to AppModals', () => {
+    useTimer.mockReturnValue(mkTimer({ runningTaskId: 'task-42' }))
+    render(<App />)
+    expect(lastAppModalsProps.runningTaskId).toBe('task-42')
+  })
+
   it('forwards timerTask: null by default', () => {
     render(<App />)
     expect(lastAppModalsProps.timerTask).toBeNull()
@@ -1654,5 +1730,195 @@ describe('buildSidebarSections receives showCalendarCompletion', () => {
     render(<App />)
     const props = buildSidebarSections.mock.calls.at(-1)[0]
     expect(props.showCalendarCompletion).toBe(true)
+  })
+})
+
+// ── buildSidebarSections remaining props ──────────────────────────────────────
+
+describe('buildSidebarSections remaining props', () => {
+  it('receives selectedDate as today\'s Date object', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.selectedDate).toBeInstanceOf(Date)
+    expect(props.selectedDate.toLocaleDateString('en-CA')).toBe(TODAY)
+  })
+
+  it('receives markDateWithTasksFn — the return value of markDateWithTasks', () => {
+    const fn = vi.fn()
+    markDateWithTasks.mockReturnValue(fn)
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.markDateWithTasksFn).toBe(fn)
+  })
+
+  it('receives setShowCalendarCompletion that updates showCalendarCompletion', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => props.setShowCalendarCompletion(true))
+    expect(buildSidebarSections.mock.calls.at(-1)[0].showCalendarCompletion).toBe(true)
+  })
+
+  it('receives the full tasks object from useTasks', () => {
+    const tasks = { [TODAY]: [{ id: 't1', done: false }] }
+    useTasks.mockReturnValue(mkTasks({ tasks }))
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.tasks).toBe(tasks)
+  })
+
+  it('receives setTotalStudyTime that updates totalStudyTime', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => props.setTotalStudyTime(8))
+    expect(buildSidebarSections.mock.calls.at(-1)[0].totalStudyTime).toBe(8)
+  })
+
+  it('receives setPriorityPercent that updates priorityPercent', () => {
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => props.setPriorityPercent(60))
+    expect(buildSidebarSections.mock.calls.at(-1)[0].priorityPercent).toBe(60)
+  })
+
+  it('receives music from useMusicPlayer', () => {
+    const music = { playing: true, volume: 0.8 }
+    useMusicPlayer.mockReturnValue(music)
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.music).toBe(music)
+  })
+
+  it('receives addModal from useTaskModal', () => {
+    const addModal = mkModal()
+    useTaskModal.mockImplementation(({ mode }) =>
+      mode === 'add' ? addModal : mkModal()
+    )
+    render(<App />)
+    const props = buildSidebarSections.mock.calls.at(-1)[0]
+    expect(props.addModal).toBe(addModal)
+  })
+})
+
+// ── TopBar props wired from App ───────────────────────────────────────────────
+
+describe('TopBar props wired from App', () => {
+  it('forwards lang from useLang', () => {
+    render(<App />)
+    expect(lastTopBarProps.lang).toBe('en')
+  })
+
+  it('forwards setLang from useLang', () => {
+    const setLang = vi.fn()
+    useLang.mockReturnValue({ lang: 'en', setLang, t: { allDoneNothing: 'All done — nothing left!' } })
+    render(<App />)
+    expect(lastTopBarProps.setLang).toBe(setLang)
+  })
+
+  it('forwards the current theme', () => {
+    localStorage.setItem('studyflow_theme', 'light')
+    render(<App />)
+    expect(lastTopBarProps.theme).toBe('light')
+  })
+
+  it('forwards setTheme — calling it updates the data-theme attribute', () => {
+    render(<App />)
+    act(() => lastTopBarProps.setTheme('light'))
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+  })
+
+  it('setTheme also writes the new theme to localStorage', () => {
+    render(<App />)
+    act(() => lastTopBarProps.setTheme('light'))
+    expect(localStorage.getItem('studyflow_theme')).toBe('light')
+  })
+
+  it('forwards t from useLang', () => {
+    render(<App />)
+    expect(lastTopBarProps.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
+  })
+
+  it('onShowHelp sets showHelp to true', () => {
+    render(<App />)
+    act(() => lastTopBarProps.onShowHelp())
+    expect(lastAppModalsProps.showHelp).toBe(true)
+  })
+})
+
+// ── BottomBar props wired from App ────────────────────────────────────────────
+
+describe('BottomBar props wired from App', () => {
+  it('forwards exportData as onExport', () => {
+    render(<App />)
+    expect(lastBottomBarProps.onExport).toBe(exportData)
+  })
+
+  it('forwards isCustomLayout: false by default', () => {
+    render(<App />)
+    expect(lastBottomBarProps.isCustomLayout).toBe(false)
+  })
+
+  it('forwards isCustomLayout: true from useColumnLayout', () => {
+    useColumnLayout.mockReturnValue(mkColumnLayout({ isCustomLayout: true }))
+    render(<App />)
+    expect(lastBottomBarProps.isCustomLayout).toBe(true)
+  })
+
+  it('forwards resetLayout as onResetLayout', () => {
+    const resetLayout = vi.fn()
+    useColumnLayout.mockReturnValue(mkColumnLayout({ resetLayout }))
+    render(<App />)
+    expect(lastBottomBarProps.onResetLayout).toBe(resetLayout)
+  })
+
+  it('forwards t from useLang', () => {
+    render(<App />)
+    expect(lastBottomBarProps.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
+  })
+
+  it('onShowClearConfirm sets showClearConfirm to true in AppModals', () => {
+    render(<App />)
+    act(() => lastBottomBarProps.onShowClearConfirm())
+    expect(lastAppModalsProps.showClearConfirm).toBe(true)
+  })
+
+  it('onImport calls click on importFileRef.current', () => {
+    const click = vi.fn()
+    useDataPortability.mockReturnValue({
+      pendingImport: null, setPendingImport: vi.fn(),
+      importError: '', importFileRef: { current: { click } },
+      handleImportFileChange: vi.fn(), handleImportConfirm: vi.fn(),
+    })
+    render(<App />)
+    act(() => lastBottomBarProps.onImport())
+    expect(click).toHaveBeenCalled()
+  })
+})
+
+// ── AppModals remaining props ─────────────────────────────────────────────────
+
+describe('AppModals remaining props', () => {
+  it('forwards setShowTaskBankModal — calling it updates showTaskBankModal', () => {
+    render(<App />)
+    expect(lastAppModalsProps.showTaskBankModal).toBe(false)
+    act(() => lastAppModalsProps.setShowTaskBankModal(true))
+    expect(lastAppModalsProps.showTaskBankModal).toBe(true)
+  })
+
+  it('forwards taskBankModalAutoGenerate: false by default', () => {
+    render(<App />)
+    expect(lastAppModalsProps.taskBankModalAutoGenerate).toBe(false)
+  })
+
+  it('forwards onGenerateSchedule — calling it invokes generateSchedule', () => {
+    const generateSchedule = vi.fn()
+    useSchedule.mockReturnValue(mkSchedule({ generateSchedule }))
+    render(<App />)
+    act(() => lastAppModalsProps.onGenerateSchedule())
+    expect(generateSchedule).toHaveBeenCalled()
+  })
+
+  it('forwards t from useLang', () => {
+    render(<App />)
+    expect(lastAppModalsProps.t).toEqual({ allDoneNothing: 'All done — nothing left!' })
   })
 })
