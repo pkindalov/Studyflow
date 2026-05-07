@@ -253,7 +253,7 @@ export const en = {
   helpTimer: "Focus timer",
   helpTimerTip1: (b) => <>Click the {b("play")} button on any scheduled task to start a countdown timer.</>,
   helpTimerTip2: () => <>You can also start a quick timer on any task directly from the task list — you'll be asked how many minutes you want to work on it.</>,
-  helpTimerTip3: (b) => <>The timer pauses and resumes. Progress is saved automatically — if you close and reopen the timer, it picks up where it left off.</>,
+  helpTimerTip3: () => <>The timer pauses and resumes. Progress is saved automatically — if you close and reopen the timer, it picks up where it left off.</>,
   helpTimerTip4: (b) => <>When time is up the task is marked as done. Hit {b("Restart")} if you need another round.</>,
 
   helpPomodoro: "Pomodoro mode",
@@ -266,7 +266,7 @@ export const en = {
   helpMusicTip3: () => <>Pick a track from inside the timer modal too — the playlist is always accessible there.</>,
 
   helpDragDrop: "Drag & drop",
-  helpDragDropTip1: () => <>Drag task cards to {<strong className="text-on-surface">reorder</strong>} them within the day.</>,
+  helpDragDropTip1: (b) => <>Drag task cards to {b("reorder")} them within the day.</>,
   helpDragDropTip2: () => <>Drag schedule items to reorder the focus session.</>,
   helpDragDropTip3: (b) => <>Drag sidebar panels (calendar, music, progress…) between the {b("left and right columns")} using the move icon that appears on hover.</>,
   helpDragDropTip4: (b) => <>Click {b("Reset layout")} (bottom-right) to restore the default column arrangement.</>,
