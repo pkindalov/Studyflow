@@ -2403,3 +2403,85 @@ describe('column layout drives section rendering', () => {
     expect(screen.queryByTestId('hidden-section')).toBeNull()
   })
 })
+
+// ── recurring injection re-runs when date changes ─────────────────────────────
+
+describe('recurring injection re-runs when date changes', () => {
+  const template = { id: 'r1', text: 'Daily habit', priority: false }
+
+  it('injects recurring tasks under the new dateKey after navigating to a different date', () => {
+    const addTaskDirect = vi.fn()
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [template] }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    addTaskDirect.mockClear()
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+
+    expect(addTaskDirect).toHaveBeenCalledWith(
+      '2000-01-01',
+      expect.objectContaining({ recurringId: 'r1' }),
+    )
+  })
+
+  it('skips injection for the new date when recurringId already exists there', () => {
+    const addTaskDirect = vi.fn()
+    useTasks.mockReturnValue(mkTasks({
+      addTaskDirect,
+      tasks: { '2000-01-01': [{ id: 'x', recurringId: 'r1', done: false }] },
+    }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [template] }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    addTaskDirect.mockClear()
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+
+    expect(addTaskDirect).not.toHaveBeenCalledWith('2000-01-01', expect.anything())
+  })
+
+  it('does not inject for a new date when checkUnsaved blocks the navigation', () => {
+    const addTaskDirect = vi.fn()
+    const checkUnsaved = vi.fn() // never calls its callback
+    useTasks.mockReturnValue(mkTasks({ addTaskDirect, tasks: {} }))
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [template] }))
+    useSchedule.mockReturnValue(mkSchedule({ checkUnsaved }))
+    appliesToDate.mockReturnValue(true)
+
+    render(<App />)
+    addTaskDirect.mockClear()
+
+    const { handleDateChange } = buildSidebarSections.mock.calls.at(-1)[0]
+    act(() => handleDateChange(new Date('2000-01-01')))
+
+    // dateKey never changed, so '2000-01-01' injection never triggered
+    expect(addTaskDirect).not.toHaveBeenCalledWith('2000-01-01', expect.anything())
+  })
+})
+
+// ── showClearConfirm forwarded to AppModals ───────────────────────────────────
+
+describe('showClearConfirm forwarded to AppModals', () => {
+  it('starts as false', () => {
+    render(<App />)
+    expect(lastAppModalsProps.showClearConfirm).toBe(false)
+  })
+
+  it('setShowClearConfirm updates showClearConfirm to true', () => {
+    render(<App />)
+    act(() => lastAppModalsProps.setShowClearConfirm(true))
+    expect(lastAppModalsProps.showClearConfirm).toBe(true)
+  })
+
+  it('setShowClearConfirm can reset back to false', () => {
+    render(<App />)
+    act(() => lastAppModalsProps.setShowClearConfirm(true))
+    act(() => lastAppModalsProps.setShowClearConfirm(false))
+    expect(lastAppModalsProps.showClearConfirm).toBe(false)
+  })
+})
