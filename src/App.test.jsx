@@ -2257,3 +2257,149 @@ describe('notification banner conditional rendering', () => {
     expect(banner.textContent).toBe('All done — nothing left!')
   })
 })
+
+// ── markDateWithTasksFn recomputes on dep changes ─────────────────────────────
+
+describe('markDateWithTasksFn recomputes on dep changes', () => {
+  it('re-calls markDateWithTasks when tasks change between renders', () => {
+    const initialTasks = {}
+    useTasks.mockReturnValue(mkTasks({ tasks: initialTasks }))
+    const { rerender } = render(<App />)
+    const callsBefore = markDateWithTasks.mock.calls.length
+
+    const newTasks = { [TODAY]: [{ id: 't1', done: false }] }
+    useTasks.mockReturnValue(mkTasks({ tasks: newTasks }))
+    act(() => rerender(<App />))
+
+    expect(markDateWithTasks.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(markDateWithTasks.mock.calls.at(-1)[0]).toBe(newTasks)
+  })
+
+  it('re-calls markDateWithTasks when recurringTasks change between renders', () => {
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: [] }))
+    const { rerender } = render(<App />)
+    const callsBefore = markDateWithTasks.mock.calls.length
+
+    const newRecurring = [{ id: 'r1', text: 'Habit' }]
+    useRecurringTasks.mockReturnValue(mkRecurring({ recurringTasks: newRecurring }))
+    act(() => rerender(<App />))
+
+    expect(markDateWithTasks.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(markDateWithTasks.mock.calls.at(-1)[2]).toBe(newRecurring)
+  })
+
+  it('re-calls markDateWithTasks with true when showCalendarCompletion is toggled on', () => {
+    render(<App />)
+    const callsBefore = markDateWithTasks.mock.calls.length
+
+    act(() => buildSidebarSections.mock.calls.at(-1)[0].setShowCalendarCompletion(true))
+
+    expect(markDateWithTasks.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(markDateWithTasks.mock.calls.at(-1)[3]).toBe(true)
+  })
+
+  it('does not re-call markDateWithTasks when unrelated state (excludedTaskIds) changes', () => {
+    render(<App />)
+    const callCount = markDateWithTasks.mock.calls.length
+
+    act(() => lastMainContentProps.onToggleSelect('task-x'))
+
+    expect(markDateWithTasks.mock.calls.length).toBe(callCount)
+  })
+})
+
+// ── savedListTexts recomputes when taskBank changes ───────────────────────────
+
+describe('savedListTexts recomputes when taskBank changes', () => {
+  it('adds new text when taskBank gains an item', () => {
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    const { rerender } = render(<App />)
+    expect(lastMainContentProps.savedListTexts.has('Math')).toBe(true)
+    expect(lastMainContentProps.savedListTexts.has('Science')).toBe(false)
+
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }, { text: 'Science' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    act(() => rerender(<App />))
+
+    expect(lastMainContentProps.savedListTexts.has('Science')).toBe(true)
+  })
+
+  it('removes text when taskBank loses an item', () => {
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }, { text: 'Science' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    const { rerender } = render(<App />)
+
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    act(() => rerender(<App />))
+
+    expect(lastMainContentProps.savedListTexts.has('Science')).toBe(false)
+    expect(lastMainContentProps.savedListTexts.has('Math')).toBe(true)
+  })
+
+  it('becomes empty when taskBank is cleared', () => {
+    useTaskBank.mockReturnValue({
+      taskBank: [{ text: 'Math' }],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    const { rerender } = render(<App />)
+    expect(lastMainContentProps.savedListTexts.size).toBe(1)
+
+    useTaskBank.mockReturnValue({
+      taskBank: [],
+      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
+    })
+    act(() => rerender(<App />))
+
+    expect(lastMainContentProps.savedListTexts.size).toBe(0)
+  })
+})
+
+// ── column layout drives section rendering ────────────────────────────────────
+
+describe('column layout drives section rendering', () => {
+  afterEach(() => {
+    buildSidebarSections.mockReturnValue({})
+  })
+
+  it('renders a section from columnLayout.left', () => {
+    buildSidebarSections.mockReturnValue({ cal: <div data-testid="left-section-content" /> })
+    useColumnLayout.mockReturnValue(mkColumnLayout({ columnLayout: { left: ['cal'], right: [] } }))
+    render(<App />)
+    expect(screen.getByTestId('left-section-content')).toBeTruthy()
+  })
+
+  it('renders a section from columnLayout.right', () => {
+    buildSidebarSections.mockReturnValue({ music: <div data-testid="right-section-content" /> })
+    useColumnLayout.mockReturnValue(mkColumnLayout({ columnLayout: { left: [], right: ['music'] } }))
+    render(<App />)
+    expect(screen.getByTestId('right-section-content')).toBeTruthy()
+  })
+
+  it('renders sections from both columns independently', () => {
+    buildSidebarSections.mockReturnValue({
+      cal: <div data-testid="left-content" />,
+      music: <div data-testid="right-content" />,
+    })
+    useColumnLayout.mockReturnValue(mkColumnLayout({ columnLayout: { left: ['cal'], right: ['music'] } }))
+    render(<App />)
+    expect(screen.getByTestId('left-content')).toBeTruthy()
+    expect(screen.getByTestId('right-content')).toBeTruthy()
+  })
+
+  it('does not render a section absent from both columns', () => {
+    buildSidebarSections.mockReturnValue({ hidden: <div data-testid="hidden-section" /> })
+    useColumnLayout.mockReturnValue(mkColumnLayout({ columnLayout: { left: [], right: [] } }))
+    render(<App />)
+    expect(screen.queryByTestId('hidden-section')).toBeNull()
+  })
+})
