@@ -32,25 +32,26 @@ export default function SchedulePanel({
             {t.todaysSchedule}
           </h3>
         )}
-        <DndContext sensors={scheduleSensors} collisionDetection={closestCenter} onDragEnd={onScheduleDragEnd}>
-          <SortableContext items={schedule.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-            <ul className="flex flex-col gap-3">
-              {schedule.map((task) => (
-                <ScheduleItem
-                  key={task.id}
-                  task={task}
-                  elapsed={scheduleTimers[task.id] || 0}
-                  isRunning={runningTaskId === task.id}
-                  runningTaskId={runningTaskId}
-                  onOpenTimer={onOpenTimer}
-                  onMarkDone={onMarkDone}
-                  onRemove={onRemove}
-                  t={t}
-                />
-              ))}
-            </ul>
-          </SortableContext>
-        </DndContext>
+        {!allScheduleDone && (
+          <DndContext sensors={scheduleSensors} collisionDetection={closestCenter} onDragEnd={onScheduleDragEnd}>
+            <SortableContext items={schedule.map((item) => item.id)} strategy={verticalListSortingStrategy}>
+              <ul className="flex flex-col gap-3">
+                {schedule.map((task) => (
+                  <ScheduleItem
+                    key={task.id}
+                    task={task}
+                    elapsed={scheduleTimers[task.id] || 0}
+                    isRunning={runningTaskId === task.id}
+                    onOpenTimer={onOpenTimer}
+                    onMarkDone={onMarkDone}
+                    onRemove={onRemove}
+                    t={t}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
       <div className="flex gap-3 justify-end mt-4 flex-wrap">
         <button

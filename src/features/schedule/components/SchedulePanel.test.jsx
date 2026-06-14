@@ -81,6 +81,12 @@ describe('all done state', () => {
     render(<SchedulePanel {...defaultProps} allScheduleDone={true} />)
     expect(screen.queryByText("Today's Schedule")).toBeNull()
   })
+
+  it('hides task items when allScheduleDone is true', () => {
+    render(<SchedulePanel {...defaultProps} allScheduleDone={true} />)
+    expect(screen.queryByText('Study math')).toBeNull()
+    expect(screen.queryByText('Read chapter')).toBeNull()
+  })
 })
 
 // ── panel-level callbacks ─────────────────────────────────────────────────────
