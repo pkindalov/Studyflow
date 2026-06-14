@@ -174,7 +174,7 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     setTimerTask(task);
     setIsTimerMinimized(false);
     setTaskAllocations((prev) => ({ ...prev, [task.id]: task.scheduledMinutes }));
-    if ((scheduleTimersRef.current[task.id] || 0) < task.scheduledMinutes * 60) {
+    if (!task.done && (scheduleTimersRef.current[task.id] || 0) < task.scheduledMinutes * 60) {
       setRunningTaskId(task.id);
     }
   }, [pomodoroEnabled, pomodoroMinutes, timerTask]);

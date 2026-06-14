@@ -7,6 +7,7 @@ function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, on
   const hasProgress = elapsed > 0 && !isFinished;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+  // @dnd-kit requires inline transform/transition for drag animation — not expressible as Tailwind classes
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   return (
@@ -57,6 +58,7 @@ function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, on
         <button
           onClick={() => onMarkDone(task.id)}
           title={t.markDoneEarly}
+          aria-label={t.markDoneEarly}
           className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-tertiary hover:bg-tertiary/10"
         >
           <span className="material-symbols-outlined text-base">check_circle</span>
