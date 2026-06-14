@@ -143,6 +143,7 @@ export function ActivityPanel({ tasks }) {
           </div>
           <button
             onClick={() => setSelectedDate(null)}
+            aria-label="Deselect"
             className="text-on-surface-variant/50 hover:text-on-surface-variant transition-colors leading-none text-base material-symbols-outlined flex-shrink-0"
             title="Deselect"
           >

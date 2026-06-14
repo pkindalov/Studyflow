@@ -24,6 +24,34 @@ describe('StudyTimeSection', () => {
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '8' } })
     expect(set).toHaveBeenCalledWith(8)
   })
+
+  it('clamps value to 1 when input goes below 1', () => {
+    const set = vi.fn()
+    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '0' } })
+    expect(set).toHaveBeenCalledWith(1)
+  })
+
+  it('clamps value to 1 when input is negative', () => {
+    const set = vi.fn()
+    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '-5' } })
+    expect(set).toHaveBeenCalledWith(1)
+  })
+
+  it('clamps value to 24 when input exceeds 24', () => {
+    const set = vi.fn()
+    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '30' } })
+    expect(set).toHaveBeenCalledWith(24)
+  })
+
+  it('clamps empty input to 1', () => {
+    const set = vi.fn()
+    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } })
+    expect(set).toHaveBeenCalledWith(1)
+  })
 })
 
 // ── PrioritySection ──────────────────────────────────────────────────────────
