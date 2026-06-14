@@ -138,10 +138,12 @@ export function useSchedule({
     });
     // Read from storage directly so a deleted task is also removed from the persisted
     // schedule, even if the current in-memory schedule is unsaved.
-    const existing = readAllSchedules()[dateKey];
-    if (existing) {
-      writeScheduleForDate(dateKey, existing.filter((item) => !predicate(item)));
-    }
+    try {
+      const existing = readAllSchedules()[dateKey];
+      if (existing) {
+        writeScheduleForDate(dateKey, existing.filter((item) => !predicate(item)));
+      }
+    } catch { /* localStorage not available or quota exceeded */ }
   }, [dateKey]);
 
   const handleUnsavedSaveAndContinue = useCallback(() => {
@@ -171,7 +173,7 @@ export function useSchedule({
     setSchedule(null);
     setScheduleUnsaved(false);
     setShowUnsavedWarning(false);
-    localStorage.removeItem(SCHEDULES_KEY);
+    try { localStorage.removeItem(SCHEDULES_KEY); } catch { /* localStorage not available */ }
   }, []);
 
   return {

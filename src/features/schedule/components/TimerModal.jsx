@@ -188,6 +188,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
           <div className="flex flex-col items-center gap-3">
             <button
               onClick={onPlayPause}
+              aria-label={isRunning ? t.pauseTimerTitle : t.playTimerTitle}
               className={`flex items-center justify-center w-16 h-16 rounded-full shadow-lg transition-all active:scale-95 ${
                 isRunning
                   ? "bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40"
@@ -237,6 +238,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                   pomodoroEnabled ? "bg-error/70" : "bg-outline-variant/50"
                 }`}
                 title={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
+                aria-label={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${

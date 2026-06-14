@@ -4,10 +4,11 @@ export default function QuickTimerPrompt({ task, minutes, onChangeMinutes, onCon
       <div role="dialog" aria-modal="true" aria-labelledby="quick-timer-title" className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-xs p-6 flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <h3 id="quick-timer-title" className="font-headline font-bold text-on-surface text-base leading-tight line-clamp-2">{task.text}</h3>
-          <p className="text-xs text-on-surface-variant">{t.howManyMinutes}</p>
+          <label htmlFor="quick-timer-minutes" className="text-xs text-on-surface-variant">{t.howManyMinutes}</label>
         </div>
         <div className="flex items-center gap-3">
           <input
+            id="quick-timer-minutes"
             type="number" min="1" max="480" value={minutes}
             onChange={(e) => onChangeMinutes(Math.max(1, Math.min(480, Number(e.target.value))))}
             onKeyDown={(e) => {
