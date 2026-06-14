@@ -120,6 +120,7 @@ export function useSchedule({
     markTaskDone(dateKey, taskId);
     setSchedule((prev) => prev?.map((item) => item.id === taskId ? { ...item, done: true } : item) ?? null);
     setScheduleTimers((prev) => ({ ...prev, [taskId]: task.scheduledMinutes * 60 }));
+    setScheduleUnsaved(true);
   }, [schedule, runningTaskId, setRunningTaskId, markTaskDone, dateKey, setScheduleTimers]);
 
   const handleRemoveScheduleItem = useCallback((taskId) => {

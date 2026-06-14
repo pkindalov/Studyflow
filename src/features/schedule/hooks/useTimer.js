@@ -71,16 +71,18 @@ export function useTimer({ dateKey, music, markTaskDone }) {
       skipTimerPersistRef.current = false;
       return;
     }
-    const active = timerTaskRef.current;
-    const originKey = timerOriginDateKeyRef.current;
-    if (active && originKey && originKey !== dateKey) {
-      const allT = readAllTimers();
-      writeTimersForDate(originKey, { ...(allT[originKey] || {}), [active.id]: scheduleTimers[active.id] || 0 });
-      const { [active.id]: _dropped, ...rest } = scheduleTimers;
-      writeTimersForDate(dateKey, rest);
-    } else {
-      writeTimersForDate(dateKey, scheduleTimers);
-    }
+    try {
+      const active = timerTaskRef.current;
+      const originKey = timerOriginDateKeyRef.current;
+      if (active && originKey && originKey !== dateKey) {
+        const allT = readAllTimers();
+        writeTimersForDate(originKey, { ...(allT[originKey] || {}), [active.id]: scheduleTimers[active.id] || 0 });
+        const { [active.id]: _dropped, ...rest } = scheduleTimers;
+        writeTimersForDate(dateKey, rest);
+      } else {
+        writeTimersForDate(dateKey, scheduleTimers);
+      }
+    } catch { /* localStorage not available or quota exceeded */ }
   }, [scheduleTimers, dateKey]);
 
   // Wall-clock countdown interval — survives tab throttling
@@ -230,8 +232,10 @@ export function useTimer({ dateKey, music, markTaskDone }) {
       // The persist effect can't route to the origin date once the ref is cleared, so
       // write elapsed there explicitly. Drop the task from current-date state so the
       // persist effect doesn't create an orphan entry under the wrong date key.
-      const allT = readAllTimers();
-      writeTimersForDate(originKey, { ...(allT[originKey] || {}), [timerTask.id]: fullSeconds });
+      try {
+        const allT = readAllTimers();
+        writeTimersForDate(originKey, { ...(allT[originKey] || {}), [timerTask.id]: fullSeconds });
+      } catch { /* localStorage not available or quota exceeded */ }
       timerOriginDateKeyRef.current = null;
       setScheduleTimers((prev) => {
         const { [timerTask.id]: _dropped, ...rest } = prev;
