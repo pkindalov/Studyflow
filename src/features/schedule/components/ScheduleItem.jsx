@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, onMarkDone, onRemove, t }) {
+function ScheduleItem({ task, elapsed, isRunning, onOpenTimer, onMarkDone, onRemove, t }) {
   const total = task.scheduledMinutes * 60;
   const isFinished = task.done || (total > 0 && elapsed >= total);
   const hasProgress = elapsed > 0 && !isFinished;
@@ -21,7 +21,7 @@ function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, on
           {/* width is a runtime %, not expressible as a static Tailwind class */}
           <div
             className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
-            style={{ width: `${Math.min(100, (elapsed / total) * 100)}%` }}
+            style={{ width: `${isFinished ? 100 : Math.min(100, (elapsed / total) * 100)}%` }}
           />
         </div>
       )}
