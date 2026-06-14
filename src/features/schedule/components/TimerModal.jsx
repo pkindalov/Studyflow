@@ -33,7 +33,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
   const progress = totalSeconds > 0 ? remaining / totalSeconds : 0;
   const dashOffset = circumference * (1 - progress);
 
-  const pomodoroSec = pomodoroMinutes * 60;
+  const pomodoroSec = Math.max(1, pomodoroMinutes) * 60;
   const pomodoroCycle = pomodoroBreakCount + 1;
   const pomodoroTimeInCycle = Math.max(0, elapsedSeconds - pomodoroResetAt) % pomodoroSec;
   const pomodoroUntilBreak = pomodoroSec - pomodoroTimeInCycle;

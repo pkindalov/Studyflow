@@ -221,9 +221,17 @@ export function useTimer({ dateKey, music, markTaskDone }) {
   const markTimerTaskDone = useCallback(() => {
     if (!timerTask) return;
     setRunningTaskId(null);
-    markTaskDone(timerOriginDateKeyRef.current || dateKey, timerTask.id);
+    const originKey = timerOriginDateKeyRef.current;
+    const fullSeconds = timerTask.scheduledMinutes * 60;
+    markTaskDone(originKey || dateKey, timerTask.id);
+    // When the task belongs to a different date, the persist effect won't route to
+    // the origin date after the ref is cleared, so we write it explicitly here.
+    if (originKey && originKey !== dateKey) {
+      const allT = readAllTimers();
+      writeTimersForDate(originKey, { ...(allT[originKey] || {}), [timerTask.id]: fullSeconds });
+    }
     timerOriginDateKeyRef.current = null;
-    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: timerTask.scheduledMinutes * 60 }));
+    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: fullSeconds }));
     music.pause();
     setTimerTask(null);
   }, [timerTask, dateKey, markTaskDone, music]);
