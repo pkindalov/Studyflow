@@ -24,7 +24,7 @@ export function useTimerActions({
     const allocated = taskAllocations[task.id];
     if (task.done) {
       const scheduleTask = schedule?.find((s) => s.id === task.id);
-      const minutes = scheduleTask?.scheduledMinutes || allocated || 25;
+      const minutes = scheduleTask?.scheduledMinutes || allocated || DEFAULT_POMODORO_MINUTES;
       setScheduleTimers((prev) => ({ ...prev, [task.id]: minutes * 60 }));
       openTimer({ ...task, scheduledMinutes: minutes });
       return;

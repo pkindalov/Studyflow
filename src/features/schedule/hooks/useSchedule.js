@@ -45,6 +45,7 @@ export function useSchedule({
   const handleScheduleDragEnd = useCallback(({ active, over }) => {
     if (!over || active.id === over.id) return;
     setSchedule((prev) => {
+      if (!prev) return null;
       const from = prev.findIndex((item) => item.id === active.id);
       const to = prev.findIndex((item) => item.id === over.id);
       return arrayMove(prev, from, to);
@@ -124,6 +125,7 @@ export function useSchedule({
   const handleRemoveScheduleItem = useCallback((taskId) => {
     if (runningTaskId === taskId) setRunningTaskId(null);
     setSchedule((prev) => {
+      if (!prev) return null;
       const next = prev.filter((item) => item.id !== taskId);
       return next.length > 0 ? next : null;
     });

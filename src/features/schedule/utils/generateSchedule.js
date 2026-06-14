@@ -1,3 +1,12 @@
+const fisherYatesShuffle = (arr) => {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+
 /**
  * Pure allocation math — no side-effects, easily unit-testable.
  * Returns a shuffled, time-allocated schedule array, or null if nothing to schedule.
@@ -39,8 +48,8 @@ export function generateSchedule({ tasksForDay, excludedTaskIds, totalStudyTime,
     ...allocate(nonPriorityTasks, nonPriorityMinutes),
   ].filter((t) => t.scheduledMinutes > 0);
 
-  const prioritySlice = scheduleArr.filter((t) => t.priority).sort(() => Math.random() - 0.5);
-  const normalSlice = scheduleArr.filter((t) => !t.priority).sort(() => Math.random() - 0.5);
+  const prioritySlice = fisherYatesShuffle(scheduleArr.filter((t) => t.priority));
+  const normalSlice = fisherYatesShuffle(scheduleArr.filter((t) => !t.priority));
 
   return [...prioritySlice, ...normalSlice];
 }
