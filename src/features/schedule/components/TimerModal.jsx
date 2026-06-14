@@ -33,6 +33,11 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
   const progress = totalSeconds > 0 ? remaining / totalSeconds : 0;
   const dashOffset = circumference * (1 - progress);
 
+  const pomodoroSec = pomodoroMinutes * 60;
+  const pomodoroCycle = pomodoroBreakCount + 1;
+  const pomodoroTimeInCycle = Math.max(0, elapsedSeconds - pomodoroResetAt) % pomodoroSec;
+  const pomodoroUntilBreak = pomodoroSec - pomodoroTimeInCycle;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-8 flex flex-col items-center gap-5">
@@ -82,7 +87,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
               strokeWidth="10"
               className="text-surface-container-high"
             />
-            {/* Progress arc */}
+            {/* Progress arc — style required for SVG stroke-dashoffset animation, not expressible as a Tailwind class */}
             <circle
               cx="100"
               cy="100"
@@ -258,26 +263,20 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                   <span className="text-xs text-on-surface-variant">{t.minUnit}</span>
                 </div>
 
-                {elapsedSeconds > 0 && (() => {
-                  const pomSec = pomodoroMinutes * 60;
-                  const cycle = pomodoroBreakCount + 1;
-                  const timeInCycle = Math.max(0, elapsedSeconds - pomodoroResetAt) % pomSec;
-                  const untilBreak = pomSec - timeInCycle;
-                  return (
-                    <div className="flex items-center justify-between bg-error/8 border border-error/20 rounded-lg px-3 py-1.5">
-                      <span className="text-xs text-error/80 font-semibold">
-                        {t.cycleLabel} {cycle}
-                      </span>
-                      <span className="text-xs text-on-surface-variant font-mono">
-                        {isRunning
-                          ? `${t.breakIn} ${formatTime(untilBreak, false)}`
-                          : timeInCycle === 0
-                            ? t.takeBreak
-                            : t.pausedLeft(formatTime(untilBreak, false))}
-                      </span>
-                    </div>
-                  );
-                })()}
+                {elapsedSeconds > 0 && (
+                  <div className="flex items-center justify-between bg-error/8 border border-error/20 rounded-lg px-3 py-1.5">
+                    <span className="text-xs text-error/80 font-semibold">
+                      {t.cycleLabel} {pomodoroCycle}
+                    </span>
+                    <span className="text-xs text-on-surface-variant font-mono">
+                      {isRunning
+                        ? `${t.breakIn} ${formatTime(pomodoroUntilBreak, false)}`
+                        : pomodoroTimeInCycle === 0
+                          ? t.takeBreak
+                          : t.pausedLeft(formatTime(pomodoroUntilBreak, false))}
+                    </span>
+                  </div>
+                )}
               </>
             )}
           </div>

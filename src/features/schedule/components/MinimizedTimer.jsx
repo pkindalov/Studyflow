@@ -41,6 +41,7 @@ function MinimizedTimer({ task, elapsedSeconds, isRunning, onExpand, onPlayPause
               strokeWidth="2.5"
               className={isFinished ? "text-tertiary/30" : "text-outline-variant/30"}
             />
+            {/* style required for SVG stroke-dashoffset animation, not expressible as a Tailwind class */}
             <circle
               cx="15" cy="15" r={radius}
               fill="none"
