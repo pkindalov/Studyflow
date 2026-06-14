@@ -32,6 +32,7 @@ function MinimizedTimer({ task, elapsedSeconds, isRunning, onExpand, onPlayPause
                 : "bg-primary hover:opacity-90"
           }`}
           title={isRunning ? t.pauseTimerTitle : t.playTimerTitle}
+          aria-label={isRunning ? t.pauseTimerTitle : t.playTimerTitle}
         >
           <svg className="absolute inset-0" viewBox="0 0 30 30">
             <circle
@@ -83,6 +84,7 @@ function MinimizedTimer({ task, elapsedSeconds, isRunning, onExpand, onPlayPause
           onClick={onExpand}
           className="flex items-center justify-center w-7 h-7 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all flex-shrink-0"
           title={t.expandTimer}
+          aria-label={t.expandTimer}
         >
           <span className="material-symbols-outlined text-lg">open_in_full</span>
         </button>

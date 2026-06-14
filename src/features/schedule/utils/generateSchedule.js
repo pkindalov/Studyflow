@@ -29,6 +29,7 @@ export function generateSchedule({ tasksForDay, excludedTaskIds, totalStudyTime,
   }
 
   const allocate = (tasks, budget) => {
+    if (!tasks.length) return [];
     if (tasks.length === 1) return [{ ...tasks[0], scheduledMinutes: budget }];
     const perTask = Math.floor(budget / tasks.length);
     let left = budget;
