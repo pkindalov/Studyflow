@@ -1,4 +1,4 @@
-const fisherYatesShuffle = (arr) => {
+const fisherYatesShuffle = function(arr) {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -7,7 +7,7 @@ const fisherYatesShuffle = (arr) => {
   return result;
 };
 
-export function generateSchedule({ tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent }) {
+export const generateSchedule = function({ tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent }) {
   const selectedTasks = tasksForDay.filter((task) => !excludedTaskIds.has(task.id) && !task.done);
   if (totalStudyTime <= 0 || !selectedTasks.length) return null;
 
@@ -28,16 +28,13 @@ export function generateSchedule({ tasksForDay, excludedTaskIds, totalStudyTime,
     nonPriorityMinutes = 0;
   }
 
-  const allocate = (tasks, budget) => {
+  // Spreads remainder evenly: first `remainder` tasks get perTask+1, the rest get perTask.
+  // This avoids the "last-task-gets-all" skew when budget < tasks.length.
+  const allocate = function(tasks, budget) {
     if (!tasks.length) return [];
-    if (tasks.length === 1) return [{ ...tasks[0], scheduledMinutes: budget }];
     const perTask = Math.floor(budget / tasks.length);
-    let left = budget;
-    return tasks.map((task, i) => {
-      const time = i === tasks.length - 1 ? left : perTask;
-      left -= time;
-      return { ...task, scheduledMinutes: time };
-    });
+    const remainder = budget % tasks.length;
+    return tasks.map((task, i) => ({ ...task, scheduledMinutes: perTask + (i < remainder ? 1 : 0) }));
   };
 
   const scheduleArr = [
