@@ -309,8 +309,9 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     setScheduleTimers({});
     setTaskAllocations({});
     setIsTimerMinimized(false);
+    music.pause();
     musicStartedFromTimerRef.current = false;
-  }, []);
+  }, [music]);
 
   return {
     timerTask,

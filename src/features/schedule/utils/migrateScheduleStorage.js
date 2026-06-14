@@ -1,6 +1,6 @@
 import { SCHEDULES_KEY, TIMERS_KEY } from "./scheduleStorage";
 
-export function runMigrations() {
+export const runMigrations = function() {
   const readAll = (k) => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } };
   const schedules = readAll(SCHEDULES_KEY);
   const timers    = readAll(TIMERS_KEY);
