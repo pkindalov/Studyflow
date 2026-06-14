@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import { PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SCHEDULES_KEY, readAllSchedules, writeScheduleForDate } from "../utils/scheduleStorage";
@@ -18,17 +18,17 @@ export function useSchedule({
   showNotification,
   t,
 }) {
-  const [schedule, setSchedule] = useState(null);
+  const [schedule, setSchedule] = useState(() => readAllSchedules()[dateKey] || null);
   const [scheduleUnsaved, setScheduleUnsaved] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const unsavedProceedRef = useRef(null);
+  const [prevDateKey, setPrevDateKey] = useState(dateKey);
 
-  // Load schedule for the selected date
-  useEffect(() => {
-    const allSchedules = readAllSchedules();
-    setSchedule(allSchedules[dateKey] || null);
+  if (prevDateKey !== dateKey) {
+    setPrevDateKey(dateKey);
+    setSchedule(readAllSchedules()[dateKey] || null);
     setScheduleUnsaved(false);
-  }, [dateKey]);
+  }
 
   const allScheduleDone = useMemo(() =>
     !!schedule && schedule.length > 0 && schedule.every((task) =>
@@ -45,8 +45,8 @@ export function useSchedule({
   const handleScheduleDragEnd = useCallback(({ active, over }) => {
     if (!over || active.id === over.id) return;
     setSchedule((prev) => {
-      const from = prev.findIndex((t) => t.id === active.id);
-      const to = prev.findIndex((t) => t.id === over.id);
+      const from = prev.findIndex((item) => item.id === active.id);
+      const to = prev.findIndex((item) => item.id === over.id);
       return arrayMove(prev, from, to);
     });
     setScheduleUnsaved(true);
@@ -113,17 +113,17 @@ export function useSchedule({
   }, [dateKey, showNotification, t]);
 
   const handleMarkScheduleItemDone = useCallback((taskId) => {
-    const task = schedule?.find((t) => t.id === taskId);
+    const task = schedule?.find((item) => item.id === taskId);
     if (!task) return;
     if (runningTaskId === taskId) setRunningTaskId(null);
     markTaskDone(dateKey, taskId);
-    setSchedule((prev) => prev?.map((t) => t.id === taskId ? { ...t, done: true } : t) ?? null);
+    setSchedule((prev) => prev?.map((item) => item.id === taskId ? { ...item, done: true } : item) ?? null);
     setScheduleTimers((prev) => ({ ...prev, [taskId]: task.scheduledMinutes * 60 }));
   }, [schedule, runningTaskId, setRunningTaskId, markTaskDone, dateKey, setScheduleTimers]);
 
   const handleRemoveScheduleItem = useCallback((taskId) => {
     setSchedule((prev) => {
-      const next = prev.filter((t) => t.id !== taskId);
+      const next = prev.filter((item) => item.id !== taskId);
       return next.length > 0 ? next : null;
     });
     setScheduleUnsaved(true);
@@ -132,12 +132,14 @@ export function useSchedule({
   const removeTaskFromSchedule = useCallback((predicate) => {
     setSchedule((prev) => {
       if (!prev) return null;
-      const next = prev.filter((t) => !predicate(t));
+      const next = prev.filter((item) => !predicate(item));
       return next.length > 0 ? next : null;
     });
+    // Read from storage directly so a deleted task is also removed from the persisted
+    // schedule, even if the current in-memory schedule is unsaved.
     const existing = readAllSchedules()[dateKey];
     if (existing) {
-      writeScheduleForDate(dateKey, existing.filter((t) => !predicate(t)));
+      writeScheduleForDate(dateKey, existing.filter((item) => !predicate(item)));
     }
   }, [dateKey]);
 
@@ -160,9 +162,10 @@ export function useSchedule({
   }, []);
 
   const markScheduleItemUndone = useCallback((taskId) => {
-    setSchedule((prev) => prev?.map((t) => t.id === taskId ? { ...t, done: false } : t) ?? null);
+    setSchedule((prev) => prev?.map((item) => item.id === taskId ? { ...item, done: false } : item) ?? null);
   }, []);
 
+  // Removes ALL dates from storage — use deleteSchedule() to remove only the current date.
   const clearSchedule = useCallback(() => {
     setSchedule(null);
     setScheduleUnsaved(false);

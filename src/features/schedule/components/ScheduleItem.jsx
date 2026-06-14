@@ -17,6 +17,7 @@ function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, on
     >
       {(hasProgress || isFinished) && (
         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
+          {/* width is a runtime %, not expressible as a static Tailwind class */}
           <div
             className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
             style={{ width: `${Math.min(100, (elapsed / total) * 100)}%` }}
