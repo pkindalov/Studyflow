@@ -7,10 +7,6 @@ const fisherYatesShuffle = (arr) => {
   return result;
 };
 
-/**
- * Pure allocation math — no side-effects, easily unit-testable.
- * Returns a shuffled, time-allocated schedule array, or null if nothing to schedule.
- */
 export function generateSchedule({ tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent }) {
   const selectedTasks = tasksForDay.filter((task) => !excludedTaskIds.has(task.id) && !task.done);
   if (totalStudyTime <= 0 || !selectedTasks.length) return null;

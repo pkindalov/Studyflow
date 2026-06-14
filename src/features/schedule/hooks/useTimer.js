@@ -76,7 +76,13 @@ export function useTimer({ dateKey, music, markTaskDone }) {
       const originKey = timerOriginDateKeyRef.current;
       if (active && originKey && originKey !== dateKey) {
         const allT = readAllTimers();
-        writeTimersForDate(originKey, { ...(allT[originKey] || {}), [active.id]: scheduleTimers[active.id] || 0 });
+        // Prefer in-memory elapsed; if the task key was cleared (e.g. schedule regeneration
+        // called setScheduleTimers({})), fall back to the already-persisted value so we don't
+        // overwrite valid storage with 0.
+        const activeElapsed = Object.prototype.hasOwnProperty.call(scheduleTimers, active.id)
+          ? scheduleTimers[active.id]
+          : (allT[originKey]?.[active.id] ?? 0);
+        writeTimersForDate(originKey, { ...(allT[originKey] || {}), [active.id]: activeElapsed });
         const { [active.id]: _dropped, ...rest } = scheduleTimers;
         writeTimersForDate(dateKey, rest);
       } else {
