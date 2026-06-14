@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { readAllTimers, writeTimersForDate } from "../utils/scheduleStorage";
 
+export const DEFAULT_POMODORO_MINUTES = 25;
+
 export function useTimer({ dateKey, music, markTaskDone }) {
   const skipTimerPersistRef = useRef(true);
 
@@ -10,14 +12,14 @@ export function useTimer({ dateKey, music, markTaskDone }) {
   const [scheduleTimers, setScheduleTimers] = useState({});
   const [taskAllocations, setTaskAllocations] = useState({});
   const [pendingTimerTask, setPendingTimerTask] = useState(null);
-  const [pendingTimerMinutes, setPendingTimerMinutes] = useState(25);
+  const [pendingTimerMinutes, setPendingTimerMinutes] = useState(DEFAULT_POMODORO_MINUTES);
   const [pendingSwitchTask, setPendingSwitchTask] = useState(null);
 
   const [pomodoroEnabled, setPomodoroEnabled] = useState(() => {
     try { return JSON.parse(localStorage.getItem("pomodoro_enabled")) ?? false; } catch { return false; }
   });
   const [pomodoroMinutes, setPomodoroMinutes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? 25; } catch { return 25; }
+    try { return JSON.parse(localStorage.getItem("pomodoro_minutes")) ?? DEFAULT_POMODORO_MINUTES; } catch { return DEFAULT_POMODORO_MINUTES; }
   });
   const [pomodoroResetAt, setPomodoroResetAt] = useState(0);
   const [pomodoroBreakCount, setPomodoroBreakCount] = useState(0);
@@ -224,14 +226,21 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     const originKey = timerOriginDateKeyRef.current;
     const fullSeconds = timerTask.scheduledMinutes * 60;
     markTaskDone(originKey || dateKey, timerTask.id);
-    // When the task belongs to a different date, the persist effect won't route to
-    // the origin date after the ref is cleared, so we write it explicitly here.
     if (originKey && originKey !== dateKey) {
+      // The persist effect can't route to the origin date once the ref is cleared, so
+      // write elapsed there explicitly. Drop the task from current-date state so the
+      // persist effect doesn't create an orphan entry under the wrong date key.
       const allT = readAllTimers();
       writeTimersForDate(originKey, { ...(allT[originKey] || {}), [timerTask.id]: fullSeconds });
+      timerOriginDateKeyRef.current = null;
+      setScheduleTimers((prev) => {
+        const { [timerTask.id]: _dropped, ...rest } = prev;
+        return rest;
+      });
+    } else {
+      timerOriginDateKeyRef.current = null;
+      setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: fullSeconds }));
     }
-    timerOriginDateKeyRef.current = null;
-    setScheduleTimers((prev) => ({ ...prev, [timerTask.id]: fullSeconds }));
     music.pause();
     setTimerTask(null);
   }, [timerTask, dateKey, markTaskDone, music]);

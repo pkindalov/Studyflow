@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { DEFAULT_POMODORO_MINUTES } from "./useTimer";
 
 export function useTimerActions({
   timerTask,
@@ -32,7 +33,7 @@ export function useTimerActions({
       openTimer({ ...task, scheduledMinutes: allocated });
     } else {
       setPendingTimerTask(task);
-      setPendingTimerMinutes(25);
+      setPendingTimerMinutes(DEFAULT_POMODORO_MINUTES);
     }
   }, [openTimer, scheduleTimers, taskAllocations, schedule, setScheduleTimers, setPendingTimerTask, setPendingTimerMinutes]);
 
