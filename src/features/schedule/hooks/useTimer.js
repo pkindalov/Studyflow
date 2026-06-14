@@ -204,7 +204,7 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     timerOriginDateKeyRef.current = dateKeyRef.current;
     setTimerTask(next);
     setTaskAllocations((prev) => ({ ...prev, [next.id]: next.scheduledMinutes }));
-    if (elapsed < next.scheduledMinutes * 60) {
+    if (!next.done && elapsed < next.scheduledMinutes * 60) {
       setRunningTaskId(next.id);
     }
   }, [pendingSwitchTask, pomodoroEnabled, pomodoroMinutes, music]);

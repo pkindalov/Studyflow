@@ -301,6 +301,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                       ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
                       : "bg-tertiary text-on-tertiary hover:opacity-90"
                   }`}
+                  aria-label={music.isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
                   title={music.isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
                 >
                   <span className="material-symbols-outlined text-sm">
@@ -368,6 +369,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
                     <button
                       onClick={() => setShowAllTracks(false)}
                       className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
+                      aria-label={t.close}
                     >
                       <span className="material-symbols-outlined text-xl">close</span>
                     </button>
