@@ -122,12 +122,13 @@ export function useSchedule({
   }, [schedule, runningTaskId, setRunningTaskId, markTaskDone, dateKey, setScheduleTimers]);
 
   const handleRemoveScheduleItem = useCallback((taskId) => {
+    if (runningTaskId === taskId) setRunningTaskId(null);
     setSchedule((prev) => {
       const next = prev.filter((item) => item.id !== taskId);
       return next.length > 0 ? next : null;
     });
     setScheduleUnsaved(true);
-  }, []);
+  }, [runningTaskId, setRunningTaskId]);
 
   const removeTaskFromSchedule = useCallback((predicate) => {
     setSchedule((prev) => {

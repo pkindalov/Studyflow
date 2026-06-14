@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { TIMERS_KEY, readAllTimers, writeTimersForDate } from "../utils/scheduleStorage";
+import { readAllTimers, writeTimersForDate } from "../utils/scheduleStorage";
 
 export function useTimer({ dateKey, music, markTaskDone }) {
   const skipTimerPersistRef = useRef(true);
@@ -250,8 +250,8 @@ export function useTimer({ dateKey, music, markTaskDone }) {
         }
         setRunningTaskId(timerTask.id);
         if (elapsed === 0 || musicWasPlayingRef.current) {
+          if (!music.isPlaying) musicStartedFromTimerRef.current = true;
           music.play();
-          musicStartedFromTimerRef.current = true;
         }
       }
     }
