@@ -40,7 +40,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-8 flex flex-col items-center gap-5">
+      <div role="dialog" aria-modal="true" aria-labelledby="timer-modal-title" className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-8 flex flex-col items-center gap-5">
         {/* Minimize + Close buttons */}
         <div className="absolute top-4 right-4 flex items-center gap-1">
           {onMinimize && (
@@ -64,7 +64,7 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
 
         {/* Task name */}
         <div className="text-center w-full px-8">
-          <h2 className="text-lg font-headline font-bold text-on-surface leading-tight line-clamp-2">
+          <h2 id="timer-modal-title" className="text-lg font-headline font-bold text-on-surface leading-tight line-clamp-2">
             {task.text}
           </h2>
           {task.priority && (
@@ -360,9 +360,9 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
             {/* All tracks modal */}
             {showAllTracks && (
               <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+                <div role="dialog" aria-modal="true" aria-labelledby="tracks-modal-title" className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
+                    <h2 id="tracks-modal-title" className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
                       <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
                       {t.playlistLabel}
                     </h2>
