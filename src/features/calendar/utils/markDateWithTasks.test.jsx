@@ -158,4 +158,17 @@ describe('edge cases', () => {
     const fn = markDateWithTasks({}, fmt, [weekly], false)
     expect(fn(props(PAST))).toBeNull()
   })
+
+  it('does not show a dot for a recurring task on its skipped date', () => {
+    const skipped = { ...daily, skippedDates: [TODAY_KEY] }
+    const fn = markDateWithTasks({}, fmt, [skipped], false)
+    expect(fn(props(TODAY))).toBeNull()
+  })
+
+  it('still shows a dot for a recurring task on a non-skipped date when another date is skipped', () => {
+    const skipped = { ...daily, skippedDates: [PAST_KEY] }
+    const fn = markDateWithTasks({}, fmt, [skipped], false)
+    const { container } = render(fn(props(TODAY)))
+    expect(dot(container)).toBeTruthy()
+  })
 })

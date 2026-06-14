@@ -18,7 +18,9 @@ export const markDateWithTasks = (
   const key = formatDateKey(date);
   const dayTasks = tasks[key] || [];
   const hasManual = dayTasks.length > 0;
-  const hasRecurring = recurringTasks.some((t) => appliesToDate(t, key));
+  const hasRecurring = recurringTasks.some(
+    (t) => !(t.skippedDates || []).includes(key) && appliesToDate(t, key),
+  );
 
   if (!hasManual && !hasRecurring) return null;
 
