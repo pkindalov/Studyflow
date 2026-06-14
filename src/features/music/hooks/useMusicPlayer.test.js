@@ -108,6 +108,12 @@ describe('initial state', () => {
     const { result } = renderHook(() => useMusicPlayer())
     expect(result.current.playlist).toHaveLength(3)
   })
+
+  it('defaults volume to 70 when localStorage contains a non-numeric string', () => {
+    localStorage.setItem('music_volume', 'abc')
+    const { result } = renderHook(() => useMusicPlayer())
+    expect(result.current.volume).toBe(70)
+  })
 })
 
 // ── addTrack ──────────────────────────────────────────────────────────────────

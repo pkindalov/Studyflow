@@ -38,6 +38,7 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
       </span>
       <button
         onClick={(e) => { e.stopPropagation(); onRemove(track.id); }}
+        aria-label={removeTitle}
         className="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
         title={removeTitle}
       >
@@ -94,6 +95,7 @@ function MusicPanel({
         {activeTrack && (
           <button
             onClick={onTogglePlay}
+            aria-label={isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
             className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
               isPlaying
                 ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
@@ -143,6 +145,7 @@ function MusicPanel({
           <p className="flex-1 text-xs text-error leading-snug">{t.trackPlaybackError}</p>
           <button
             onClick={onClearPlaybackError}
+            aria-label={t.trackPlaybackErrorDismiss}
             className="flex-shrink-0 text-error/60 hover:text-error transition-colors"
             title={t.trackPlaybackErrorDismiss}
           >
@@ -206,11 +209,13 @@ function MusicPanel({
           <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
+                <span className="material-symbols-outlined text-xl text-tertiary" aria-hidden="true">headphones</span>
                 {t.playlistLabel}
               </h2>
               <button
                 onClick={() => setShowAll(false)}
+                aria-label="Close playlist"
+                title="Close playlist"
                 className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
               >
                 <span className="material-symbols-outlined text-xl">close</span>

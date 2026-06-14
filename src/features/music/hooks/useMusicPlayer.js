@@ -38,8 +38,7 @@ export function extractVideoId(url) {
       if (embedMatch) return embedMatch[1];
     }
   } catch {
-    // Not a valid URL
-    console.error("Not a valid URL");
+    // not a valid URL
   }
   return null;
 }
@@ -63,7 +62,9 @@ export function useMusicPlayer() {
 
   const [volume, setVolumeState] = useState(() => {
     const saved = localStorage.getItem("music_volume");
-    return saved !== null ? Number(saved) : 70;
+    if (saved === null) return 70;
+    const parsed = Number(saved);
+    return isNaN(parsed) ? 70 : parsed;
   });
 
   // Persist playlist

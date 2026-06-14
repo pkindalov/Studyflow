@@ -97,6 +97,27 @@ describe('track list', () => {
     wrap(<MusicPanel {...baseProps({ playlist })} />)
     expect(screen.getByText('+1 more — view all')).toBeTruthy()
   })
+
+  it('opens the playlist modal when "view all" is clicked', () => {
+    const playlist = Array.from({ length: 6 }, (_, i) => makeTrack(`t${i}`, `Track ${i}`))
+    wrap(<MusicPanel {...baseProps({ playlist })} />)
+    fireEvent.click(screen.getByText('+1 more — view all'))
+    expect(screen.getByRole('heading', { name: 'Playlist' })).toBeTruthy()
+  })
+
+  it('closes the playlist modal when the close button is clicked', () => {
+    const playlist = Array.from({ length: 6 }, (_, i) => makeTrack(`t${i}`, `Track ${i}`))
+    wrap(<MusicPanel {...baseProps({ playlist })} />)
+    fireEvent.click(screen.getByText('+1 more — view all'))
+    fireEvent.click(screen.getByRole('button', { name: 'Close playlist' }))
+    expect(screen.queryByRole('heading', { name: 'Playlist' })).toBeNull()
+  })
+
+  it('remove button has an accessible label', () => {
+    const playlist = [makeTrack('t1', 'Lo-Fi Beats')]
+    wrap(<MusicPanel {...baseProps({ playlist })} />)
+    expect(screen.getByRole('button', { name: 'Remove track' })).toBeTruthy()
+  })
 })
 
 describe('volume slider', () => {
