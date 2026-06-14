@@ -174,6 +174,7 @@ export const bg = {
   runningStatus: "Изпълнява се — кликни за преглед",
   resumeTimerStatus: "Продължи таймера",
   startTimerStatus: "Стартирай таймер",
+  removeFromSchedule: "Премахни от разписанието",
 
   // ── Bottom bar ────────────────────────────────────────────────────────────────
   exportBtn: "Експорт",

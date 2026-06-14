@@ -138,7 +138,7 @@ export function useTimer({ dateKey, music, markTaskDone }) {
       return;
     }
     const pomodoroSeconds = pomodoroEnabled ? Math.max(1, pomodoroMinutes) * 60 : 0;
-    if (pomodoroSeconds > 0 && elapsed > pomodoroResetAt && (elapsed - pomodoroResetAt) % pomodoroSeconds === 0) {
+    if (pomodoroSeconds > 0 && (elapsed - pomodoroResetAt) >= pomodoroSeconds) {
       setPomodoroResetAt(elapsed);
       setPomodoroBreakCount((n) => n + 1);
       setRunningTaskId(null);

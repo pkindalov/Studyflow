@@ -15,6 +15,7 @@ const t = {
   resumeTimerStatus: 'Resume timer',
   startTimerStatus: 'Start timer',
   markDoneEarly: 'Mark as Done',
+  removeFromSchedule: 'Remove from schedule',
 }
 
 const schedule = [

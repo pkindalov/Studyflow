@@ -167,6 +167,7 @@ export const en = {
   runningStatus: "Running — click to view",
   resumeTimerStatus: "Resume timer",
   startTimerStatus: "Start timer",
+  removeFromSchedule: "Remove from schedule",
 
   // ── Bottom bar ────────────────────────────────────────────────────────────────
   exportBtn: "Export",

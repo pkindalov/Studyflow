@@ -37,6 +37,7 @@ function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, on
       <button
         onClick={() => onOpenTimer(task)}
         title={isFinished ? t.completedStatus : isRunning ? t.runningStatus : hasProgress ? t.resumeTimerStatus : t.startTimerStatus}
+        aria-label={isFinished ? t.completedStatus : isRunning ? t.runningStatus : hasProgress ? t.resumeTimerStatus : t.startTimerStatus}
         className={`flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 ${
           isFinished
             ? "bg-tertiary/20 text-tertiary"
@@ -62,7 +63,8 @@ function ScheduleItem({ task, elapsed, isRunning, runningTaskId, onOpenTimer, on
       )}
       <button
         onClick={() => onRemove(task.id)}
-        title="Remove from schedule"
+        title={t.removeFromSchedule}
+        aria-label={t.removeFromSchedule}
         className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-error hover:bg-error/10"
       >
         <span className="material-symbols-outlined text-base">close</span>
