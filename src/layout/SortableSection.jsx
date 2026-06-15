@@ -4,10 +4,11 @@ import { CSS } from "@dnd-kit/utilities";
 export default function SortableSection({ id, t, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
+    // transform and transition must be inline — dnd-kit drives these values dynamically
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.3 : 1 }}
-      className="group/sec"
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`group/sec ${isDragging ? "opacity-30" : "opacity-100"}`}
     >
       <div
         {...attributes}

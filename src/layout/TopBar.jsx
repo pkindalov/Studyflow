@@ -27,7 +27,7 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t }
             className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-sm transition-all"
             title={theme === "dark" ? t.switchToLight : t.switchToDark}
           >
-            <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
+            <span className="material-symbols-outlined text-base icon-filled">
               {theme === "dark" ? "light_mode" : "dark_mode"}
             </span>
             {theme === "dark" ? t.lightMode : t.darkMode}
@@ -60,7 +60,7 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t }
           className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high shadow-lg transition-all"
           title={theme === "dark" ? t.switchToLight : t.switchToDark}
         >
-          <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>
+          <span className="material-symbols-outlined text-base icon-filled">
             {theme === "dark" ? "light_mode" : "dark_mode"}
           </span>
           {theme === "dark" ? t.lightMode : t.darkMode}

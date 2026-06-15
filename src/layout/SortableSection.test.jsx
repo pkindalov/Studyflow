@@ -48,17 +48,16 @@ describe('SortableSection', () => {
     expect(screen.getByText('drag_indicator')).toBeTruthy()
   })
 
-  it('applies opacity 1 when not dragging', () => {
+  it('applies opacity-100 class when not dragging', () => {
     const { container } = render(
       <SortableSection id="section-1" t={t}>
         <span>Content</span>
       </SortableSection>
     )
-    const wrapper = container.firstChild
-    expect(wrapper.style.opacity).toBe('1')
+    expect(container.firstChild.className).toContain('opacity-100')
   })
 
-  it('applies opacity 0.3 when isDragging is true', () => {
+  it('applies opacity-30 class when isDragging is true', () => {
     mockUseSortable.mockReturnValueOnce({
       attributes: {},
       listeners: {},
@@ -72,6 +71,6 @@ describe('SortableSection', () => {
         <span>Content</span>
       </SortableSection>
     )
-    expect(container.firstChild.style.opacity).toBe('0.3')
+    expect(container.firstChild.className).toContain('opacity-30')
   })
 })
