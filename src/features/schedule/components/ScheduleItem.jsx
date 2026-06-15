@@ -74,6 +74,6 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
       </button>
     </li>
   );
-}
+};
 
 export default ScheduleItem;

@@ -21,4 +21,4 @@ export const runMigrations = function() {
     if (migratedSchedules) localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules));
     if (migratedTimers)    localStorage.setItem(TIMERS_KEY,    JSON.stringify(timers));
   } catch { /* localStorage not available or quota exceeded — migration is best-effort */ }
-}
+};

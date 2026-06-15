@@ -29,7 +29,7 @@ export const generateSchedule = function({ tasksForDay, excludedTaskIds, totalSt
   }
 
   // Spreads remainder evenly: first `remainder` tasks get perTask+1, the rest get perTask.
-  // This avoids the "last-task-gets-all" skew when budget < tasks.length.
+  // Input must be pre-shuffled so that which tasks receive the extra minute varies per regeneration.
   const allocate = function(tasks, budget) {
     if (!tasks.length) return [];
     const perTask = Math.floor(budget / tasks.length);
@@ -37,13 +37,10 @@ export const generateSchedule = function({ tasksForDay, excludedTaskIds, totalSt
     return tasks.map((task, i) => ({ ...task, scheduledMinutes: perTask + (i < remainder ? 1 : 0) }));
   };
 
-  const scheduleArr = [
-    ...allocate(priorityTasks, priorityMinutes),
-    ...allocate(nonPriorityTasks, nonPriorityMinutes),
+  // Shuffle before allocate: randomises which tasks receive the extra minute each generation.
+  // Priority tasks come first in the output; order within each group is already randomised.
+  return [
+    ...allocate(fisherYatesShuffle(priorityTasks), priorityMinutes),
+    ...allocate(fisherYatesShuffle(nonPriorityTasks), nonPriorityMinutes),
   ].filter((t) => t.scheduledMinutes > 0);
-
-  const prioritySlice = fisherYatesShuffle(scheduleArr.filter((t) => t.priority));
-  const normalSlice = fisherYatesShuffle(scheduleArr.filter((t) => !t.priority));
-
-  return [...prioritySlice, ...normalSlice];
-}
+};

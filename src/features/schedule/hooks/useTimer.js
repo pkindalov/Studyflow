@@ -304,6 +304,7 @@ export const useTimer = function({ dateKey, music, markTaskDone }) {
   }, [timerTask, scheduleTimers]);
 
   const resetTimer = useCallback(() => {
+    timerOriginDateKeyRef.current = null;
     setTimerTask(null);
     setRunningTaskId(null);
     setScheduleTimers({});
