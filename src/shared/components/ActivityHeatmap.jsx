@@ -57,7 +57,7 @@ function formatTooltip(date, count) {
 }
 
 function ActivityHeatmap({ heatmap, selectedDate, onSelectDate }) {
-  const { weeks, today } = useMemo(buildGrid, []);
+  const { weeks, today } = useMemo(() => buildGrid(), []);
   const monthLabels = useMemo(() => buildMonthLabels(weeks), [weeks]);
 
   return (
@@ -89,15 +89,26 @@ function ActivityHeatmap({ heatmap, selectedDate, onSelectDate }) {
               const dateStr = date.toLocaleDateString("en-CA");
               const count = heatmap[dateStr] || 0;
               const isSelected = selectedDate === dateStr;
+              const isInteractive = !isFuture && !!onSelectDate;
+              const tooltip = isFuture ? "" : formatTooltip(date, count);
               return (
                 <div
                   key={dIdx}
-                  title={isFuture ? "" : formatTooltip(date, count)}
-                  onClick={!isFuture && onSelectDate ? () => onSelectDate(isSelected ? null : dateStr) : undefined}
+                  title={tooltip}
+                  role={isInteractive ? "button" : undefined}
+                  tabIndex={isInteractive ? 0 : undefined}
+                  aria-label={isInteractive ? tooltip : undefined}
+                  onClick={isInteractive ? () => onSelectDate(isSelected ? null : dateStr) : undefined}
+                  onKeyDown={isInteractive ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectDate(isSelected ? null : dateStr);
+                    }
+                  } : undefined}
                   className={[
                     "w-2 h-2 rounded-[2px] flex-shrink-0 transition-opacity",
                     cellClass(count, isFuture),
-                    !isFuture && onSelectDate ? "cursor-pointer hover:opacity-80" : "",
+                    isInteractive ? "cursor-pointer hover:opacity-80" : "",
                     isSelected ? "ring-1 ring-primary ring-offset-[1px] ring-offset-surface-container" : "",
                   ].join(" ")}
                 />
