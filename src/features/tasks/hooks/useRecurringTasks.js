@@ -79,7 +79,9 @@ export const useRecurringTasks = function() {
   const skipDate = useCallback((id, dateKey) => {
     setRecurringTasks((prev) =>
       prev.map((t) =>
-        t.id === id ? { ...t, skippedDates: [...(t.skippedDates || []), dateKey] } : t,
+        t.id === id && !(t.skippedDates || []).includes(dateKey)
+          ? { ...t, skippedDates: [...(t.skippedDates || []), dateKey] }
+          : t,
       ),
     );
   }, []);

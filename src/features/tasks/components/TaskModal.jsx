@@ -249,7 +249,8 @@ const TaskModal = function({
           </button>
           <button
             onClick={() => onSave()}
-            className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold shadow-sm hover:opacity-90 transition-all"
+            disabled={!text.trim()}
+            className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold shadow-sm hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {t.save}
           </button>

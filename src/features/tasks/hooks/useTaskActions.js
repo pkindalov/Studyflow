@@ -48,9 +48,7 @@ export const useTaskActions = function ({
 
   const handleSaveToBank = useCallback(
     (task) => {
-      const bankTask = taskBank.find(
-        (bt) => bt.text === task.text && !!bt.priority === !!task.priority,
-      );
+      const bankTask = taskBank.find((bt) => bt.text === task.text);
       if (bankTask) {
         removeFromBank(bankTask.id);
       } else {

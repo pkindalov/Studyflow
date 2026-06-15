@@ -67,11 +67,16 @@ describe('actions', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
-  it('calls onSave when Save is clicked', () => {
+  it('calls onSave when Save is clicked with non-empty text', () => {
     const onSave = vi.fn()
-    wrap(<TaskModal {...baseProps()} onSave={onSave} />)
+    wrap(<TaskModal {...baseProps()} text="My task" onSave={onSave} />)
     fireEvent.click(screen.getByText('Save'))
     expect(onSave).toHaveBeenCalledOnce()
+  })
+
+  it('Save button is disabled when text is empty', () => {
+    wrap(<TaskModal {...baseProps()} text="" />)
+    expect(screen.getByText('Save').closest('button')).toBeDisabled()
   })
 
   it('calls setText when textarea changes', () => {
