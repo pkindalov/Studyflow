@@ -90,7 +90,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
       ) : (
         <>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={paginated.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+            <SortableContext items={paginated.map((task) => task.id)} strategy={verticalListSortingStrategy}>
               <div className={isGridView ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "flex flex-col gap-6"}>
                 {paginated.map((task) => (
                   <SortableTaskCard

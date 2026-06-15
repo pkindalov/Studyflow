@@ -96,10 +96,10 @@ export const useTaskModal = function({
         });
         try {
           const allTimers = readAllTimers();
-          const targetTimers = { ...(allTimers[targetDate] || {}) };
-          delete targetTimers[taskId];
-          writeTimersForDate(targetDate, targetTimers);
-        } catch { /* ignore */ }
+          const fromTimers = { ...(allTimers[dateKey] || {}) };
+          delete fromTimers[taskId];
+          writeTimersForDate(dateKey, fromTimers);
+        } catch (err) { console.error("Failed to clean up timer on task move:", err); }
       }
       const effectiveDateKey = (targetDate && targetDate !== dateKey) ? targetDate : dateKey;
       const task = (tasks[dateKey] || []).find((t) => t.id === taskId);
