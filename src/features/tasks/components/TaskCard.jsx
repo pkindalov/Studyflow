@@ -89,7 +89,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
                 ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
                 : "text-on-surface-variant/50 hover:text-secondary hover:bg-secondary/10"
             }`}
-            aria-label={t.saveToList}
+            aria-label={isInList ? t.removeFromList : t.saveToList}
             title={isInList ? t.savedListBtn : t.saveToList}
           >
             <span className={`material-symbols-outlined text-base ${isInList ? "icon-filled" : "icon-outlined"}`}>

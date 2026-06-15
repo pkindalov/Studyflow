@@ -145,7 +145,7 @@ describe('optional buttons', () => {
   it('calls onSaveToBank when isInList is true', () => {
     const onSaveToBank = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onSaveToBank={onSaveToBank} isInList={true} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Saved to list!' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove from list' }))
     expect(onSaveToBank).toHaveBeenCalledWith(base)
   })
 
