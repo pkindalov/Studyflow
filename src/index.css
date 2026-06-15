@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Material Symbols fill-state utilities — fontVariationSettings cannot be expressed as Tailwind utilities */
+.icon-filled   { font-variation-settings: 'FILL' 1; }
+.icon-outlined { font-variation-settings: 'FILL' 0; }
+
 :root {
   /* Primary — soft indigo-violet */
   --color-primary: #9580f5;

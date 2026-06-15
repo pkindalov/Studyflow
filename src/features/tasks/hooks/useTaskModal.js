@@ -110,9 +110,9 @@ export const useTaskModal = function({
         const actualRecurrence = recurrence === "custom" ? "daily" : recurrence;
         const ed = computeRecurringEndDate(recurrence, sd, monthsAhead, yearsAhead, endDate);
         if (task?.recurringId) {
-          updateRecurring(task.recurringId, text, image, priority, actualRecurrence, sd, ed);
+          updateRecurring(task.recurringId, trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
         } else {
-          const newId = addRecurring(text, image, priority, actualRecurrence, sd, ed);
+          const newId = addRecurring(trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
           linkRecurring(effectiveDateKey, taskId, newId);
         }
       } else if (task?.recurringId) {

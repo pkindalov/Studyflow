@@ -10,6 +10,7 @@ const PAGE_SIZE = 8;
 
 const SortableTaskCard = function({ id, ...props }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  // Inline style required: dnd-kit applies CSS transform at runtime for drag animation
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style}>

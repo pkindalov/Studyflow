@@ -37,10 +37,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         onClick={() => onToggle(task.id)}
         aria-label={isDone ? t.markIncomplete : t.markComplete}
       >
-        <span
-          className="material-symbols-outlined text-white text-sm"
-          style={{ fontVariationSettings: "'FILL' 1" }}
-        >
+        <span className="material-symbols-outlined text-white text-sm icon-filled">
           check
         </span>
       </button>
@@ -95,10 +92,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
             aria-label={t.saveToList}
             title={isInList ? t.savedListBtn : t.saveToList}
           >
-            <span
-              className="material-symbols-outlined text-base"
-              style={{ fontVariationSettings: isInList ? "'FILL' 1" : "'FILL' 0" }}
-            >
+            <span className={`material-symbols-outlined text-base ${isInList ? "icon-filled" : "icon-outlined"}`}>
               bookmark
             </span>
           </button>
@@ -114,10 +108,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
             aria-label={selected ? t.excludeFromSchedule : t.includeInSchedule}
             title={selected ? t.excludeFromSchedule : t.includeInSchedule}
           >
-            <span
-              className="material-symbols-outlined text-base"
-              style={{ fontVariationSettings: selected ? "'FILL' 1" : "'FILL' 0" }}
-            >
+            <span className={`material-symbols-outlined text-base ${selected ? "icon-filled" : "icon-outlined"}`}>
               event_available
             </span>
           </button>

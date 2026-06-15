@@ -203,7 +203,7 @@ const TaskBankModal = function({
                           : "border-outline/40 text-on-surface-variant hover:text-tertiary"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: editPriority ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                      <span className={`material-symbols-outlined text-base ${editPriority ? "icon-filled" : "icon-outlined"}`}>star</span>
                     </button>
                     <button onClick={saveEdit} className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors flex-shrink-0">
                       <span className="material-symbols-outlined text-base">check</span>
@@ -286,7 +286,7 @@ const TaskBankModal = function({
                         : "border-outline/40 text-on-surface-variant hover:border-tertiary/40 hover:text-tertiary"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: newTaskPriority ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                    <span className={`material-symbols-outlined text-base ${newTaskPriority ? "icon-filled" : "icon-outlined"}`}>star</span>
                   </button>
                   <button
                     type="submit"
