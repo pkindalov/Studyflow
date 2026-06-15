@@ -10,6 +10,8 @@ export const bg = {
   delete: "Изтрий",
   add: "Добави",
   restore: "Възстанови",
+  prevPage: "Предишна",
+  nextPage: "Следваща",
   moreViewAll: (n) => `+${n} още — виж всички`,
 
   // ── Calendar sidebar ────────────────────────────────────────────────────────
@@ -139,6 +141,7 @@ export const bg = {
   selectedDayLabel: "Избран ден",
   selectedDayTasksFn: (n) =>
     `${n} ${n === 1 ? "задача завършена" : "задачи завършени"}`,
+  heatmapNoTasksDone: "Няма завършени задачи",
 
   // ── Music panel ───────────────────────────────────────────────────────────────
   focusMusicLabel: "Музика за фокус",

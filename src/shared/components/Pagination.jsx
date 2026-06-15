@@ -1,4 +1,7 @@
+import { useLang } from "../i18n/LangContext";
+
 const Pagination = function({ page, totalPages, onPrev, onNext }) {
+  const { t } = useLang();
   if (totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-between pt-2 border-t border-outline-variant/30">
@@ -8,7 +11,7 @@ const Pagination = function({ page, totalPages, onPrev, onNext }) {
         className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container-high disabled:opacity-30 disabled:pointer-events-none transition-all"
       >
         <span className="material-symbols-outlined text-sm">chevron_left</span>
-        Prev
+        {t.prevPage}
       </button>
       <span className="text-xs text-on-surface-variant tabular-nums">
         {page + 1} / {totalPages}
@@ -18,7 +21,7 @@ const Pagination = function({ page, totalPages, onPrev, onNext }) {
         disabled={page >= totalPages - 1}
         className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container-high disabled:opacity-30 disabled:pointer-events-none transition-all"
       >
-        Next
+        {t.nextPage}
         <span className="material-symbols-outlined text-sm">chevron_right</span>
       </button>
     </div>

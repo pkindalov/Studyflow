@@ -10,6 +10,8 @@ export const en = {
   delete: "Delete",
   add: "Add",
   restore: "Restore",
+  prevPage: "Prev",
+  nextPage: "Next",
   moreViewAll: (n) => `+${n} more — view all`,
 
   // ── Calendar sidebar ────────────────────────────────────────────────────────
@@ -134,6 +136,7 @@ export const en = {
   last6Months: "Last 6 months",
   selectedDayLabel: "Selected day",
   selectedDayTasksFn: (n) => `${n} task${n === 1 ? "" : "s"} done`,
+  heatmapNoTasksDone: "No tasks done",
 
   // ── Music panel ───────────────────────────────────────────────────────────────
   focusMusicLabel: "Focus Music",

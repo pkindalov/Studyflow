@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import { useLang } from "../i18n/LangContext";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const WEEKS = 26;
 
 // Maps done-task count to a Tailwind colour class
@@ -38,27 +38,30 @@ const buildGrid = function() {
   return { weeks, today };
 }
 
-const buildMonthLabels = function(weeks) {
+const buildMonthLabels = function(weeks, lang) {
+  const dateLocale = lang === "bg" ? "bg-BG" : "en-US";
   const labels = [];
   weeks.forEach((week, wIdx) => {
     const first = week[0];
     const prev = wIdx > 0 ? weeks[wIdx - 1][0] : null;
     if (!prev || first.getMonth() !== prev.getMonth()) {
-      labels.push({ wIdx, label: MONTHS[first.getMonth()] });
+      labels.push({ wIdx, label: first.toLocaleDateString(dateLocale, { month: "short" }) });
     }
   });
   return labels;
 }
 
-const formatTooltip = function(date, count) {
-  const label = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  if (!count) return `${label} · No tasks done`;
-  return `${label} · ${count} task${count === 1 ? "" : "s"} done`;
+const formatTooltip = function(date, count, lang, t) {
+  const dateLocale = lang === "bg" ? "bg-BG" : "en-US";
+  const label = date.toLocaleDateString(dateLocale, { month: "short", day: "numeric", year: "numeric" });
+  if (!count) return `${label} · ${t.heatmapNoTasksDone}`;
+  return `${label} · ${t.selectedDayTasksFn(count)}`;
 }
 
 const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
+  const { lang, t } = useLang();
   const { weeks, today } = useMemo(() => buildGrid(), []);
-  const monthLabels = useMemo(() => buildMonthLabels(weeks), [weeks]);
+  const monthLabels = useMemo(() => buildMonthLabels(weeks, lang), [weeks, lang]);
 
   return (
     <div className="flex flex-col gap-1 overflow-x-auto">
@@ -90,7 +93,7 @@ const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
               const count = heatmap[dateStr] || 0;
               const isSelected = selectedDate === dateStr;
               const isInteractive = !isFuture && !!onSelectDate;
-              const tooltip = isFuture ? "" : formatTooltip(date, count);
+              const tooltip = isFuture ? "" : formatTooltip(date, count, lang, t);
               return (
                 <div
                   key={dIdx}
