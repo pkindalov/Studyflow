@@ -3,7 +3,7 @@ import { readAllTimers, writeTimersForDate } from "../utils/scheduleStorage";
 
 export const DEFAULT_POMODORO_MINUTES = 25;
 
-export function useTimer({ dateKey, music, markTaskDone }) {
+export const useTimer = function({ dateKey, music, markTaskDone }) {
   const skipTimerPersistRef = useRef(true);
 
   const [timerTask, setTimerTask] = useState(null);
@@ -346,4 +346,4 @@ export function useTimer({ dateKey, music, markTaskDone }) {
     resetTimer,
     timerOriginDateKeyRef,
   };
-}
+};

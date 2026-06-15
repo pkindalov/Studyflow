@@ -4,7 +4,7 @@ import { PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors } fro
 import { SCHEDULES_KEY, readAllSchedules, writeScheduleForDate } from "../utils/scheduleStorage";
 import { generateSchedule as computeScheduleAllocation } from "../utils/generateSchedule";
 
-export function useSchedule({
+export const useSchedule = function({
   dateKey,
   tasksForDay,
   excludedTaskIds,
@@ -200,4 +200,4 @@ export function useSchedule({
     handleUnsavedCancel,
     clearSchedule,
   };
-}
+};

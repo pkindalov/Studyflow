@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { DEFAULT_POMODORO_MINUTES } from "./useTimer";
 
-export function useTimerActions({
+export const useTimerActions = function({
   timerTask,
   dateKey,
   openTimer,
@@ -71,4 +71,4 @@ export function useTimerActions({
   }, [timerTask, dateKey, scheduleTimers, setScheduleTimers, resetPomodoroState, toggleTask, timerOriginDateKeyRef, markScheduleItemUndone, setRunningTaskId, music]);
 
   return { openTimerForTask, restartTimer, startAgainTimer };
-}
+};
