@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -22,8 +22,6 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
   const { t } = useLang();
   const [page, setPage] = useState(0);
 
-  useEffect(() => { setPage(0); }, [tasks.length]);
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
@@ -36,7 +34,8 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
   };
 
   const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
-  const paginated = tasks.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const currentPage = totalPages > 0 ? Math.min(page, totalPages - 1) : 0;
+  const paginated = tasks.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
 
   const showSelectionControls = !!onToggleSelect;
   const allSelected = showSelectionControls && tasks.every((task) => !excludedTaskIds.has(task.id));
@@ -112,10 +111,10 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
             </SortableContext>
           </DndContext>
           <Pagination
-            page={page}
+            page={currentPage}
             totalPages={totalPages}
-            onPrev={() => setPage((p) => p - 1)}
-            onNext={() => setPage((p) => p + 1)}
+            onPrev={() => setPage(Math.max(0, currentPage - 1))}
+            onNext={() => setPage(Math.min(totalPages - 1, currentPage + 1))}
           />
         </>
       )}

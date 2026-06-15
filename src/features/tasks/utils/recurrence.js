@@ -5,13 +5,13 @@ export const computeRecurringEndDate = function(recurrence, startDate, monthsAhe
     return lastDay.toLocaleDateString("en-CA");
   }
   if (recurrence === "monthly") {
-    const targetMonth = start.getMonth() + Math.max(1, parseInt(monthsAhead) || 3);
+    const targetMonth = start.getMonth() + Math.max(1, parseInt(monthsAhead, 10) || 3);
     const lastDayOfTarget = new Date(start.getFullYear(), targetMonth + 1, 0).getDate();
     const targetDay = Math.min(start.getDate(), lastDayOfTarget);
     return new Date(start.getFullYear(), targetMonth, targetDay).toLocaleDateString("en-CA");
   }
   if (recurrence === "yearly") {
-    const targetYear = start.getFullYear() + Math.max(1, parseInt(yearsAhead) || 2);
+    const targetYear = start.getFullYear() + Math.max(1, parseInt(yearsAhead, 10) || 2);
     const lastDayOfTarget = new Date(targetYear, start.getMonth() + 1, 0).getDate();
     const targetDay = Math.min(start.getDate(), lastDayOfTarget);
     return new Date(targetYear, start.getMonth(), targetDay).toLocaleDateString("en-CA");
