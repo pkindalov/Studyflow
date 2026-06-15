@@ -75,18 +75,20 @@ export const useTaskModal = function({
   }, [mode, dateKey, recurringTasks]);
 
   const handleSubmit = useCallback(() => {
-    if (!text.trim()) return;
+    const trimmedText = text.trim();
+    const trimmedImage = image.trim();
+    if (!trimmedText) return;
     const sd = startDate || dateKey;
     if (mode === "add") {
       if (recurrence !== "none") {
         const actualRecurrence = recurrence === "custom" ? "daily" : recurrence;
         const ed = computeRecurringEndDate(recurrence, sd, monthsAhead, yearsAhead, endDate);
-        addRecurring(text, image, priority, actualRecurrence, sd, ed);
+        addRecurring(trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
       } else {
-        addTask(dateKey, text, image, priority);
+        addTask(dateKey, trimmedText, trimmedImage, priority);
       }
     } else {
-      editTask(dateKey, taskId, text, image, priority);
+      editTask(dateKey, taskId, trimmedText, trimmedImage, priority);
       if (targetDate && targetDate !== dateKey) {
         moveTask(dateKey, targetDate, taskId);
         removeTaskFromSchedule((t) => t.id === taskId);
