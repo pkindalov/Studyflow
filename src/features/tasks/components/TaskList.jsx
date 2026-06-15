@@ -30,7 +30,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
     useSensor(KeyboardSensor),
   );
 
-  const handleDragEnd = ({ active, over }) => {
+  const handleDragEnd = function({ active, over }) {
     if (!over || active.id === over.id) return;
     onReorder?.(active.id, over.id);
   };

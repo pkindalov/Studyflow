@@ -19,7 +19,7 @@ export const useTaskBank = function() {
     const trimmed = text.trim();
     if (!trimmed) return;
     setTaskBank((prev) => {
-      if (prev.some((t) => t.text === trimmed && t.priority === priority)) return prev;
+      if (prev.some((t) => t.text === trimmed && t.priority === !!priority)) return prev;
       return [...prev, { id: generateId(), text: trimmed, priority: !!priority }];
     });
   }, []);

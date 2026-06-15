@@ -30,7 +30,7 @@ const TaskBankModal = function({
     return (tasks[importDate] || []).filter((task) => !task.done);
   }, [tasks, importDate]);
 
-  const toggleId = (id) => {
+  const toggleId = function(id) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -39,7 +39,7 @@ const TaskBankModal = function({
     });
   };
 
-  const handleTabChange = (next) => {
+  const handleTabChange = function(next) {
     setTab(next);
     setSelectedIds(new Set());
     setEditingId(null);
@@ -55,14 +55,14 @@ const TaskBankModal = function({
     return base;
   }, [taskBank, searchQuery, sortOrder]);
 
-  const handleConfirm = () => {
+  const handleConfirm = function() {
     if (selectedIds.size === 0) return;
     const source = tab === "list" ? taskBank : importDateTasks;
     const selected = source.filter((task) => selectedIds.has(task.id));
     onConfirm(selected.map(({ text, priority, imageUrl }) => ({ text, priority, imageUrl })));
   };
 
-  const handleAddToList = (e) => {
+  const handleAddToList = function(e) {
     e.preventDefault();
     if (!newTaskText.trim()) return;
     onAddToBank(newTaskText.trim(), newTaskPriority);
@@ -70,20 +70,20 @@ const TaskBankModal = function({
     setNewTaskPriority(false);
   };
 
-  const startEdit = (task) => {
+  const startEdit = function(task) {
     setEditingId(task.id);
     setEditText(task.text);
     setEditPriority(task.priority);
   };
 
-  const saveEdit = () => {
+  const saveEdit = function() {
     if (editText.trim() && editingId) {
       onUpdateInBank(editingId, editText.trim(), editPriority);
     }
     setEditingId(null);
   };
 
-  const cancelEdit = () => setEditingId(null);
+  const cancelEdit = function() { setEditingId(null); };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">

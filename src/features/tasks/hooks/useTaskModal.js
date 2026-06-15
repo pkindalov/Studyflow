@@ -114,8 +114,8 @@ export const useTaskModal = function({
         }
       } else if (task?.recurringId) {
         deleteRecurring(task.recurringId);
-        deleteAllByRecurringId(task.recurringId);
         linkRecurring(effectiveDateKey, taskId, null);
+        deleteAllByRecurringId(task.recurringId);
       }
     }
     reset();

@@ -49,8 +49,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         <img
           src={task.imageUrl}
           alt={t.taskVisualAlt}
-          className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 shadow-sm bg-white"
-          style={{ minWidth: 48, minHeight: 48, maxWidth: 48, maxHeight: 48 }}
+          className="w-12 h-12 flex-shrink-0 rounded-xl object-cover border border-outline-variant/20 shadow-sm bg-white"
         />
       )}
 
