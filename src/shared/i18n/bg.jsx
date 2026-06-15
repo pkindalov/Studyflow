@@ -142,6 +142,8 @@ export const bg = {
   selectedDayTasksFn: (n) =>
     `${n} ${n === 1 ? "задача завършена" : "задачи завършени"}`,
   heatmapNoTasksDone: "Няма завършени задачи",
+  heatmapLessLabel: "По-малко",
+  heatmapMoreLabel: "Повече",
 
   // ── Music panel ───────────────────────────────────────────────────────────────
   focusMusicLabel: "Музика за фокус",

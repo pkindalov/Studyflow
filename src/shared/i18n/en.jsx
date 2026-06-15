@@ -137,6 +137,8 @@ export const en = {
   selectedDayLabel: "Selected day",
   selectedDayTasksFn: (n) => `${n} task${n === 1 ? "" : "s"} done`,
   heatmapNoTasksDone: "No tasks done",
+  heatmapLessLabel: "Less",
+  heatmapMoreLabel: "More",
 
   // ── Music panel ───────────────────────────────────────────────────────────────
   focusMusicLabel: "Focus Music",

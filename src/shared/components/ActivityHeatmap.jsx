@@ -123,11 +123,11 @@ const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
 
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-1 justify-end">
-        <span className="text-[9px] text-on-surface-variant/50">Less</span>
+        <span className="text-[9px] text-on-surface-variant/50">{t.heatmapLessLabel}</span>
         {["bg-surface-container-highest", "bg-emerald-400/40", "bg-emerald-400/65", "bg-emerald-500/85", "bg-emerald-500"].map((cls, i) => (
           <div key={i} className={`w-2 h-2 rounded-[2px] ${cls}`} />
         ))}
-        <span className="text-[9px] text-on-surface-variant/50">More</span>
+        <span className="text-[9px] text-on-surface-variant/50">{t.heatmapMoreLabel}</span>
       </div>
     </div>
   );
