@@ -29,7 +29,7 @@ export const useActivityStats = function(tasks) {
       checkDate.setDate(checkDate.getDate() - 1);
     }
 
-    // Walk backward from yesterday (or 2 days ago if today was already counted)
+    // Walk backward from yesterday; if today is inactive the streak can still continue from yesterday
     while (true) {
       const key = fmt(checkDate);
       const done = (tasks[key] || []).filter((task) => task.done).length > 0;

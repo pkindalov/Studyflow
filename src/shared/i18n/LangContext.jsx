@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import { en } from "./en.jsx";
 import { bg } from "./bg.jsx";
 
@@ -15,14 +15,14 @@ export const LangProvider = function({ children }) {
     }
   });
 
-  const setLang = (newLang) => {
+  const setLang = useCallback((newLang) => {
     setLangState(newLang);
     try {
       localStorage.setItem("studyflow_lang", newLang);
     } catch {
       // storage not available
     }
-  };
+  }, []);
 
   const t = LANGS[lang] ?? en;
 

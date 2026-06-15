@@ -63,8 +63,13 @@ export const readBackupFile = function(file) {
           reject(new Error("Backup file contains invalid data and cannot be restored."));
           return;
         }
+        const rawExportedAt = payload.exportedAt ?? null;
+        const exportedAt =
+          rawExportedAt && !isNaN(new Date(rawExportedAt).getTime())
+            ? rawExportedAt
+            : null;
         resolve({
-          exportedAt: payload.exportedAt || null,
+          exportedAt,
           keyCount: Object.keys(payload.data).length,
           rawData: payload.data,
         });
