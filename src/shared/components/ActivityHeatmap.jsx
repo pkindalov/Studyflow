@@ -4,7 +4,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const WEEKS = 26;
 
 // Maps done-task count to a Tailwind colour class
-function cellClass(count, isFuture) {
+const cellClass = function(count, isFuture) {
   if (isFuture) return "bg-transparent";
   if (!count) return "bg-surface-container-highest";
   if (count === 1) return "bg-emerald-400/40";
@@ -13,7 +13,7 @@ function cellClass(count, isFuture) {
   return "bg-emerald-500";
 }
 
-function buildGrid() {
+const buildGrid = function() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -38,7 +38,7 @@ function buildGrid() {
   return { weeks, today };
 }
 
-function buildMonthLabels(weeks) {
+const buildMonthLabels = function(weeks) {
   const labels = [];
   weeks.forEach((week, wIdx) => {
     const first = week[0];
@@ -50,13 +50,13 @@ function buildMonthLabels(weeks) {
   return labels;
 }
 
-function formatTooltip(date, count) {
+const formatTooltip = function(date, count) {
   const label = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   if (!count) return `${label} · No tasks done`;
   return `${label} · ${count} task${count === 1 ? "" : "s"} done`;
 }
 
-function ActivityHeatmap({ heatmap, selectedDate, onSelectDate }) {
+const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
   const { weeks, today } = useMemo(() => buildGrid(), []);
   const monthLabels = useMemo(() => buildMonthLabels(weeks), [weeks]);
 

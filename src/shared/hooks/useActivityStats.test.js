@@ -9,7 +9,6 @@ const TWO_DAYS_AGO = '2024-06-13'
 
 const done = (id) => ({ id, done: true })
 const notDone = (id) => ({ id, done: false })
-const tasks = (map) => map // alias for readability
 
 beforeEach(() => {
   vi.useFakeTimers()

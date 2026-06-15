@@ -6,7 +6,7 @@ const LANGS = { en, bg };
 
 const LangContext = createContext({ lang: "en", setLang: () => {}, t: en });
 
-export function LangProvider({ children }) {
+export const LangProvider = function({ children }) {
   const [lang, setLangState] = useState(
     () => localStorage.getItem("studyflow_lang") || "en"
   );
@@ -25,4 +25,5 @@ export function LangProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLang = () => useContext(LangContext);
