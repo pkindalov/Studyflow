@@ -27,7 +27,8 @@ export const exportData = function() {
   Object.keys(localStorage)
     .filter((key) => key.startsWith("schedule_"))
     .forEach((key) => {
-      data[key] = localStorage.getItem(key);
+      const val = localStorage.getItem(key);
+      if (val !== null) data[key] = val;
     });
 
   const payload = {
@@ -53,7 +54,7 @@ export const readBackupFile = function(file) {
     reader.onload = (e) => {
       try {
         const payload = JSON.parse(e.target.result);
-        if (!payload.data || typeof payload.data !== "object") {
+        if (!payload.data || typeof payload.data !== "object" || Array.isArray(payload.data)) {
           reject(new Error("This doesn't look like a Studyflow backup file."));
           return;
         }

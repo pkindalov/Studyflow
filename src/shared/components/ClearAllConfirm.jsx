@@ -9,8 +9,8 @@ const ClearAllConfirm = function({ onCancel, onConfirm, t }) {
           </h3>
           <p className="text-sm text-on-surface-variant">{t.clearWarningMsg}</p>
           <ul className="text-sm text-on-surface-variant flex flex-col gap-1 pl-2">
-            {[t.clearItem1, t.clearItem2, t.clearItem3, t.clearItem4].map((item) => (
-              <li key={item} className="flex items-center gap-2">
+            {[t.clearItem1, t.clearItem2, t.clearItem3, t.clearItem4].map((item, i) => (
+              <li key={i} className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-error/60 flex-shrink-0" />
                 {item}
               </li>
