@@ -109,7 +109,7 @@ function App() {
 
   const { handleDeleteTask, handleStopRecurring, handleSaveToBank, handleOpenSavedList, handleReorder } = useTaskActions({
     tasks, dateKey, deleteTask, deleteRecurring, deleteAllByRecurringId,
-    removeTaskFromSchedule, reorderTasks, taskBank, savedListTexts,
+    removeTaskFromSchedule, reorderTasks, taskBank,
     addToBank, removeFromBank, showNotification, t,
     setShowTaskBankModal, setTaskBankModalAutoGenerate,
   });

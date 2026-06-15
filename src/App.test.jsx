@@ -2115,18 +2115,6 @@ describe('useTaskActions receives correct arguments', () => {
     expect(args.removeFromBank).toBe(removeFromBank)
   })
 
-  it('receives savedListTexts as a Set derived from taskBank', () => {
-    useTaskBank.mockReturnValue({
-      taskBank: [{ text: 'Math' }, { text: 'Science' }],
-      addToBank: vi.fn(), removeFromBank: vi.fn(), updateInBank: vi.fn(), reorderBank: vi.fn(),
-    })
-    render(<App />)
-    const { savedListTexts } = useTaskActions.mock.calls[0][0]
-    expect(savedListTexts).toBeInstanceOf(Set)
-    expect(savedListTexts.has('Math')).toBe(true)
-    expect(savedListTexts.has('Science')).toBe(true)
-  })
-
   it('receives showNotification as a function, t from useLang, and state setters', () => {
     render(<App />)
     const args = useTaskActions.mock.calls[0][0]
