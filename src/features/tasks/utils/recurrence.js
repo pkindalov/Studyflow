@@ -1,4 +1,4 @@
-export function computeRecurringEndDate(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
+export const computeRecurringEndDate = function(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
   const start = new Date(startDate + "T12:00:00");
   if (recurrence === "daily") {
     const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);

@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { computeRecurringEndDate } from "../utils/recurrence";
 import { readAllTimers, writeTimersForDate } from "../../schedule/utils/scheduleStorage";
 
-export function useTaskModal({
+export const useTaskModal = function({
   mode,
   dateKey,
   tasks,
@@ -101,6 +101,7 @@ export function useTaskModal({
           writeTimersForDate(targetDate, targetTimers);
         } catch { /* ignore */ }
       }
+      const effectiveDateKey = (targetDate && targetDate !== dateKey) ? targetDate : dateKey;
       const task = (tasks[dateKey] || []).find((t) => t.id === taskId);
       if (recurrence !== "none") {
         const actualRecurrence = recurrence === "custom" ? "daily" : recurrence;
@@ -109,12 +110,12 @@ export function useTaskModal({
           updateRecurring(task.recurringId, text, image, priority, actualRecurrence, sd, ed);
         } else {
           const newId = addRecurring(text, image, priority, actualRecurrence, sd, ed);
-          linkRecurring(dateKey, taskId, newId);
+          linkRecurring(effectiveDateKey, taskId, newId);
         }
       } else if (task?.recurringId) {
         deleteRecurring(task.recurringId);
         deleteAllByRecurringId(task.recurringId);
-        linkRecurring(dateKey, taskId, null);
+        linkRecurring(effectiveDateKey, taskId, null);
       }
     }
     reset();

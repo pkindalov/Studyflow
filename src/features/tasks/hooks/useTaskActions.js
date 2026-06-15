@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-export function useTaskActions({
+export const useTaskActions = function({
   tasks,
   dateKey,
   deleteTask,

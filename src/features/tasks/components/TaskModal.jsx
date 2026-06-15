@@ -1,12 +1,12 @@
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function monthName(dateStr, locale) {
+const monthName = function(dateStr, locale) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString(locale, { month: "long", year: "numeric" });
 }
 
-function TaskModal({
+const TaskModal = function({
   isOpen,
   onClose,
   onSave,

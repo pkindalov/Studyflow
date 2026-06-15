@@ -1,19 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { generateId } from "../../../shared/utils/id";
 
-export function useTasks() {
-  const [tasks, setTasks] = useState({});
-  const [isLoaded, setIsLoaded] = useState(false);
+export const useTasks = function() {
+  const [tasks, setTasks] = useState(() => {
+    try {
+      const saved = localStorage.getItem("studyflow_tasks");
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("studyflow_tasks");
-    if (saved) setTasks(JSON.parse(saved));
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
-  }, [tasks, isLoaded]);
+    localStorage.setItem("studyflow_tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const addTask = useCallback((dateKey, text, imageUrl = "", priority = false) => {
     setTasks((prev) => ({

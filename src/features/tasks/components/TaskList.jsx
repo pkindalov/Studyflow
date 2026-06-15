@@ -8,7 +8,7 @@ import { useLang } from "../../../shared/i18n/LangContext";
 
 const PAGE_SIZE = 8;
 
-function SortableTaskCard({ id, ...props }) {
+const SortableTaskCard = function({ id, ...props }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
@@ -18,7 +18,7 @@ function SortableTaskCard({ id, ...props }) {
   );
 }
 
-function TaskList({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder }) {
+const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder }) {
   const { t } = useLang();
   const [page, setPage] = useState(0);
 

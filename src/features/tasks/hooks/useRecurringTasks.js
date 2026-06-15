@@ -3,7 +3,7 @@ import { generateId } from "../../../shared/utils/id";
 
 const STORAGE_KEY = "studyflow_recurring";
 
-export function appliesToDate(template, dateKey) {
+export const appliesToDate = function(template, dateKey) {
   if (dateKey < template.startDate) return false;
   if (template.endDate && dateKey > template.endDate) return false;
   const date = new Date(dateKey + "T12:00:00");
@@ -20,13 +20,13 @@ export function appliesToDate(template, dateKey) {
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-function ordinal(n) {
+const ordinal = function(n) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return s[(v - 20) % 10] || s[v] || s[0];
 }
 
-export function recurrenceLabel(template) {
+export const recurrenceLabel = function(template) {
   const start = new Date(template.startDate + "T12:00:00");
   let label = "";
   switch (template.recurrence) {
@@ -40,7 +40,7 @@ export function recurrenceLabel(template) {
   return label;
 }
 
-export function useRecurringTasks() {
+export const useRecurringTasks = function() {
   const [recurringTasks, setRecurringTasks] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);

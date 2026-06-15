@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function TaskBankModal({
+const TaskBankModal = function({
   taskBank,
   tasks,
   onConfirm,
