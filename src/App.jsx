@@ -18,6 +18,7 @@ import { useDataPortability } from "./shared/hooks/useDataPortability";
 import { useTimerActions } from "./features/schedule/hooks/useTimerActions";
 import { useTaskActions } from "./features/tasks/hooks/useTaskActions";
 import { runMigrations } from "./features/schedule/utils/migrateScheduleStorage";
+import { readAllTimers, writeTimersForDate } from "./features/schedule/utils/scheduleStorage";
 import { buildSidebarSections } from "./layout/sidebarSections";
 import SortableSection from "./layout/SortableSection";
 import TopBar from "./layout/TopBar";
@@ -85,8 +86,17 @@ function App() {
     handleUnsavedSaveAndContinue, handleUnsavedDiscard, handleUnsavedCancel, clearSchedule,
   } = useSchedule({ dateKey, tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, scheduleTimers, setScheduleTimers, runningTaskId, setRunningTaskId, markTaskDone, showNotification, t });
 
+  const handleCleanupTimerForTask = useCallback((fromDateKey, taskId) => {
+    try {
+      const allTimers = readAllTimers();
+      const fromTimers = { ...(allTimers[fromDateKey] || {}) };
+      delete fromTimers[taskId];
+      writeTimersForDate(fromDateKey, fromTimers);
+    } catch (err) { console.error("Failed to clean up timer on task move:", err); }
+  }, []);
+
   const addModal = useTaskModal({ mode: "add", dateKey, addTask, addRecurring });
-  const editModal = useTaskModal({ mode: "edit", dateKey, tasks, recurringTasks, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, removeTaskFromSchedule, setScheduleTimers });
+  const editModal = useTaskModal({ mode: "edit", dateKey, tasks, recurringTasks, editTask, moveTask, updateRecurring, addRecurring, linkRecurring, deleteRecurring, deleteAllByRecurringId, removeTaskFromSchedule, setScheduleTimers, onCleanupTimer: handleCleanupTimerForTask });
   const isEditing = editModal.isOpen;
   const { pendingImport, setPendingImport, importError, importFileRef, handleImportFileChange, handleImportConfirm } = useDataPortability();
 

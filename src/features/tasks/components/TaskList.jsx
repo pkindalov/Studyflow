@@ -5,8 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
-
-const PAGE_SIZE = 8;
+import { PAGE_SIZE } from "../../../shared/utils/uiConstants";
 
 const SortableTaskCard = function({ id, ...props }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });

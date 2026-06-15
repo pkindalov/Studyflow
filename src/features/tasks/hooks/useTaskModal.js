@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { computeRecurringEndDate } from "../utils/recurrence";
-import { readAllTimers, writeTimersForDate } from "../../schedule/utils/scheduleStorage";
 
 export const useTaskModal = function({
   mode,
@@ -17,6 +16,7 @@ export const useTaskModal = function({
   deleteAllByRecurringId,
   removeTaskFromSchedule,
   setScheduleTimers,
+  onCleanupTimer,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState("");
@@ -97,12 +97,7 @@ export const useTaskModal = function({
           delete next[taskId];
           return next;
         });
-        try {
-          const allTimers = readAllTimers();
-          const fromTimers = { ...(allTimers[dateKey] || {}) };
-          delete fromTimers[taskId];
-          writeTimersForDate(dateKey, fromTimers);
-        } catch (err) { console.error("Failed to clean up timer on task move:", err); }
+        onCleanupTimer?.(dateKey, taskId);
       }
       const effectiveDateKey = (targetDate && targetDate !== dateKey) ? targetDate : dateKey;
       const task = (tasks[dateKey] || []).find((t) => t.id === taskId);
@@ -127,7 +122,7 @@ export const useTaskModal = function({
     startDate, endDate, monthsAhead, yearsAhead, targetDate,
     tasks, addTask, addRecurring, editTask, moveTask, updateRecurring,
     linkRecurring, deleteRecurring, deleteAllByRecurringId,
-    removeTaskFromSchedule, setScheduleTimers, reset,
+    removeTaskFromSchedule, setScheduleTimers, onCleanupTimer, reset,
   ]);
 
   return {
