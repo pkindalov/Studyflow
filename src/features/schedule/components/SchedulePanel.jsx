@@ -21,8 +21,7 @@ const SchedulePanel = function({
       <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-emerald-700/80 border-emerald-500/40" : "bg-surface-container border-outline-variant/50"}`}>
         {allScheduleDone ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
-            {/* fontVariationSettings fills the icon — not expressible as a Tailwind class */}
-            <span className="material-symbols-outlined text-5xl text-emerald-200" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+            <span className="material-symbols-outlined text-5xl text-emerald-200 icon-filled">verified</span>
             <h3 className="font-headline font-bold text-2xl text-white">{t.scheduleAllDoneHeadline}</h3>
             <p className="text-sm text-emerald-100 max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
           </div>
