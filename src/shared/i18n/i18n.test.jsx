@@ -115,7 +115,7 @@ describe('string function output — bg', () => {
   })
 
   it('selectedDayTasksFn — singular (1)', () => {
-    expect(bg.selectedDayTasksFn(1)).toBe('1 задача завършени')
+    expect(bg.selectedDayTasksFn(1)).toBe('1 задача завършена')
   })
 
   it('selectedDayTasksFn — plural (4)', () => {
