@@ -36,8 +36,8 @@ export const useActivityStats = function(tasks) {
       if (!done) break;
       count++;
       checkDate.setDate(checkDate.getDate() - 1);
-      // Safety: don't walk back more than 2 years
-      if (count > 730) break;
+      // Safety: don't walk back more than 2 years (365 × 2 = 730)
+      if (count >= 730) break;
     }
 
     return { streak: count, activeToday: todayDone };
