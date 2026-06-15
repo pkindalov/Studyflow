@@ -229,6 +229,7 @@ export const bg = {
   addToListPlaceholder: "Нова задача в списъка...",
   removeFromList: "Премахни от списъка",
   saveToList: "Добавено в списъка!",
+  saveToListAction: "Запази в списъка",
   savedListBtn: "Запазен списък",
   useFromSavedList: "Използвай запазен списък",
   addToToday: "Добави за днес",

@@ -100,6 +100,7 @@ const TaskBankModal = function({
           </div>
           <button
             onClick={onClose}
+            aria-label={t.close}
             className="p-1.5 rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant flex-shrink-0"
           >
             <span className="material-symbols-outlined text-base">close</span>
@@ -250,6 +251,7 @@ const TaskBankModal = function({
                     <button
                       onClick={(e) => { e.preventDefault(); startEdit(task); }}
                       className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-primary hover:bg-primary/10 transition-all text-on-surface-variant/50 flex-shrink-0"
+                      aria-label={t.editListItem}
                       title={t.editListItem}
                     >
                       <span className="material-symbols-outlined text-base">edit</span>
@@ -257,6 +259,7 @@ const TaskBankModal = function({
                     <button
                       onClick={(e) => { e.preventDefault(); onRemoveFromBank(task.id); }}
                       className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-error hover:bg-error/10 transition-all text-on-surface-variant/50 flex-shrink-0"
+                      aria-label={t.removeFromList}
                       title={t.removeFromList}
                     >
                       <span className="material-symbols-outlined text-base">delete</span>

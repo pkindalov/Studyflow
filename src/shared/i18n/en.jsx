@@ -221,6 +221,7 @@ export const en = {
   addToListPlaceholder: "New task for saved list...",
   removeFromList: "Remove from list",
   saveToList: "Saved to list!",
+  saveToListAction: "Save to list",
   savedListBtn: "Saved List",
   useFromSavedList: "Use saved list",
   addToToday: "Add to today",
