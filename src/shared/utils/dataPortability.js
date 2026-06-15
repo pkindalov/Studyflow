@@ -4,6 +4,7 @@ const STATIC_KEYS = [
   "studyflow_task_bank",
   "studyflow_schedules",
   "studyflow_schedule_timers",
+  "studyflow_focus_extra",
   "studyflow_theme",
   "studyflow_calendar_completion",
   "studyflow_column_layout",
@@ -17,7 +18,7 @@ const STATIC_KEYS = [
 /**
  * Serialises all app data into a JSON file and triggers a browser download.
  */
-export function exportData() {
+export const exportData = function() {
   const data = {};
 
   STATIC_KEYS.forEach((key) => {
@@ -54,7 +55,7 @@ export function exportData() {
  * @param {File} file
  * @returns {Promise<{ exportedAt: string, keyCount: number, rawData: Object }>}
  */
-export function readBackupFile(file) {
+export const readBackupFile = function(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -82,7 +83,7 @@ export function readBackupFile(file) {
  * Wipes current app data and writes the backup data to localStorage.
  * @param {Object} rawData - The `data` object from a backup payload
  */
-export function applyBackup(rawData) {
+export const applyBackup = function(rawData) {
   // Remove existing app keys
   const keysToRemove = Object.keys(localStorage).filter(
     (k) => STATIC_KEYS.includes(k) || k.startsWith("schedule_") || k.startsWith("studyflow_schedule")

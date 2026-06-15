@@ -6,7 +6,7 @@ import { useMemo } from "react";
  * @param {Object} tasks - The full tasks map: { "YYYY-MM-DD": [{ id, done, ... }] }
  * @returns {{ streak: number, activeToday: boolean, totalFocusSeconds: number, heatmap: Object }}
  */
-export function useActivityStats(tasks) {
+export const useActivityStats = function(tasks) {
   const heatmap = useMemo(() => {
     const map = {};
     Object.entries(tasks).forEach(([dateStr, dayTasks]) => {
@@ -70,7 +70,7 @@ export function useActivityStats(tasks) {
       if (dateKey === todayKey) todayFocusSeconds = daySeconds;
     });
   } catch {
-    // localStorage not available
+    // localStorage unavailable or data is malformed
   }
 
   return { streak, activeToday, totalFocusSeconds, todayFocusSeconds, heatmap };

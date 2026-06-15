@@ -1,4 +1,4 @@
-export default function ImportConfirmDialog({ exportedAt, lang, onCancel, onConfirm, t }) {
+const ImportConfirmDialog = function({ exportedAt, lang, onCancel, onConfirm, t }) {
   const formattedDate = exportedAt
     ? new Date(exportedAt).toLocaleDateString(lang === "bg" ? "bg-BG" : "en-US", { dateStyle: "medium" })
     : t.unknownDate;
@@ -20,4 +20,6 @@ export default function ImportConfirmDialog({ exportedAt, lang, onCancel, onConf
       </div>
     </div>
   );
-}
+};
+
+export default ImportConfirmDialog;

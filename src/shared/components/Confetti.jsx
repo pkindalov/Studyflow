@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 const COLORS = ["#6ee7b7", "#34d399", "#fbbf24", "#f472b6", "#60a5fa", "#c084fc", "#fb923c", "#ffffff"];
 
-export default function Confetti({ active }) {
+const Confetti = function({ active }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
 
@@ -73,4 +73,6 @@ export default function Confetti({ active }) {
 
   if (!active) return null;
   return <canvas ref={canvasRef} className="fixed inset-0 z-[60] pointer-events-none" />;
-}
+};
+
+export default Confetti;

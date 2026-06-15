@@ -1,4 +1,4 @@
-function Pagination({ page, totalPages, onPrev, onNext }) {
+const Pagination = function({ page, totalPages, onPrev, onNext }) {
   if (totalPages <= 1) return null;
   return (
     <div className="flex items-center justify-between pt-2 border-t border-outline-variant/30">
@@ -23,6 +23,6 @@ function Pagination({ page, totalPages, onPrev, onNext }) {
       </button>
     </div>
   );
-}
+};
 
 export default Pagination;

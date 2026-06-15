@@ -7,13 +7,21 @@ const LANGS = { en, bg };
 const LangContext = createContext({ lang: "en", setLang: () => {}, t: en });
 
 export const LangProvider = function({ children }) {
-  const [lang, setLangState] = useState(
-    () => localStorage.getItem("studyflow_lang") || "en"
-  );
+  const [lang, setLangState] = useState(() => {
+    try {
+      return localStorage.getItem("studyflow_lang") || "en";
+    } catch {
+      return "en";
+    }
+  });
 
   const setLang = (l) => {
     setLangState(l);
-    localStorage.setItem("studyflow_lang", l);
+    try {
+      localStorage.setItem("studyflow_lang", l);
+    } catch {
+      // storage not available
+    }
   };
 
   const t = LANGS[lang] ?? en;

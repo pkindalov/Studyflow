@@ -4,7 +4,7 @@
  * accessing the dev server via a LAN IP on mobile. This fallback uses
  * crypto.getRandomValues() which works in non-secure contexts too.
  */
-export function generateId() {
+export const generateId = function() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }

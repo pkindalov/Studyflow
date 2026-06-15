@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { readBackupFile, applyBackup } from "../utils/dataPortability";
 
-export function useDataPortability() {
+export const useDataPortability = function() {
   const [pendingImport, setPendingImport] = useState(null);
   const [importError, setImportError] = useState("");
   const importFileRef = useRef(null);
@@ -21,9 +21,13 @@ export function useDataPortability() {
 
   const handleImportConfirm = useCallback(() => {
     if (!pendingImport) return;
-    applyBackup(pendingImport.rawData);
-    setPendingImport(null);
-    window.location.reload();
+    try {
+      applyBackup(pendingImport.rawData);
+      setPendingImport(null);
+      window.location.reload();
+    } catch (err) {
+      setImportError(err.message);
+    }
   }, [pendingImport]);
 
   return {
