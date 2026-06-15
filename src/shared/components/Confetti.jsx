@@ -72,7 +72,7 @@ const Confetti = function({ active }) {
   }, [active]);
 
   if (!active) return null;
-  return <canvas ref={canvasRef} className="fixed inset-0 z-[60] pointer-events-none" />;
-};
+  return <canvas ref={canvasRef} className="fixed inset-0 z-[60] pointer-events-none" aria-hidden="true" />;
+}
 
 export default Confetti;

@@ -25,6 +25,6 @@ const ClearAllConfirm = function({ onCancel, onConfirm, t }) {
       </div>
     </div>
   );
-};
+}
 
 export default ClearAllConfirm;

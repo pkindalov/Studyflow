@@ -23,6 +23,6 @@ const Pagination = function({ page, totalPages, onPrev, onNext }) {
       </button>
     </div>
   );
-};
+}
 
 export default Pagination;

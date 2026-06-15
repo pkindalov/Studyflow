@@ -20,6 +20,6 @@ const ImportConfirmDialog = function({ exportedAt, lang, onCancel, onConfirm, t 
       </div>
     </div>
   );
-};
+}
 
 export default ImportConfirmDialog;
