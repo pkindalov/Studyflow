@@ -60,6 +60,14 @@ describe('appliesToDate', () => {
     })
   })
 
+  it('returns false when dateKey is in skippedDates', () => {
+    expect(appliesToDate(tmpl({ recurrence: 'daily', skippedDates: ['2024-09-15'] }), '2024-09-15')).toBe(false)
+  })
+
+  it('returns true for the same template on a non-skipped date', () => {
+    expect(appliesToDate(tmpl({ recurrence: 'daily', skippedDates: ['2024-09-15'] }), '2024-09-16')).toBe(true)
+  })
+
   it('returns false for unknown recurrence type', () => {
     expect(appliesToDate(tmpl({ recurrence: 'biweekly' }), '2024-03-15')).toBe(false)
   })

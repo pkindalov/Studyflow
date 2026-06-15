@@ -6,6 +6,7 @@ const STORAGE_KEY = "studyflow_recurring";
 export const appliesToDate = function(template, dateKey) {
   if (dateKey < template.startDate) return false;
   if (template.endDate && dateKey > template.endDate) return false;
+  if (template.skippedDates?.includes(dateKey)) return false;
   const date = new Date(dateKey + "T12:00:00");
   const start = new Date(template.startDate + "T12:00:00");
 

@@ -111,6 +111,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
                 ? "text-secondary hover:bg-secondary/10"
                 : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
             }`}
+            aria-label={selected ? t.excludeFromSchedule : t.includeInSchedule}
             title={selected ? t.excludeFromSchedule : t.includeInSchedule}
           >
             <span

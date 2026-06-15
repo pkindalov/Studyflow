@@ -49,9 +49,9 @@ const TaskBankModal = function({
   const filteredBank = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const base = q ? taskBank.filter((task) => task.text.toLowerCase().includes(q)) : [...taskBank];
-    if (sortOrder === "priority") return base.sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
-    if (sortOrder === "az") return base.sort((a, b) => a.text.localeCompare(b.text));
-    if (sortOrder === "za") return base.sort((a, b) => b.text.localeCompare(a.text));
+    if (sortOrder === "priority") return [...base].sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
+    if (sortOrder === "az") return [...base].sort((a, b) => a.text.localeCompare(b.text));
+    if (sortOrder === "za") return [...base].sort((a, b) => b.text.localeCompare(a.text));
     return base;
   }, [taskBank, searchQuery, sortOrder]);
 

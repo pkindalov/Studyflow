@@ -51,7 +51,7 @@ const TaskModal = function({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 sm:p-7 flex flex-col gap-5 max-h-[92dvh] overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: "touch" }}>
+      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 sm:p-7 flex flex-col gap-5 max-h-[92dvh] overflow-y-auto overscroll-contain">
         {/* Close button */}
         <button
           onClick={onClose}

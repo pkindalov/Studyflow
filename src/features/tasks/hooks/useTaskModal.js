@@ -75,6 +75,7 @@ export const useTaskModal = function({
   }, [mode, dateKey, recurringTasks]);
 
   const handleSubmit = useCallback(() => {
+    if (!text.trim()) return;
     const sd = startDate || dateKey;
     if (mode === "add") {
       if (recurrence !== "none") {
