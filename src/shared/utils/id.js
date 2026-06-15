@@ -1,9 +1,4 @@
-/**
- * Generates a UUID v4.
- * crypto.randomUUID() requires a secure context (HTTPS), so it fails when
- * accessing the dev server via a LAN IP on mobile. This fallback uses
- * crypto.getRandomValues() which works in non-secure contexts too.
- */
+// Falls back to getRandomValues because randomUUID() requires HTTPS (breaks on LAN dev server)
 export const generateId = function() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();

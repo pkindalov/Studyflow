@@ -17,9 +17,7 @@ const buildGrid = function() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Anchor the last column's last cell to today.
-  // Sunday = 0, so the first cell of the grid is (26*7) + today.getDay() days before
-  // the last Sunday of the grid.  Simpler: step back 25 full weeks + align to Sunday.
+  // Step back 25 full weeks then align to Sunday so the last column ends on/after today
   const firstSunday = new Date(today);
   firstSunday.setDate(firstSunday.getDate() - (25 * 7 + today.getDay()));
 

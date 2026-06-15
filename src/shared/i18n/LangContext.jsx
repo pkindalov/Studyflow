@@ -15,10 +15,10 @@ export const LangProvider = function({ children }) {
     }
   });
 
-  const setLang = (l) => {
-    setLangState(l);
+  const setLang = (newLang) => {
+    setLangState(newLang);
     try {
-      localStorage.setItem("studyflow_lang", l);
+      localStorage.setItem("studyflow_lang", newLang);
     } catch {
       // storage not available
     }

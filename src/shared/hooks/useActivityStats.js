@@ -1,16 +1,10 @@
 import { useMemo } from "react";
 
-/**
- * Derives streak, total focus time, and heatmap data from task and timer state.
- *
- * @param {Object} tasks - The full tasks map: { "YYYY-MM-DD": [{ id, done, ... }] }
- * @returns {{ streak: number, activeToday: boolean, totalFocusSeconds: number, heatmap: Object }}
- */
 export const useActivityStats = function(tasks) {
   const heatmap = useMemo(() => {
     const map = {};
     Object.entries(tasks).forEach(([dateStr, dayTasks]) => {
-      const done = dayTasks.filter((t) => t.done).length;
+      const done = dayTasks.filter((task) => task.done).length;
       if (done > 0) map[dateStr] = done;
     });
     return map;
@@ -23,7 +17,7 @@ export const useActivityStats = function(tasks) {
     const fmt = (d) => d.toLocaleDateString("en-CA");
 
     const todayKey = fmt(today);
-    const todayDone = (tasks[todayKey] || []).filter((t) => t.done).length > 0;
+    const todayDone = (tasks[todayKey] || []).filter((task) => task.done).length > 0;
 
     let count = 0;
     const checkDate = new Date(today);
@@ -38,7 +32,7 @@ export const useActivityStats = function(tasks) {
     // Walk backward from yesterday (or 2 days ago if today was already counted)
     while (true) {
       const key = fmt(checkDate);
-      const done = (tasks[key] || []).filter((t) => t.done).length > 0;
+      const done = (tasks[key] || []).filter((task) => task.done).length > 0;
       if (!done) break;
       count++;
       checkDate.setDate(checkDate.getDate() - 1);
@@ -62,9 +56,9 @@ export const useActivityStats = function(tasks) {
       const allTaskIds = new Set([...Object.keys(timers), ...Object.keys(extra)]);
       let daySeconds = 0;
       allTaskIds.forEach((taskId) => {
-        const t = typeof timers[taskId] === "number" && timers[taskId] > 0 ? timers[taskId] : 0;
-        const e = typeof extra[taskId] === "number" && extra[taskId] > 0 ? extra[taskId] : 0;
-        daySeconds += t + e;
+        const timerSeconds = typeof timers[taskId] === "number" && timers[taskId] > 0 ? timers[taskId] : 0;
+        const extraSeconds = typeof extra[taskId] === "number" && extra[taskId] > 0 ? extra[taskId] : 0;
+        daySeconds += timerSeconds + extraSeconds;
       });
       totalFocusSeconds += daySeconds;
       if (dateKey === todayKey) todayFocusSeconds = daySeconds;

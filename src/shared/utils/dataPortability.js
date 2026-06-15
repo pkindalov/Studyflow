@@ -15,9 +15,6 @@ const STATIC_KEYS = [
   "music_volume",
 ];
 
-/**
- * Serialises all app data into a JSON file and triggers a browser download.
- */
 export const exportData = function() {
   const data = {};
 
@@ -28,9 +25,9 @@ export const exportData = function() {
 
   // Dynamic keys: all schedule_* and schedule_timers_*
   Object.keys(localStorage)
-    .filter((k) => k.startsWith("schedule_"))
-    .forEach((k) => {
-      data[k] = localStorage.getItem(k);
+    .filter((key) => key.startsWith("schedule_"))
+    .forEach((key) => {
+      data[key] = localStorage.getItem(key);
     });
 
   const payload = {
@@ -50,11 +47,6 @@ export const exportData = function() {
   URL.revokeObjectURL(url);
 }
 
-/**
- * Reads a backup JSON file and returns a summary before the caller commits the restore.
- * @param {File} file
- * @returns {Promise<{ exportedAt: string, keyCount: number, rawData: Object }>}
- */
 export const readBackupFile = function(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -63,6 +55,11 @@ export const readBackupFile = function(file) {
         const payload = JSON.parse(e.target.result);
         if (!payload.data || typeof payload.data !== "object") {
           reject(new Error("This doesn't look like a Studyflow backup file."));
+          return;
+        }
+        const hasInvalidValues = Object.values(payload.data).some((v) => typeof v !== "string");
+        if (hasInvalidValues) {
+          reject(new Error("Backup file contains invalid data and cannot be restored."));
           return;
         }
         resolve({
@@ -79,16 +76,12 @@ export const readBackupFile = function(file) {
   });
 }
 
-/**
- * Wipes current app data and writes the backup data to localStorage.
- * @param {Object} rawData - The `data` object from a backup payload
- */
 export const applyBackup = function(rawData) {
   // Remove existing app keys
   const keysToRemove = Object.keys(localStorage).filter(
-    (k) => STATIC_KEYS.includes(k) || k.startsWith("schedule_") || k.startsWith("studyflow_schedule")
+    (key) => STATIC_KEYS.includes(key) || key.startsWith("schedule_") || key.startsWith("studyflow_schedule")
   );
-  keysToRemove.forEach((k) => localStorage.removeItem(k));
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
 
   // Write backup
   Object.entries(rawData).forEach(([key, value]) => {
