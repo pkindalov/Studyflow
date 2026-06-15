@@ -1,12 +1,12 @@
 import { useLang } from "../../../shared/i18n/LangContext";
 
-const formatMmSs = (seconds) => {
+const formatMmSs = function(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-export default function PomodoroPanel({
+const PomodoroPanel = function({
   pomodoroEnabled, setPomodoroEnabled,
   pomodoroMinutes, setPomodoroMinutes,
   pomodoroResetAt, pomodoroBreakCount,
@@ -60,4 +60,6 @@ export default function PomodoroPanel({
       )}
     </div>
   );
-}
+};
+
+export default PomodoroPanel;

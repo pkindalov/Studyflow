@@ -1,4 +1,4 @@
-export default function UnsavedScheduleWarning({ onCancel, onDiscard, onSaveAndContinue, t }) {
+const UnsavedScheduleWarning = function({ onCancel, onDiscard, onSaveAndContinue, t }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div role="dialog" aria-modal="true" aria-labelledby="unsaved-warning-title" className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
@@ -17,4 +17,6 @@ export default function UnsavedScheduleWarning({ onCancel, onDiscard, onSaveAndC
       </div>
     </div>
   );
-}
+};
+
+export default UnsavedScheduleWarning;

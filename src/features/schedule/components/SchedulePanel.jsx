@@ -2,7 +2,7 @@ import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import ScheduleItem from "./ScheduleItem";
 
-export default function SchedulePanel({
+const SchedulePanel = function({
   schedule,
   allScheduleDone,
   scheduleTimers,
@@ -71,4 +71,6 @@ export default function SchedulePanel({
       </div>
     </>
   );
-}
+};
+
+export default SchedulePanel;

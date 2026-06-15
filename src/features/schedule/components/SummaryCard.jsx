@@ -1,6 +1,6 @@
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function SummaryCard({ total, completed, remaining, progress }) {
+const SummaryCard = function({ total, completed, remaining, progress }) {
   const { t } = useLang();
   const radius = 46;
   const circumference = 2 * Math.PI * radius;
@@ -85,6 +85,6 @@ function SummaryCard({ total, completed, remaining, progress }) {
       </div>
     </section>
   );
-}
+};
 
 export default SummaryCard;

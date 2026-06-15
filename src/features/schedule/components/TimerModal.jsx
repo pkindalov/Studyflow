@@ -3,7 +3,7 @@ import TimerCountdown from "./TimerCountdown";
 import PomodoroPanel from "./PomodoroPanel";
 import MusicPanel from "./MusicPanel";
 
-function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onStartAgain, onMarkDone, onMinimize, music,
+const TimerModal = function({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onStartAgain, onMarkDone, onMinimize, music,
   pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0, pomodoroBreakCount = 0 }) {
   const { t } = useLang();
   const totalSeconds = task.scheduledMinutes * 60;
@@ -92,6 +92,6 @@ function TimerModal({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onR
       </div>
     </div>
   );
-}
+};
 
 export default TimerModal;

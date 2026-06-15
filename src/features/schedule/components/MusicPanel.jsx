@@ -5,7 +5,7 @@ import { useLang } from "../../../shared/i18n/LangContext";
 const TIMER_VISIBLE = 5;
 const TIMER_PAGE_SIZE = 8;
 
-export default function MusicPanel({ music }) {
+const MusicPanel = function({ music }) {
   const { t } = useLang();
   const [showAllTracks, setShowAllTracks] = useState(false);
   const [tracksPage, setTracksPage] = useState(0);
@@ -96,4 +96,6 @@ export default function MusicPanel({ music }) {
       )}
     </div>
   );
-}
+};
+
+export default MusicPanel;

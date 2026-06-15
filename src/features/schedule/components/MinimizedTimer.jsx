@@ -1,12 +1,12 @@
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function formatTime(seconds) {
+const formatTime = function(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
+};
 
-function MinimizedTimer({ task, elapsedSeconds, isRunning, onExpand, onPlayPause }) {
+const MinimizedTimer = function({ task, elapsedSeconds, isRunning, onExpand, onPlayPause }) {
   const { t } = useLang();
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
@@ -91,6 +91,6 @@ function MinimizedTimer({ task, elapsedSeconds, isRunning, onExpand, onPlayPause
       </div>
     </div>
   );
-}
+};
 
 export default MinimizedTimer;

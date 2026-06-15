@@ -1,4 +1,4 @@
-export default function QuickTimerPrompt({ task, minutes, onChangeMinutes, onConfirm, onCancel, t }) {
+const QuickTimerPrompt = function({ task, minutes, onChangeMinutes, onConfirm, onCancel, t }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div role="dialog" aria-modal="true" aria-labelledby="quick-timer-title" className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-xs p-6 flex flex-col gap-4">
@@ -27,4 +27,6 @@ export default function QuickTimerPrompt({ task, minutes, onChangeMinutes, onCon
       </div>
     </div>
   );
-}
+};
+
+export default QuickTimerPrompt;

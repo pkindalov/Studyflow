@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 
-const formatTime = (seconds, hms) => {
+const formatTime = function(seconds, hms) {
   if (hms) {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -13,7 +13,7 @@ const formatTime = (seconds, hms) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-export default function TimerCountdown({ remaining, totalSeconds, elapsedSeconds, isRunning, isFinished }) {
+const TimerCountdown = function({ remaining, totalSeconds, elapsedSeconds, isRunning, isFinished }) {
   const { t } = useLang();
   const [hmsMode, setHmsMode] = useState(false);
 
@@ -68,4 +68,6 @@ export default function TimerCountdown({ remaining, totalSeconds, elapsedSeconds
       </div>
     </>
   );
-}
+};
+
+export default TimerCountdown;

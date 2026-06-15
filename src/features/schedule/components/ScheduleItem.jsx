@@ -1,7 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function ScheduleItem({ task, elapsed, isRunning, onOpenTimer, onMarkDone, onRemove, t }) {
+const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDone, onRemove, t }) {
   const total = task.scheduledMinutes * 60;
   const isFinished = task.done || (total > 0 && elapsed >= total);
   const hasProgress = elapsed > 0 && !isFinished;
