@@ -214,6 +214,7 @@ export function TasksProgressSection({
               <h2 className="text-lg font-headline font-bold text-on-surface">{sectionTitle}</h2>
               <button
                 onClick={() => setShowAll(false)}
+                aria-label={t.close}
                 className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
               >
                 <span className="material-symbols-outlined text-xl">close</span>

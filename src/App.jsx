@@ -61,10 +61,10 @@ function App() {
   const tasksForDay = useMemo(() => tasks[dateKey] || [], [tasks, dateKey]);
   const { totalTasks, completedTasks, remainingTasks, progress } = useMemo(() => {
     const total = tasksForDay.length;
-    const completed = tasksForDay.filter((t) => t.done).length;
+    const completed = tasksForDay.filter((task) => task.done).length;
     return { totalTasks: total, completedTasks: completed, remainingTasks: total - completed, progress: total === 0 ? 0 : Math.round((completed / total) * 100) };
   }, [tasksForDay]);
-  const savedListTexts = useMemo(() => new Set(taskBank.map((t) => t.text)), [taskBank]);
+  const savedListTexts = useMemo(() => new Set(taskBank.map((item) => item.text)), [taskBank]);
   const showNotification = useCallback((msg) => {
     setNotification(msg);
     setTimeout(() => setNotification(""), 2500);
@@ -136,7 +136,7 @@ function App() {
   }, [allScheduleDone]);
 
   useEffect(() => {
-    const existingIds = new Set((tasks[dateKey] || []).map((t) => t.recurringId).filter(Boolean));
+    const existingIds = new Set((tasks[dateKey] || []).map((task) => task.recurringId).filter(Boolean));
     recurringTasks.forEach((template) => {
       if (existingIds.has(template.id)) return;
       if ((template.skippedDates || []).includes(dateKey)) return;
@@ -160,7 +160,7 @@ function App() {
   }, []);
 
   const handleToggleTask = useCallback((id) => {
-    const task = (tasks[dateKey] || []).find((t) => t.id === id);
+    const task = (tasks[dateKey] || []).find((entry) => entry.id === id);
     toggleTask(dateKey, id);
     if (!task || !schedule) return;
     const inSchedule = schedule.find((s) => s.id === id);
