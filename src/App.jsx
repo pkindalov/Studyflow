@@ -48,12 +48,21 @@ function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showTaskBankModal, setShowTaskBankModal] = useState(false);
   const [taskBankModalAutoGenerate, setTaskBankModalAutoGenerate] = useState(false);
-  const prevAllScheduleDoneRef = useRef(false);
+  const [prevAllScheduleDone, setPrevAllScheduleDone] = useState(false);
   const notificationTimerRef = useRef(null);
 
   const dateKey = formatDateKey(selectedDate);
 
+  // Reset task exclusions when the user navigates to a different day. Done during
+  // render (not in an effect) per React's "you might not need an effect" guidance.
+  const [prevDateKey, setPrevDateKey] = useState(dateKey);
+  if (dateKey !== prevDateKey) {
+    setPrevDateKey(dateKey);
+    setExcludedTaskIds(new Set());
+  }
+
   const { tasks, addTask, addTaskDirect, toggleTask, markTaskDone, deleteTask, editTask, linkRecurring, deleteAllByRecurringId, moveTask, reorderTasks, clearAllTasks } = useTasks();
+  const tasksRef = useRef(tasks);
   const { recurringTasks, addRecurring, updateRecurring, deleteRecurring, clearAllRecurring } = useRecurringTasks();
   const { taskBank, addToBank, removeFromBank, updateInBank, reorderBank } = useTaskBank();
   const music = useMusicPlayer();
@@ -87,6 +96,13 @@ function App() {
     handleRemoveScheduleItem, markScheduleItemUndone, removeTaskFromSchedule,
     handleUnsavedSaveAndContinue, handleUnsavedDiscard, handleUnsavedCancel, clearSchedule,
   } = useSchedule({ dateKey, tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, scheduleTimers, setScheduleTimers, runningTaskId, setRunningTaskId, markTaskDone, showNotification, t });
+
+  // Fire confetti once when the schedule transitions to fully done. Render-phase
+  // transition detection; the auto-hide timer lives in its own effect below.
+  if (allScheduleDone !== prevAllScheduleDone) {
+    setPrevAllScheduleDone(allScheduleDone);
+    if (allScheduleDone) setShowConfetti(true);
+  }
 
   const handleCleanupTimerForTask = useCallback((fromDateKey, taskId) => {
     try {
@@ -125,28 +141,23 @@ function App() {
     localStorage.setItem("studyflow_calendar_completion", String(showCalendarCompletion));
   }, [showCalendarCompletion]);
 
-  useEffect(() => { setExcludedTaskIds(new Set()); }, [dateKey]);
+  useEffect(() => {
+    if (!showConfetti) return;
+    const hideTimerId = setTimeout(() => setShowConfetti(false), 4500);
+    return () => clearTimeout(hideTimerId);
+  }, [showConfetti]);
+
+  useEffect(() => { tasksRef.current = tasks; }, [tasks]);
 
   useEffect(() => {
-    if (allScheduleDone && !prevAllScheduleDoneRef.current) {
-      prevAllScheduleDoneRef.current = true;
-      setShowConfetti(true);
-      const timerId = setTimeout(() => setShowConfetti(false), 4500);
-      return () => clearTimeout(timerId);
-    }
-    if (!allScheduleDone) prevAllScheduleDoneRef.current = false;
-  }, [allScheduleDone]);
-
-  useEffect(() => {
-    const existingIds = new Set((tasks[dateKey] || []).map((task) => task.recurringId).filter(Boolean));
+    const existingIds = new Set((tasksRef.current[dateKey] || []).map((task) => task.recurringId).filter(Boolean));
     recurringTasks.forEach((template) => {
       if (existingIds.has(template.id)) return;
       if ((template.skippedDates || []).includes(dateKey)) return;
       if (!appliesToDate(template, dateKey)) return;
       addTaskDirect(dateKey, { id: generateId(), text: template.text, imageUrl: template.imageUrl, priority: template.priority, done: false, recurringId: template.id });
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateKey, recurringTasks]);
+  }, [dateKey, recurringTasks, addTaskDirect]);
 
   const markDateWithTasksFn = useMemo(
     () => markDateWithTasks(tasks, formatDateKey, recurringTasks, showCalendarCompletion),

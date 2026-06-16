@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { generateId } from "../../../shared/utils/id";
 import {
   initYTPlayer,
@@ -53,6 +53,8 @@ export function useMusicPlayer() {
     }
   });
 
+  const playlistRef = useRef(playlist);
+
   const [activeTrackId, setActiveTrackId] = useState(
     () => localStorage.getItem("music_active_track") || null,
   );
@@ -66,6 +68,7 @@ export function useMusicPlayer() {
     const parsed = Number(saved);
     return isNaN(parsed) ? 70 : parsed;
   });
+  const volumeRef = useRef(volume);
 
   // Persist playlist
   useEffect(() => {
@@ -100,19 +103,21 @@ export function useMusicPlayer() {
         setIsPlaying(false);
       },
     );
-    ytVolume(volume);
+    ytVolume(volumeRef.current);
     return resetYTPlayer;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When active track changes: cue the new video (don't auto-play) and clear any prior error
+  // Keep a ref to the latest playlist so the cue effect can look up a track's URL
+  // without re-cueing every time the playlist is reordered or edited.
+  useEffect(() => { playlistRef.current = playlist; }, [playlist]);
+
+  // When the active track changes: cue the new video (don't auto-play). Clearing a
+  // prior playback error happens in selectTrack, where the user drives the change.
   useEffect(() => {
     if (!activeTrackId) return;
-    setPlaybackError(null);
-    const track = playlist.find((t) => t.id === activeTrackId);
+    const track = playlistRef.current.find((t) => t.id === activeTrackId);
     const videoId = track ? extractVideoId(track.url) : null;
     if (videoId) ytCue(videoId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTrackId]);
 
   // play() resumes whatever is cued — does NOT restart the track
@@ -137,6 +142,7 @@ export function useMusicPlayer() {
   }, []);
 
   const selectTrack = useCallback((id) => {
+    setPlaybackError(null);
     setActiveTrackId(id);
     setPlaylist((prev) => {
       const idx = prev.findIndex((t) => t.id === id);
