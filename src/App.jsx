@@ -49,6 +49,7 @@ function App() {
   const [showTaskBankModal, setShowTaskBankModal] = useState(false);
   const [taskBankModalAutoGenerate, setTaskBankModalAutoGenerate] = useState(false);
   const prevAllScheduleDoneRef = useRef(false);
+  const notificationTimerRef = useRef(null);
 
   const dateKey = formatDateKey(selectedDate);
 
@@ -66,8 +67,9 @@ function App() {
   }, [tasksForDay]);
   const savedListTexts = useMemo(() => new Set(taskBank.map((item) => item.text)), [taskBank]);
   const showNotification = useCallback((msg) => {
+    if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
     setNotification(msg);
-    setTimeout(() => setNotification(""), 2500);
+    notificationTimerRef.current = setTimeout(() => setNotification(""), 2500);
   }, []);
 
   const {
