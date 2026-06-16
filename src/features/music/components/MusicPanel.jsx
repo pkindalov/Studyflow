@@ -48,6 +48,120 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
   );
 }
 
+function PlaylistModal({ isOpen, onClose, playlist, activeTrackId, isPlaying, playbackError, onSelectTrack, onRemoveTrack }) {
+  const { t } = useLang();
+  const [modalPage, setModalPage] = useState(0);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-xl text-tertiary" aria-hidden="true">headphones</span>
+            {t.playlistLabel}
+          </h2>
+          <button
+            onClick={onClose}
+            aria-label="Close playlist"
+            title="Close playlist"
+            className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
+          >
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          {playlist
+            .slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE)
+            .map((track) => (
+              <TrackRow
+                key={track.id}
+                track={track}
+                isActive={track.id === activeTrackId}
+                isPlaying={isPlaying}
+                isErrored={playbackError?.trackId === track.id}
+                onSelect={onSelectTrack}
+                onRemove={onRemoveTrack}
+                removeTitle={t.removeTrackTitle}
+              />
+            ))}
+        </div>
+        <Pagination
+          page={modalPage}
+          totalPages={Math.ceil(playlist.length / MODAL_PAGE_SIZE)}
+          onPrev={() => setModalPage((p) => p - 1)}
+          onNext={() => setModalPage((p) => p + 1)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AddTrackForm({ onAddTrack }) {
+  const { t } = useLang();
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newUrl, setNewUrl] = useState("");
+  const [addError, setAddError] = useState("");
+
+  const handleAdd = useCallback(() => {
+    const name = newName.trim();
+    const url = newUrl.trim();
+    if (!name) return setAddError(t.enterTrackNameError);
+    if (!extractVideoId(url)) return setAddError(t.invalidUrlError);
+    setAddError("");
+    onAddTrack(name, url);
+    setNewName("");
+    setNewUrl("");
+    setShowAdd(false);
+  }, [newName, newUrl, onAddTrack, t]);
+
+  return (
+    <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-1 border-t border-outline-variant/30 mt-1">
+      {!showAdd ? (
+        <button
+          onClick={() => setShowAdd(true)}
+          className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors mt-2"
+        >
+          <span className="material-symbols-outlined text-sm">add</span>
+          {t.addYoutubeTrack}
+        </button>
+      ) : (
+        <div className="flex flex-col gap-2 mt-2">
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder={t.trackNamePlaceholder}
+            className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-tertiary/50 text-on-surface placeholder:text-on-surface-variant/60"
+          />
+          <input
+            value={newUrl}
+            onChange={(e) => setNewUrl(e.target.value)}
+            placeholder={t.youtubeUrlPlaceholder}
+            className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-tertiary/50 text-on-surface placeholder:text-on-surface-variant/60"
+          />
+          {addError && <p className="text-[10px] text-error">{addError}</p>}
+          <div className="flex gap-2">
+            <button
+              onClick={handleAdd}
+              className="flex-1 px-3 py-1.5 bg-tertiary text-on-tertiary rounded-xl text-xs font-semibold hover:opacity-90 transition-all"
+            >
+              {t.add}
+            </button>
+            <button
+              onClick={() => { setShowAdd(false); setNewName(""); setNewUrl(""); setAddError(""); }}
+              className="px-3 py-1.5 border border-outline-variant/60 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-all"
+            >
+              {t.cancel}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MusicPanel({
   playlist,
   activeTrackId,
@@ -63,72 +177,36 @@ function MusicPanel({
   onClearPlaybackError,
 }) {
   const { t } = useLang();
-  const [showAdd, setShowAdd] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newUrl, setNewUrl] = useState("");
-  const [addError, setAddError] = useState("");
   const [showAll, setShowAll] = useState(false);
-  const [modalPage, setModalPage] = useState(0);
-
-  const handleAdd = useCallback(() => {
-    const name = newName.trim();
-    const url = newUrl.trim();
-    if (!name) return setAddError(t.enterTrackNameError);
-    if (!extractVideoId(url)) return setAddError(t.invalidUrlError);
-    setAddError("");
-    onAddTrack(name, url);
-    setNewName("");
-    setNewUrl("");
-    setShowAdd(false);
-  }, [newName, newUrl, onAddTrack, t]);
 
   return (
     <section className="bg-surface-container rounded-2xl border border-outline-variant/50 flex flex-col gap-0 overflow-hidden">
-      {/* Header */}
       <div className="flex items-center gap-2 px-4 sm:px-5 pt-4 sm:pt-5 pb-3">
-        <span className="material-symbols-outlined text-xl text-tertiary">
-          headphones
-        </span>
-        <span className="font-headline font-bold text-on-surface text-lg flex-1">
-          {t.focusMusicLabel}
-        </span>
+        <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
+        <span className="font-headline font-bold text-on-surface text-lg flex-1">{t.focusMusicLabel}</span>
         {activeTrack && (
           <button
             onClick={onTogglePlay}
             aria-label={isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
             className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
-              isPlaying
-                ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
-                : "bg-primary text-on-primary hover:opacity-90"
+              isPlaying ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30" : "bg-primary text-on-primary hover:opacity-90"
             }`}
             title={isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
           >
-            <span className="material-symbols-outlined text-base">
-              {isPlaying ? "pause" : "play_arrow"}
-            </span>
+            <span className="material-symbols-outlined text-base">{isPlaying ? "pause" : "play_arrow"}</span>
           </button>
         )}
       </div>
 
-      {/* Now Playing bar */}
       {activeTrack && (
-        <div
-          className={`mx-4 mb-3 rounded-xl px-3 py-2 flex items-center gap-2 border transition-all ${
-            isPlaying
-              ? "bg-tertiary/10 border-tertiary/30"
-              : "bg-surface-container-high border-outline-variant/30"
-          }`}
-        >
-          <span
-            className={`material-symbols-outlined text-base flex-shrink-0 ${isPlaying ? "text-tertiary" : "text-on-surface-variant"}`}
-          >
+        <div className={`mx-4 mb-3 rounded-xl px-3 py-2 flex items-center gap-2 border transition-all ${isPlaying ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-high border-outline-variant/30"}`}>
+          <span className={`material-symbols-outlined text-base flex-shrink-0 ${isPlaying ? "text-tertiary" : "text-on-surface-variant"}`}>
             {isPlaying ? "music_note" : "music_off"}
           </span>
-          <span className="text-xs font-medium text-on-surface flex-1 truncate">
-            {activeTrack.name}
-          </span>
+          <span className="text-xs font-medium text-on-surface flex-1 truncate">{activeTrack.name}</span>
           {isPlaying && (
             <span className="flex gap-0.5 items-end h-3 flex-shrink-0">
+              {/* Heights drive the static equalizer bar animation and must be inline */}
               <span className="w-0.5 bg-tertiary rounded-full animate-[eq1_0.8s_ease_infinite]" style={{ height: "40%" }} />
               <span className="w-0.5 bg-tertiary rounded-full animate-[eq2_0.6s_ease_infinite]" style={{ height: "70%" }} />
               <span className="w-0.5 bg-tertiary rounded-full animate-[eq3_0.9s_ease_infinite]" style={{ height: "55%" }} />
@@ -138,49 +216,26 @@ function MusicPanel({
         </div>
       )}
 
-      {/* Playback error banner */}
       {playbackError && (
         <div className="mx-4 mb-3 rounded-xl px-3 py-2 flex items-start gap-2 bg-error/10 border border-error/30">
           <span className="material-symbols-outlined text-base text-error flex-shrink-0 mt-0.5">error</span>
           <p className="flex-1 text-xs text-error leading-snug">{t.trackPlaybackError}</p>
-          <button
-            onClick={onClearPlaybackError}
-            aria-label={t.trackPlaybackErrorDismiss}
-            className="flex-shrink-0 text-error/60 hover:text-error transition-colors"
-            title={t.trackPlaybackErrorDismiss}
-          >
+          <button onClick={onClearPlaybackError} aria-label={t.trackPlaybackErrorDismiss} className="flex-shrink-0 text-error/60 hover:text-error transition-colors" title={t.trackPlaybackErrorDismiss}>
             <span className="material-symbols-outlined text-sm">close</span>
           </button>
         </div>
       )}
 
-      {/* Volume slider */}
       {activeTrack && (
         <div className="mx-4 mb-3 flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
-            volume_down
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={volume}
-            onChange={(e) => onSetVolume(Number(e.target.value))}
-            className="flex-1 h-1.5 accent-tertiary cursor-pointer"
-          />
-          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
-            volume_up
-          </span>
+          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">volume_down</span>
+          <input type="range" min={0} max={100} value={volume} onChange={(e) => onSetVolume(Number(e.target.value))} className="flex-1 h-1.5 accent-tertiary cursor-pointer" />
+          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">volume_up</span>
         </div>
       )}
 
-      {/* Track list — compact, shows first VISIBLE_COUNT tracks */}
       <div className="flex flex-col gap-1 px-4 sm:px-5 pb-2">
-        {playlist.length === 0 && (
-          <p className="text-xs text-on-surface-variant text-center py-3">
-            {t.noTracksMsg}
-          </p>
-        )}
+        {playlist.length === 0 && <p className="text-xs text-on-surface-variant text-center py-3">{t.noTracksMsg}</p>}
         {playlist.slice(0, VISIBLE_COUNT).map((track) => (
           <TrackRow
             key={track.id}
@@ -194,108 +249,24 @@ function MusicPanel({
           />
         ))}
         {playlist.length > VISIBLE_COUNT && (
-          <button
-            onClick={() => { setShowAll(true); setModalPage(0); }}
-            className="w-full text-center py-1.5 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors"
-          >
+          <button onClick={() => setShowAll(true)} className="w-full text-center py-1.5 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors">
             {t.moreViewAll(playlist.length - VISIBLE_COUNT)}
           </button>
         )}
       </div>
 
-      {/* All tracks modal */}
-      {showAll && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-xl text-tertiary" aria-hidden="true">headphones</span>
-                {t.playlistLabel}
-              </h2>
-              <button
-                onClick={() => setShowAll(false)}
-                aria-label="Close playlist"
-                title="Close playlist"
-                className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
-              >
-                <span className="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              {playlist
-                .slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE)
-                .map((track) => (
-                  <TrackRow
-                    key={track.id}
-                    track={track}
-                    isActive={track.id === activeTrackId}
-                    isPlaying={isPlaying}
-                    isErrored={playbackError?.trackId === track.id}
-                    onSelect={onSelectTrack}
-                    onRemove={onRemoveTrack}
-                    removeTitle={t.removeTrackTitle}
-                  />
-                ))}
-            </div>
-            <Pagination
-              page={modalPage}
-              totalPages={Math.ceil(playlist.length / MODAL_PAGE_SIZE)}
-              onPrev={() => setModalPage((p) => p - 1)}
-              onNext={() => setModalPage((p) => p + 1)}
-            />
-          </div>
-        </div>
-      )}
+      <PlaylistModal
+        isOpen={showAll}
+        onClose={() => setShowAll(false)}
+        playlist={playlist}
+        activeTrackId={activeTrackId}
+        isPlaying={isPlaying}
+        playbackError={playbackError}
+        onSelectTrack={onSelectTrack}
+        onRemoveTrack={onRemoveTrack}
+      />
 
-      {/* Add track */}
-      <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-1 border-t border-outline-variant/30 mt-1">
-        {!showAdd ? (
-          <button
-            onClick={() => setShowAdd(true)}
-            className="flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-on-surface transition-colors mt-2"
-          >
-            <span className="material-symbols-outlined text-sm">add</span>
-            {t.addYoutubeTrack}
-          </button>
-        ) : (
-          <div className="flex flex-col gap-2 mt-2">
-            <input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder={t.trackNamePlaceholder}
-              className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-tertiary/50 text-on-surface placeholder:text-on-surface-variant/60"
-            />
-            <input
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-              placeholder={t.youtubeUrlPlaceholder}
-              className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-tertiary/50 text-on-surface placeholder:text-on-surface-variant/60"
-            />
-            {addError && (
-              <p className="text-[10px] text-error">{addError}</p>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={handleAdd}
-                className="flex-1 px-3 py-1.5 bg-tertiary text-on-tertiary rounded-xl text-xs font-semibold hover:opacity-90 transition-all"
-              >
-                {t.add}
-              </button>
-              <button
-                onClick={() => {
-                  setShowAdd(false);
-                  setNewName("");
-                  setNewUrl("");
-                  setAddError("");
-                }}
-                className="px-3 py-1.5 border border-outline-variant/60 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-all"
-              >
-                {t.cancel}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <AddTrackForm onAddTrack={onAddTrack} />
     </section>
   );
 }

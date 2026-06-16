@@ -2,6 +2,29 @@ import { useState, useMemo } from "react";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 
+const TasksProgressModal = function({ sectionTitle, items, onClose }) {
+  const { t } = useLang();
+  const [modalPage, setModalPage] = useState(0);
+  const modalTotalPages = Math.ceil(items.length / MODAL_PAGE_SIZE);
+  const modalItems = items.slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE);
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-headline font-bold text-on-surface">{sectionTitle}</h2>
+          <button onClick={onClose} aria-label={t.close} className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all">
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          {modalItems.map(({ key, ...item }) => <ProgressRow key={key} {...item} />)}
+        </div>
+        <Pagination page={modalPage} totalPages={modalTotalPages} onPrev={() => setModalPage((p) => p - 1)} onNext={() => setModalPage((p) => p + 1)} />
+      </div>
+    </div>
+  );
+};
+
 const MODAL_PAGE_SIZE = 5;
 const MAX_VISIBLE = 5;
 
@@ -122,7 +145,6 @@ export function TasksProgressSection({
 }) {
   const { t } = useLang();
   const [showAll, setShowAll] = useState(false);
-  const [modalPage, setModalPage] = useState(0);
 
   const items = useMemo(() => {
     if (recurringTasks.length > 0) {
@@ -175,8 +197,6 @@ export function TasksProgressSection({
   const hasAny = items.length > 0;
   const visible = items.slice(0, MAX_VISIBLE);
   const overflow = items.length - MAX_VISIBLE;
-  const modalTotalPages = Math.ceil(items.length / MODAL_PAGE_SIZE);
-  const modalItems = items.slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE);
   const sectionTitle = recurringTasks.length > 0 ? t.activeProjects : t.todaysTasks;
 
   if (!hasAny) return null;
@@ -208,31 +228,7 @@ export function TasksProgressSection({
       </section>
 
       {showAll && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-headline font-bold text-on-surface">{sectionTitle}</h2>
-              <button
-                onClick={() => setShowAll(false)}
-                aria-label={t.close}
-                className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
-              >
-                <span className="material-symbols-outlined text-xl">close</span>
-              </button>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              {modalItems.map(({ key, ...item }) => (
-                <ProgressRow key={key} {...item} />
-              ))}
-            </div>
-            <Pagination
-              page={modalPage}
-              totalPages={modalTotalPages}
-              onPrev={() => setModalPage((p) => p - 1)}
-              onNext={() => setModalPage((p) => p + 1)}
-            />
-          </div>
-        </div>
+        <TasksProgressModal sectionTitle={sectionTitle} items={items} onClose={() => setShowAll(false)} />
       )}
     </>
   );

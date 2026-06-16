@@ -56,16 +56,14 @@ export const useActivityStats = function(tasks) {
       const allTaskIds = new Set([...Object.keys(timers), ...Object.keys(extra)]);
       let daySeconds = 0;
       allTaskIds.forEach((taskId) => {
-        const timerSeconds = typeof timers[taskId] === "number" && timers[taskId] > 0 ? timers[taskId] : 0;
-        const extraSeconds = typeof extra[taskId] === "number" && extra[taskId] > 0 ? extra[taskId] : 0;
-        daySeconds += timerSeconds + extraSeconds;
+        const timerSec = typeof timers[taskId] === "number" && timers[taskId] > 0 ? timers[taskId] : 0;
+        const extraSec = typeof extra[taskId] === "number" && extra[taskId] > 0 ? extra[taskId] : 0;
+        daySeconds += timerSec + extraSec;
       });
       totalFocusSeconds += daySeconds;
       if (dateKey === todayKey) todayFocusSeconds = daySeconds;
     });
-  } catch {
-    // localStorage unavailable or data is malformed
-  }
+  } catch { /* localStorage unavailable or data is malformed */ }
 
   return { streak, activeToday, totalFocusSeconds, todayFocusSeconds, heatmap };
 }
