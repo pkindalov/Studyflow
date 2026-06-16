@@ -129,8 +129,8 @@ function App() {
     if (allScheduleDone && !prevAllScheduleDoneRef.current) {
       prevAllScheduleDoneRef.current = true;
       setShowConfetti(true);
-      const t = setTimeout(() => setShowConfetti(false), 4500);
-      return () => clearTimeout(t);
+      const timerId = setTimeout(() => setShowConfetti(false), 4500);
+      return () => clearTimeout(timerId);
     }
     if (!allScheduleDone) prevAllScheduleDoneRef.current = false;
   }, [allScheduleDone]);

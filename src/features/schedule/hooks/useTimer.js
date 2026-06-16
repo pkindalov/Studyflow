@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { readAllTimers, writeTimersForDate } from "../utils/scheduleStorage";
+import { TIMERS_KEY, readAllTimers, writeTimersForDate } from "../utils/scheduleStorage";
 
 export const DEFAULT_POMODORO_MINUTES = 25;
 
@@ -307,11 +307,16 @@ export const useTimer = function({ dateKey, music, markTaskDone }) {
     timerOriginDateKeyRef.current = null;
     setTimerTask(null);
     setRunningTaskId(null);
+    skipTimerPersistRef.current = true;
     setScheduleTimers({});
     setTaskAllocations({});
     setIsTimerMinimized(false);
     music.pause();
     musicStartedFromTimerRef.current = false;
+    try {
+      localStorage.removeItem(TIMERS_KEY);
+      localStorage.removeItem("studyflow_focus_extra");
+    } catch { /* localStorage not available */ }
   }, [music]);
 
   return {
