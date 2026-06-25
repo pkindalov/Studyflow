@@ -68,8 +68,6 @@ export function useMusicPlayer() {
     const parsed = Number(saved);
     return isNaN(parsed) ? 70 : parsed;
   });
-  const volumeRef = useRef(volume);
-
   // Persist playlist
   useEffect(() => {
     localStorage.setItem("music_playlist", JSON.stringify(playlist));
@@ -89,6 +87,8 @@ export function useMusicPlayer() {
 
   // Init the YouTube player — the service manages its own DOM element
   useEffect(() => {
+    const savedVolume = localStorage.getItem("music_volume");
+    const initialVolume = savedVolume !== null && !isNaN(Number(savedVolume)) ? Number(savedVolume) : 70;
     initYTPlayer(
       (e) => {
         if (typeof window.YT?.PlayerState !== "undefined") {
@@ -103,7 +103,7 @@ export function useMusicPlayer() {
         setIsPlaying(false);
       },
     );
-    ytVolume(volumeRef.current);
+    ytVolume(initialVolume);
     return resetYTPlayer;
   }, []);
 
