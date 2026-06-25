@@ -98,7 +98,8 @@ function App() {
   } = useSchedule({ dateKey, tasksForDay, excludedTaskIds, totalStudyTime, priorityPercent, scheduleTimers, setScheduleTimers, runningTaskId, setRunningTaskId, markTaskDone, showNotification, t });
 
   // Fire confetti once when the schedule transitions to fully done. Render-phase
-  // transition detection; the auto-hide timer lives in its own effect below.
+  // transition detection using a ref so no second render-phase setState is needed;
+  // the auto-hide timer lives in its own effect below.
   if (allScheduleDone !== prevAllScheduleDone) {
     setPrevAllScheduleDone(allScheduleDone);
     if (allScheduleDone) setShowConfetti(true);
@@ -148,6 +149,8 @@ function App() {
   }, [showConfetti]);
 
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
+
+  useEffect(() => () => clearTimeout(notificationTimerRef.current), []);
 
   useEffect(() => {
     const existingIds = new Set((tasksRef.current[dateKey] || []).map((task) => task.recurringId).filter(Boolean));

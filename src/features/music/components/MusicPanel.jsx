@@ -48,11 +48,9 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
   );
 }
 
-function PlaylistModal({ isOpen, onClose, playlist, activeTrackId, isPlaying, playbackError, onSelectTrack, onRemoveTrack }) {
+function PlaylistModal({ onClose, playlist, activeTrackId, isPlaying, playbackError, onSelectTrack, onRemoveTrack }) {
   const { t } = useLang();
   const [modalPage, setModalPage] = useState(0);
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -255,16 +253,17 @@ function MusicPanel({
         )}
       </div>
 
-      <PlaylistModal
-        isOpen={showAll}
-        onClose={() => setShowAll(false)}
-        playlist={playlist}
-        activeTrackId={activeTrackId}
-        isPlaying={isPlaying}
-        playbackError={playbackError}
-        onSelectTrack={onSelectTrack}
-        onRemoveTrack={onRemoveTrack}
-      />
+      {showAll && (
+        <PlaylistModal
+          onClose={() => setShowAll(false)}
+          playlist={playlist}
+          activeTrackId={activeTrackId}
+          isPlaying={isPlaying}
+          playbackError={playbackError}
+          onSelectTrack={onSelectTrack}
+          onRemoveTrack={onRemoveTrack}
+        />
+      )}
 
       <AddTrackForm onAddTrack={onAddTrack} />
     </section>

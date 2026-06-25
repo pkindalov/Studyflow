@@ -2,6 +2,9 @@ import { useState, useMemo } from "react";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 
+const MODAL_PAGE_SIZE = 5;
+const MAX_VISIBLE = 5;
+
 const TasksProgressModal = function({ sectionTitle, items, onClose }) {
   const { t } = useLang();
   const [modalPage, setModalPage] = useState(0);
@@ -24,9 +27,6 @@ const TasksProgressModal = function({ sectionTitle, items, onClose }) {
     </div>
   );
 };
-
-const MODAL_PAGE_SIZE = 5;
-const MAX_VISIBLE = 5;
 
 const ACCENT_COLORS = [
   "bg-primary",
