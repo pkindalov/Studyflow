@@ -5,6 +5,33 @@ import { useLang } from "../../../shared/i18n/LangContext";
 const MODAL_PAGE_SIZE = 5;
 const MAX_VISIBLE = 5;
 
+function ProgressRow({ label, progress, colorClass, priority }) {
+  return (
+    <div className="flex flex-col gap-1 p-3 bg-surface-container rounded-xl border border-outline-variant/30">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${colorClass}`} />
+          <span className="font-medium text-sm text-on-surface truncate">{label}</span>
+          {priority && (
+            <span className="text-[9px] text-tertiary font-bold tracking-wider uppercase flex-shrink-0">
+              ★
+            </span>
+          )}
+        </div>
+        <span className="text-xs text-on-surface-variant font-semibold tabular-nums flex-shrink-0">
+          {progress}%
+        </span>
+      </div>
+      <div className="h-1 rounded-full bg-outline-variant/30 overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${colorClass}`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 const TasksProgressModal = function({ sectionTitle, items, onClose }) {
   const { t } = useLang();
   const [modalPage, setModalPage] = useState(0);
@@ -35,33 +62,6 @@ const ACCENT_COLORS = [
   "bg-primary/60",
   "bg-secondary/60",
 ];
-
-function ProgressRow({ label, progress, colorClass, priority }) {
-  return (
-    <div className="flex flex-col gap-1 p-3 bg-surface-container rounded-xl border border-outline-variant/30">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${colorClass}`} />
-          <span className="font-medium text-sm text-on-surface truncate">{label}</span>
-          {priority && (
-            <span className="text-[9px] text-tertiary font-bold tracking-wider uppercase flex-shrink-0">
-              ★
-            </span>
-          )}
-        </div>
-        <span className="text-xs text-on-surface-variant font-semibold tabular-nums flex-shrink-0">
-          {progress}%
-        </span>
-      </div>
-      <div className="h-1 rounded-full bg-outline-variant/30 overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${colorClass}`}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export function StudyTimeSection({ totalStudyTime, setTotalStudyTime }) {
   const { t } = useLang();

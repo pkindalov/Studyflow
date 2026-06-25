@@ -100,6 +100,10 @@ function App() {
   // Fire confetti once when the schedule transitions to fully done. Render-phase
   // transition detection using a ref so no second render-phase setState is needed;
   // the auto-hide timer lives in its own effect below.
+  // Double-render is intentional and unavoidable here: the linter forbids ref
+  // access during render (react-hooks/refs), so useState is the only option.
+  // The two setState calls (setPrevAllScheduleDone + setShowConfetti) each
+  // schedule one extra render, but React batches them in React 18+.
   if (allScheduleDone !== prevAllScheduleDone) {
     setPrevAllScheduleDone(allScheduleDone);
     if (allScheduleDone) setShowConfetti(true);

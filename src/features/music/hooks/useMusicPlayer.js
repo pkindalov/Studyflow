@@ -68,6 +68,10 @@ export function useMusicPlayer() {
     const parsed = Number(saved);
     return isNaN(parsed) ? 70 : parsed;
   });
+  // Capture the initial volume so the player-init effect can read it without
+  // listing `volume` as a dependency (which would re-init the player on every
+  // volume change).
+  const initialVolumeRef = useRef(volume);
   // Persist playlist
   useEffect(() => {
     localStorage.setItem("music_playlist", JSON.stringify(playlist));
@@ -85,10 +89,10 @@ export function useMusicPlayer() {
     localStorage.setItem("music_volume", String(volume));
   }, [volume]);
 
-  // Init the YouTube player — the service manages its own DOM element
+  // Init the YouTube player — the service manages its own DOM element.
+  // `volume` is captured from the useState initializer at mount, so its value
+  // is identical to what the redundant localStorage read would have produced.
   useEffect(() => {
-    const savedVolume = localStorage.getItem("music_volume");
-    const initialVolume = savedVolume !== null && !isNaN(Number(savedVolume)) ? Number(savedVolume) : 70;
     initYTPlayer(
       (e) => {
         if (typeof window.YT?.PlayerState !== "undefined") {
@@ -103,7 +107,7 @@ export function useMusicPlayer() {
         setIsPlaying(false);
       },
     );
-    ytVolume(initialVolume);
+    ytVolume(initialVolumeRef.current);
     return resetYTPlayer;
   }, []);
 
