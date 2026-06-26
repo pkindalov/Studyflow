@@ -18,6 +18,7 @@ const RecurrenceSection = function({
   yearsAhead,
   setYearsAhead,
   isRecurringInstance,
+  taskDate,
 }) {
   const { t, lang } = useLang();
   const locale = lang === "bg" ? "bg-BG" : "en-US";
@@ -40,18 +41,21 @@ const RecurrenceSection = function({
         </p>
       )}
 
-      <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
+      <span
+        id="recurrence-group-label"
+        className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5"
+      >
         <span className="material-symbols-outlined text-base">repeat</span>
         {t.repeatLabel}
       </span>
 
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+      <div role="group" aria-labelledby="recurrence-group-label" className="flex flex-wrap gap-1.5 sm:gap-2">
         {RECURRENCE_OPTIONS.map((opt) => (
           <button
             key={opt.value}
             type="button"
             onClick={() => setRecurrence(opt.value)}
-            className={`flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1.5 px-1.5 sm:px-3 py-2 rounded-xl text-[11px] sm:text-sm font-semibold border transition-all ${
+            className={`flex flex-1 basis-0 min-w-[72px] flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-1.5 sm:px-3 py-2 rounded-xl text-[11px] sm:text-sm font-semibold border transition-all ${
               recurrence === opt.value
                 ? "bg-secondary text-on-secondary border-secondary"
                 : "border-outline-variant/60 text-on-surface-variant hover:bg-surface-container-high"
@@ -68,34 +72,50 @@ const RecurrenceSection = function({
           {recurrence === "daily" && (
             <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-secondary">info</span>
-              {t.repeatsEveryDayUntil(monthName(startDate, locale))}
+              {t.repeatsEveryDayUntil(monthName(taskDate || startDate, locale))}
             </p>
           )}
 
           {recurrence === "monthly" && (
             <div className="flex items-center gap-3">
-              <label className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">{t.repeatForNext}</label>
-              <input type="number" min="1" max="24" value={monthsAhead} onChange={(e) => setMonthsAhead(e.target.value)} className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50" />
-              <span className="text-xs font-semibold text-on-surface-variant">{t.months}</span>
+              <label htmlFor="recurrence-months" className="text-sm font-semibold text-on-surface-variant whitespace-nowrap">{t.repeatForNext}</label>
+              <input
+                id="recurrence-months"
+                type="number"
+                min="1"
+                max="24"
+                value={monthsAhead}
+                onChange={(e) => setMonthsAhead(e.target.value)}
+                className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50"
+              />
+              <span className="text-sm font-semibold text-on-surface-variant">{t.months}</span>
             </div>
           )}
 
           {recurrence === "yearly" && (
             <div className="flex items-center gap-3">
-              <label className="text-xs font-semibold text-on-surface-variant whitespace-nowrap">{t.repeatForNext}</label>
-              <input type="number" min="1" max="10" value={yearsAhead} onChange={(e) => setYearsAhead(e.target.value)} className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50" />
-              <span className="text-xs font-semibold text-on-surface-variant">{t.years}</span>
+              <label htmlFor="recurrence-years" className="text-sm font-semibold text-on-surface-variant whitespace-nowrap">{t.repeatForNext}</label>
+              <input
+                id="recurrence-years"
+                type="number"
+                min="1"
+                max="10"
+                value={yearsAhead}
+                onChange={(e) => setYearsAhead(e.target.value)}
+                className="w-16 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1.5 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-secondary/50"
+              />
+              <span className="text-sm font-semibold text-on-surface-variant">{t.years}</span>
             </div>
           )}
 
           {recurrence === "custom" && (
             <>
               <div className="flex items-center gap-3">
-                <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">{t.fromDate}</label>
+                <label className="text-sm font-semibold text-on-surface-variant w-10 flex-shrink-0">{t.fromDate}</label>
                 <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]" />
               </div>
               <div className="flex items-center gap-3">
-                <label className="text-xs font-semibold text-on-surface-variant w-10 flex-shrink-0">{t.toDate}</label>
+                <label className="text-sm font-semibold text-on-surface-variant w-10 flex-shrink-0">{t.toDate}</label>
                 <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]" />
                 {endDate && (
                   <button type="button" onClick={() => setEndDate("")} className="text-on-surface-variant hover:text-error transition-colors flex-shrink-0" title={t.removeEndDate}>

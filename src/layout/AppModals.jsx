@@ -130,6 +130,7 @@ export default function AppModals({
         isRecurringInstance={isEditing ? editModal.isRecurringInstance : false}
         moveToDate={isEditing && !editModal.isRecurringInstance ? editModal.targetDate : undefined}
         setMoveToDate={isEditing && !editModal.isRecurringInstance ? editModal.setTargetDate : undefined}
+        taskDate={dateKey}
         title={isEditing ? t.editTaskTitle : t.addTaskTitle}
       />
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}

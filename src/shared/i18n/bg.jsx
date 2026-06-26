@@ -21,7 +21,7 @@ export const bg = {
   // ── Task modal ───────────────────────────────────────────────────────────────
   taskDescPlaceholder: "Описание на задачата...",
   imageUrlPlaceholder: "URL на изображение (по избор)",
-  priorityTaskLabel: "Приоритетна задача/предмет",
+  priorityTaskLabel: "Маркирай като приоритет",
   repeatLabel: "Повторение",
   noRepeat: "Без повторение",
   daily: "Всеки ден",
@@ -36,6 +36,7 @@ export const bg = {
   removeEndDate: "Премахни крайна дата",
   repeatsDailyNoEnd:
     "Повтаря се всеки ден — задайте крайна дата за автоматично спиране.",
+  customEndDateRequired: "Задайте крайна дата по-горе, за да запазите.",
   repeatsEveryDayUntil: (month) => `Повтаря се всеки ден до края на ${month}.`,
   recurringChangeNote:
     "Промените в повторението ще се прилагат към всички копия.",

@@ -21,7 +21,7 @@ export const en = {
   // ── Task modal ───────────────────────────────────────────────────────────────
   taskDescPlaceholder: "Task description...",
   imageUrlPlaceholder: "Image URL (optional)",
-  priorityTaskLabel: "Priority Task/Subject",
+  priorityTaskLabel: "Mark as priority",
   repeatLabel: "Repeat",
   noRepeat: "No repeat",
   daily: "Daily",
@@ -35,6 +35,7 @@ export const en = {
   toDate: "To",
   removeEndDate: "Remove end date",
   repeatsDailyNoEnd: "Repeats daily — set an end date to stop automatically.",
+  customEndDateRequired: "Set an end date above to save.",
   repeatsEveryDayUntil: (month) => `Repeats every day until the end of ${month}.`,
   recurringChangeNote: "Changes to the repeat pattern will apply to all instances.",
   moveToDate: "Move to date",
