@@ -65,7 +65,7 @@ export const useTaskModal = function({
       setRecurrence(tpl?.recurrence || "none");
       setStartDate(tpl?.startDate || dateKey);
       setEndDate(tpl?.endDate || "");
-      setDateMode("single");
+      setDateMode(tpl?.endDate ? "range" : "single");
       setIsRecurringInstance(true);
       setTargetDate("");
     } else {
@@ -133,6 +133,10 @@ export const useTaskModal = function({
 
   const handleSetRecurrence = useCallback((value) => {
     setRecurrence(value);
+    if (value === "none") {
+      setDateMode("single");
+      setEndDate("");
+    }
   }, []);
 
   const handleSetDateMode = useCallback((newMode) => {

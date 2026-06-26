@@ -346,7 +346,7 @@ describe('useTaskModal', () => {
         }))
       )
       act(() => result.current.open(RECURRING_TASK))
-      act(() => result.current.setRecurrence('none'))
+      act(() => result.current.handleSetRecurrence('none'))
       act(() => result.current.handleSubmit())
       expect(deleteRecurring).toHaveBeenCalledWith('rec-1')
       expect(deleteAllByRecurringId).toHaveBeenCalledWith('rec-1')

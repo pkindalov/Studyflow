@@ -60,7 +60,7 @@ const RecurrenceSection = function({
             {t.dateLabel}
           </span>
 
-          <div role="group" aria-label={t.dateModeLabel}>
+          <div role="group" aria-labelledby="date-section-label">
             <button
               type="button"
               onClick={() => setDateMode("single")}

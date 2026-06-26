@@ -59,7 +59,10 @@ const TaskModal = function({
       const id = setTimeout(() => panelRef.current?.querySelector("textarea")?.focus(), 0);
       return () => clearTimeout(id);
     }
-    previousFocusRef.current?.focus();
+    if (previousFocusRef.current) {
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
