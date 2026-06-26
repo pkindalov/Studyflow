@@ -118,9 +118,9 @@ export default function AppModals({
         priority={isEditing ? editModal.priority : addModal.priority}
         setPriority={isEditing ? editModal.setPriority : addModal.setPriority}
         recurrence={isEditing ? editModal.recurrence : addModal.recurrence}
-        setRecurrence={isEditing ? editModal.handleSetRecurrence : addModal.handleSetRecurrence}
+        handleSetRecurrence={isEditing ? editModal.handleSetRecurrence : addModal.handleSetRecurrence}
         dateMode={isEditing ? editModal.dateMode : addModal.dateMode}
-        setDateMode={isEditing ? editModal.handleSetDateMode : addModal.handleSetDateMode}
+        handleSetDateMode={isEditing ? editModal.handleSetDateMode : addModal.handleSetDateMode}
         startDate={isEditing ? editModal.startDate : addModal.startDate}
         setStartDate={isEditing ? editModal.setStartDate : addModal.setStartDate}
         endDate={isEditing ? editModal.endDate : addModal.endDate}

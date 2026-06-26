@@ -173,6 +173,19 @@ describe('useTaskModal', () => {
       act(() => result.current.handleSetDateMode('range'))
       expect(result.current.dateMode).toBe('range')
     })
+
+    it('auto-promotes recurrence to "daily" when switching to range and recurrence is "none"', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => result.current.handleSetDateMode('range'))
+      expect(result.current.recurrence).toBe('daily')
+    })
+
+    it('preserves non-none recurrence when switching to range', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => result.current.handleSetRecurrence('weekly'))
+      act(() => result.current.handleSetDateMode('range'))
+      expect(result.current.recurrence).toBe('weekly')
+    })
   })
 
   describe('handleSubmit — add mode, no recurrence', () => {

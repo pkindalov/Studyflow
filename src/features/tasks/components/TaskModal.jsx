@@ -32,9 +32,9 @@ const TaskModal = function({
   priority,
   setPriority,
   recurrence,
-  setRecurrence,
+  handleSetRecurrence,
   dateMode,
-  setDateMode,
+  handleSetDateMode,
   startDate,
   setStartDate,
   endDate,
@@ -59,16 +59,17 @@ const TaskModal = function({
       const id = setTimeout(() => panelRef.current?.querySelector("textarea")?.focus(), 0);
       return () => clearTimeout(id);
     }
-    if (previousFocusRef.current) {
+    if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
       previousFocusRef.current.focus();
-      previousFocusRef.current = null;
     }
+    previousFocusRef.current = null;
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const showRecurrence = !!setRecurrence;
-  const saveDisabled = !text.trim() || (dateMode === "range" && !endDate);
+  const showRecurrence = !!handleSetRecurrence;
+  const trimmedText = text.trim();
+  const saveDisabled = !trimmedText || (dateMode === "range" && !endDate);
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") { onClose(); return; }
@@ -148,9 +149,9 @@ const TaskModal = function({
         {showRecurrence && (
           <RecurrenceSection
             recurrence={recurrence}
-            setRecurrence={setRecurrence}
+            setRecurrence={handleSetRecurrence}
             dateMode={dateMode}
-            setDateMode={setDateMode}
+            setDateMode={handleSetDateMode}
             startDate={startDate}
             setStartDate={setStartDate}
             endDate={endDate}

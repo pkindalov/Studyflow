@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 
 const monthName = function(dateStr, locale) {
@@ -27,6 +28,7 @@ const RecurrenceSection = function({
 }) {
   const { t, lang } = useLang();
   const locale = lang === "bg" ? "bg-BG" : "en-US";
+  const uid = useId();
 
   const REPEAT_OPTIONS = [
     { value: "none",    label: t.noRepeat, icon: "block" },
@@ -53,14 +55,14 @@ const RecurrenceSection = function({
         {/* Header row: icon + label on left, segmented toggle on right */}
         <div className="flex items-center justify-between">
           <span
-            id="date-section-label"
+            id={`${uid}-date-section-label`}
             className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-base">calendar_today</span>
             {t.dateLabel}
           </span>
 
-          <div role="group" aria-labelledby="date-section-label">
+          <div role="group" aria-labelledby={`${uid}-date-section-label`}>
             <button
               type="button"
               onClick={() => setDateMode("single")}
@@ -107,13 +109,13 @@ const RecurrenceSection = function({
             {/* From row */}
             <div className="flex items-center gap-3">
               <label
-                htmlFor="range-start-date"
+                htmlFor={`${uid}-range-start-date`}
                 className="text-sm font-semibold text-on-surface-variant w-10 flex-shrink-0"
               >
                 {t.fromDate}
               </label>
               <input
-                id="range-start-date"
+                id={`${uid}-range-start-date`}
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -124,13 +126,13 @@ const RecurrenceSection = function({
             {/* To row */}
             <div className="flex items-center gap-3">
               <label
-                htmlFor="range-end-date"
+                htmlFor={`${uid}-range-end-date`}
                 className="text-sm font-semibold text-on-surface-variant w-10 flex-shrink-0"
               >
                 {t.toDate}
               </label>
               <input
-                id="range-end-date"
+                id={`${uid}-range-end-date`}
                 type="date"
                 value={endDate}
                 min={startDate}
@@ -165,7 +167,7 @@ const RecurrenceSection = function({
 
         {/* Repeat header */}
         <span
-          id="repeat-group-label"
+          id={`${uid}-repeat-group-label`}
           className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5"
         >
           <span className="material-symbols-outlined text-base">repeat</span>
@@ -175,7 +177,7 @@ const RecurrenceSection = function({
         {/* Repeat pills */}
         <div
           role="group"
-          aria-labelledby="repeat-group-label"
+          aria-labelledby={`${uid}-repeat-group-label`}
           className="flex flex-wrap gap-1.5"
         >
           {REPEAT_OPTIONS.map((opt) => (
@@ -210,13 +212,13 @@ const RecurrenceSection = function({
           <div className="bg-surface-container-low rounded-xl p-3 border border-outline-variant/40">
             <div className="flex items-center gap-3">
               <label
-                htmlFor="recurrence-months"
+                htmlFor={`${uid}-recurrence-months`}
                 className="text-sm font-semibold text-on-surface-variant whitespace-nowrap"
               >
                 {t.repeatForNext}
               </label>
               <input
-                id="recurrence-months"
+                id={`${uid}-recurrence-months`}
                 type="number"
                 min="1"
                 max="24"
@@ -233,13 +235,13 @@ const RecurrenceSection = function({
           <div className="bg-surface-container-low rounded-xl p-3 border border-outline-variant/40">
             <div className="flex items-center gap-3">
               <label
-                htmlFor="recurrence-years"
+                htmlFor={`${uid}-recurrence-years`}
                 className="text-sm font-semibold text-on-surface-variant whitespace-nowrap"
               >
                 {t.repeatForNext}
               </label>
               <input
-                id="recurrence-years"
+                id={`${uid}-recurrence-years`}
                 type="number"
                 min="1"
                 max="10"

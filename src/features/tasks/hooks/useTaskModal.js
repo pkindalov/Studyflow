@@ -85,10 +85,10 @@ export const useTaskModal = function({
     if (!trimmedText) return;
     const sd = startDate || dateKey;
     const isRecurring = recurrence !== "none" || dateMode === "range";
-    const actualRecurrence = recurrence !== "none" ? recurrence : "daily";
 
     if (mode === "add") {
       if (isRecurring) {
+        const actualRecurrence = recurrence !== "none" ? recurrence : "daily";
         const ed = computeRecurringEndDate(actualRecurrence, sd, monthsAhead, yearsAhead, endDate);
         addRecurring(trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
       } else {
@@ -109,6 +109,7 @@ export const useTaskModal = function({
       const effectiveDateKey = (targetDate && targetDate !== dateKey) ? targetDate : dateKey;
       const task = (tasks[dateKey] || []).find((t) => t.id === taskId);
       if (isRecurring) {
+        const actualRecurrence = recurrence !== "none" ? recurrence : "daily";
         const ed = computeRecurringEndDate(actualRecurrence, sd, monthsAhead, yearsAhead, endDate);
         if (task?.recurringId) {
           updateRecurring(task.recurringId, trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);

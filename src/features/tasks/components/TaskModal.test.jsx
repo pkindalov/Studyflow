@@ -89,7 +89,7 @@ describe('actions', () => {
 
 describe('recurrence section', () => {
   it('shows recurrence section when setRecurrence is provided', () => {
-    wrap(<TaskModal {...baseProps()} recurrence="none" setRecurrence={vi.fn()} startDate="" setStartDate={vi.fn()} endDate="" setEndDate={vi.fn()} monthsAhead={3} setMonthsAhead={vi.fn()} yearsAhead={1} setYearsAhead={vi.fn()} />)
+    wrap(<TaskModal {...baseProps()} recurrence="none" handleSetRecurrence={vi.fn()} startDate="" setStartDate={vi.fn()} endDate="" setEndDate={vi.fn()} monthsAhead={3} setMonthsAhead={vi.fn()} yearsAhead={1} setYearsAhead={vi.fn()} />)
     expect(screen.getByText('Repeat')).toBeTruthy()
   })
 
@@ -99,12 +99,12 @@ describe('recurrence section', () => {
   })
 
   it('shows recurring instance note when isRecurringInstance is true', () => {
-    wrap(<TaskModal {...baseProps()} recurrence="daily" setRecurrence={vi.fn()} startDate="" setStartDate={vi.fn()} endDate="" setEndDate={vi.fn()} monthsAhead={3} setMonthsAhead={vi.fn()} yearsAhead={1} setYearsAhead={vi.fn()} isRecurringInstance={true} />)
+    wrap(<TaskModal {...baseProps()} recurrence="daily" handleSetRecurrence={vi.fn()} startDate="" setStartDate={vi.fn()} endDate="" setEndDate={vi.fn()} monthsAhead={3} setMonthsAhead={vi.fn()} yearsAhead={1} setYearsAhead={vi.fn()} isRecurringInstance={true} />)
     expect(screen.getByText('Changes to the repeat pattern will apply to all instances.')).toBeTruthy()
   })
 
   it('hides recurring instance note when isRecurringInstance is false', () => {
-    wrap(<TaskModal {...baseProps()} recurrence="none" setRecurrence={vi.fn()} startDate="" setStartDate={vi.fn()} endDate="" setEndDate={vi.fn()} monthsAhead={3} setMonthsAhead={vi.fn()} yearsAhead={1} setYearsAhead={vi.fn()} isRecurringInstance={false} />)
+    wrap(<TaskModal {...baseProps()} recurrence="none" handleSetRecurrence={vi.fn()} startDate="" setStartDate={vi.fn()} endDate="" setEndDate={vi.fn()} monthsAhead={3} setMonthsAhead={vi.fn()} yearsAhead={1} setYearsAhead={vi.fn()} isRecurringInstance={false} />)
     expect(screen.queryByText('Changes to the repeat pattern will apply to all instances.')).toBeNull()
   })
 })
