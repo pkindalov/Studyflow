@@ -98,7 +98,7 @@ const TaskModal = function({
           <button onClick={onClose} className="px-5 py-2 rounded-xl border border-outline-variant/60 bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-all">
             {t.cancel}
           </button>
-          <button onClick={() => onSave()} disabled={!text.trim()} className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold shadow-sm hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+          <button onClick={() => onSave()} disabled={!text.trim() || (recurrence === "custom" && !endDate)} className="px-5 py-2 rounded-xl bg-primary text-on-primary font-semibold shadow-sm hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
             {t.save}
           </button>
         </div>

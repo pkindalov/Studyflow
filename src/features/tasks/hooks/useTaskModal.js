@@ -105,6 +105,7 @@ export const useTaskModal = function({
         const actualRecurrence = recurrence === "custom" ? "daily" : recurrence;
         const ed = computeRecurringEndDate(recurrence, sd, monthsAhead, yearsAhead, endDate);
         if (task?.recurringId) {
+          deleteAllByRecurringId(task.recurringId);
           updateRecurring(task.recurringId, trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
         } else {
           const newId = addRecurring(trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
@@ -125,12 +126,20 @@ export const useTaskModal = function({
     removeTaskFromSchedule, setScheduleTimers, onCleanupTimer, reset,
   ]);
 
+  const handleSetRecurrence = useCallback((value) => {
+    setRecurrence(value);
+    if (value === "custom" && mode === "add") {
+      setStartDate("");
+      setEndDate("");
+    }
+  }, [mode]);
+
   return {
     isOpen, setIsOpen,
     text, setText,
     image, setImage,
     priority, setPriority,
-    recurrence, setRecurrence,
+    recurrence, setRecurrence, handleSetRecurrence,
     startDate, setStartDate,
     endDate, setEndDate,
     monthsAhead, setMonthsAhead,
