@@ -19,6 +19,8 @@ export const useSchedule = function({
   t,
 }) {
   const [schedule, setSchedule] = useState(() => readAllSchedules()[dateKey] || null);
+  const scheduleRef = useRef(schedule);
+  scheduleRef.current = schedule;
   const [scheduleUnsaved, setScheduleUnsaved] = useState(false);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const unsavedProceedRef = useRef(null);
@@ -130,15 +132,24 @@ export const useSchedule = function({
       const next = prev.filter((item) => item.id !== taskId);
       return next.length > 0 ? next : null;
     });
+    setScheduleTimers((prev) => { const { [taskId]: _, ...rest } = prev; return rest; });
     setScheduleUnsaved(true);
-  }, [runningTaskId, setRunningTaskId]);
+  }, [runningTaskId, setRunningTaskId, setScheduleTimers]);
 
   const removeTaskFromSchedule = useCallback((predicate) => {
+    const removedIds = (scheduleRef.current || []).filter(predicate).map((item) => item.id);
     setSchedule((prev) => {
       if (!prev) return null;
       const next = prev.filter((item) => !predicate(item));
       return next.length > 0 ? next : null;
     });
+    if (removedIds.length > 0) {
+      setScheduleTimers((prev) => {
+        const next = { ...prev };
+        removedIds.forEach((id) => delete next[id]);
+        return next;
+      });
+    }
     // Read from storage directly so a deleted task is also removed from the persisted
     // schedule, even if the current in-memory schedule is unsaved.
     try {
@@ -147,7 +158,7 @@ export const useSchedule = function({
         writeScheduleForDate(dateKey, existing.filter((item) => !predicate(item)));
       }
     } catch { /* localStorage not available or quota exceeded */ }
-  }, [dateKey]);
+  }, [dateKey, setScheduleTimers]);
 
   const handleUnsavedSaveAndContinue = useCallback(() => {
     saveSchedule();
