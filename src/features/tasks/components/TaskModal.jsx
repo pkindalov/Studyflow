@@ -3,7 +3,7 @@ import { useLang } from "../../../shared/i18n/LangContext";
 import RecurrenceSection from "./RecurrenceSection";
 
 const MoveToDateSection = function({ moveToDate, setMoveToDate, t }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString("en-CA");
   return (
     <div className="flex flex-col gap-2 border-t border-outline-variant/30 pt-4">
       <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">

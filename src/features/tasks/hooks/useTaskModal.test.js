@@ -206,7 +206,7 @@ describe('useTaskModal', () => {
       const { result } = renderHook(() => useTaskModal(makeProps({ addTask, addRecurring })))
       act(() => {
         result.current.setText('Daily habit')
-        result.current.setRecurrence('daily')
+        result.current.handleSetRecurrence('daily')
         result.current.setStartDate(DATE)
       })
       act(() => result.current.handleSubmit())
@@ -219,7 +219,7 @@ describe('useTaskModal', () => {
       const { result } = renderHook(() => useTaskModal(makeProps({ addRecurring })))
       act(() => {
         result.current.setText('Habit')
-        result.current.setRecurrence('monthly')
+        result.current.handleSetRecurrence('monthly')
         result.current.setStartDate(DATE)
       })
       act(() => result.current.handleSubmit())
@@ -306,7 +306,7 @@ describe('useTaskModal', () => {
         useTaskModal(makeProps({ mode: 'edit', addRecurring, linkRecurring }))
       )
       act(() => result.current.open(TASK))
-      act(() => result.current.setRecurrence('weekly'))
+      act(() => result.current.handleSetRecurrence('weekly'))
       act(() => result.current.handleSubmit())
       expect(addRecurring).toHaveBeenCalled()
       expect(linkRecurring).toHaveBeenCalledWith(DATE, 'ta', 'new-rec-id')
