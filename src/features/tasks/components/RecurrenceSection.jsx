@@ -60,7 +60,7 @@ const RecurrenceSection = function({
             {t.dateLabel}
           </span>
 
-          <div role="group" aria-label="Date mode">
+          <div role="group" aria-label={t.dateModeLabel}>
             <button
               type="button"
               onClick={() => setDateMode("single")}
@@ -197,11 +197,11 @@ const RecurrenceSection = function({
         </div>
 
         {/* Sub-config card */}
-        {recurrence === "daily" && (
+        {recurrence === "daily" && dateMode !== "range" && (
           <div className="bg-surface-container-low rounded-xl p-3 border border-outline-variant/40">
             <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-secondary">info</span>
-              {t.repeatsEveryDayUntil(monthName(endDate || taskDate || startDate, locale))}
+              {t.repeatsEveryDayUntil(monthName(taskDate || startDate, locale))}
             </p>
           </div>
         )}

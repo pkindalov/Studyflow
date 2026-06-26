@@ -111,7 +111,6 @@ export const useTaskModal = function({
       if (isRecurring) {
         const ed = computeRecurringEndDate(actualRecurrence, sd, monthsAhead, yearsAhead, endDate);
         if (task?.recurringId) {
-          deleteAllByRecurringId(task.recurringId);
           updateRecurring(task.recurringId, trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
         } else {
           const newId = addRecurring(trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
@@ -140,6 +139,9 @@ export const useTaskModal = function({
     setDateMode(newMode);
     if (newMode === "single") {
       setEndDate("");
+    }
+    if (newMode === "range") {
+      setRecurrence((prev) => prev === "none" ? "daily" : prev);
     }
   }, []);
 

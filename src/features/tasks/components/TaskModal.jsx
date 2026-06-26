@@ -2,9 +2,8 @@ import { useEffect, useRef } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 import RecurrenceSection from "./RecurrenceSection";
 
-const today = new Date().toISOString().slice(0, 10);
-
 const MoveToDateSection = function({ moveToDate, setMoveToDate, t }) {
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <div className="flex flex-col gap-2 border-t border-outline-variant/30 pt-4">
       <span className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
@@ -57,10 +56,10 @@ const TaskModal = function({
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement;
-      setTimeout(() => panelRef.current?.querySelector("textarea")?.focus(), 0);
-    } else {
-      previousFocusRef.current?.focus();
+      const id = setTimeout(() => panelRef.current?.querySelector("textarea")?.focus(), 0);
+      return () => clearTimeout(id);
     }
+    previousFocusRef.current?.focus();
   }, [isOpen]);
 
   if (!isOpen) return null;

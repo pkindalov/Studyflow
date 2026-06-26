@@ -29,6 +29,7 @@ export const en = {
   monthly: "Monthly",
   yearly: "Yearly",
   dateLabel: "Date",
+  dateModeLabel: "Date mode",
   singleDay: "Single",
   dateRangeMode: "Range",
   repeatForNext: "Repeat for the next",

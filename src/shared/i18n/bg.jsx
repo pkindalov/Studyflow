@@ -29,6 +29,7 @@ export const bg = {
   monthly: "Месечно",
   yearly: "Годишно",
   dateLabel: "Дата",
+  dateModeLabel: "Режим на дата",
   singleDay: "Единична",
   dateRangeMode: "Диапазон",
   repeatForNext: "Повтори за следващите",
