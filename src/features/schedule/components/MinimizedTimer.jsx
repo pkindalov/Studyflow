@@ -1,12 +1,18 @@
 import { useLang } from "../../../shared/i18n/LangContext";
 
-const formatTime = function(seconds) {
+const formatTime = function(seconds, hms) {
+  if (hms) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-const MinimizedTimer = function({ task, elapsedSeconds, isRunning, onExpand, onPlayPause }) {
+const MinimizedTimer = function({ task, elapsedSeconds, isRunning, onExpand, onPlayPause, hmsMode }) {
   const { t } = useLang();
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
@@ -75,7 +81,7 @@ const MinimizedTimer = function({ task, elapsedSeconds, isRunning, onExpand, onP
           <span className={`text-sm font-mono font-bold tabular-nums flex-shrink-0 ${
             isFinished ? "text-tertiary" : isRunning ? "text-primary" : "text-on-surface-variant"
           }`}>
-            {isFinished ? t.timerDone : formatTime(remaining)}
+            {isFinished ? t.timerDone : formatTime(remaining, hmsMode)}
           </span>
         </button>
 

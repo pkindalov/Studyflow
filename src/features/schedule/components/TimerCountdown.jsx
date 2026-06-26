@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 
 const formatTime = function(seconds, hms) {
@@ -13,9 +12,8 @@ const formatTime = function(seconds, hms) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-const TimerCountdown = function({ remaining, totalSeconds, elapsedSeconds, isRunning, isFinished }) {
+const TimerCountdown = function({ remaining, totalSeconds, elapsedSeconds, isRunning, isFinished, hmsMode, onToggleHmsMode }) {
   const { t } = useLang();
-  const [hmsMode, setHmsMode] = useState(false);
 
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
@@ -59,7 +57,7 @@ const TimerCountdown = function({ remaining, totalSeconds, elapsedSeconds, isRun
           <span className="ml-1">{t.elapsedLabel}</span>
         </div>
         <button
-          onClick={() => setHmsMode((v) => !v)}
+          onClick={onToggleHmsMode}
           className="text-[10px] font-semibold tracking-wider uppercase text-on-surface-variant/60 hover:text-on-surface-variant border border-outline-variant/30 hover:border-outline-variant/60 rounded-full px-2.5 py-0.5 transition-all"
           title={t.toggleTimeFormat}
         >

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import TimerModal from "../features/schedule/components/TimerModal";
 import MinimizedTimer from "../features/schedule/components/MinimizedTimer";
 import QuickTimerPrompt from "../features/schedule/components/QuickTimerPrompt";
@@ -43,6 +44,8 @@ export default function AppModals({
   showClearConfirm, setShowClearConfirm, handleClearAll,
   t,
 }) {
+  const [hmsMode, setHmsMode] = useState(false);
+
   return (
     <>
       {timerTask && !isTimerMinimized && (
@@ -63,6 +66,8 @@ export default function AppModals({
           setPomodoroMinutes={handleSetPomodoroMinutes}
           pomodoroResetAt={pomodoroResetAt}
           pomodoroBreakCount={pomodoroBreakCount}
+          hmsMode={hmsMode}
+          onToggleHmsMode={() => setHmsMode((v) => !v)}
         />
       )}
       {timerTask && isTimerMinimized && (
@@ -72,6 +77,7 @@ export default function AppModals({
           isRunning={runningTaskId === timerTask.id}
           onExpand={() => setIsTimerMinimized(false)}
           onPlayPause={toggleTimer}
+          hmsMode={hmsMode}
         />
       )}
       {pendingTimerTask && (

@@ -4,7 +4,8 @@ import PomodoroPanel from "./PomodoroPanel";
 import MusicPanel from "./MusicPanel";
 
 const TimerModal = function({ task, elapsedSeconds, isRunning, onPlayPause, onClose, onRestart, onStartAgain, onMarkDone, onMinimize, music,
-  pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0, pomodoroBreakCount = 0 }) {
+  pomodoroEnabled, setPomodoroEnabled, pomodoroMinutes, setPomodoroMinutes, pomodoroResetAt = 0, pomodoroBreakCount = 0,
+  hmsMode, onToggleHmsMode }) {
   const { t } = useLang();
   const totalSeconds = task.scheduledMinutes * 60;
   const remaining = Math.max(0, totalSeconds - elapsedSeconds);
@@ -35,6 +36,7 @@ const TimerModal = function({ task, elapsedSeconds, isRunning, onPlayPause, onCl
         <TimerCountdown
           remaining={remaining} totalSeconds={totalSeconds}
           elapsedSeconds={elapsedSeconds} isRunning={isRunning} isFinished={isFinished}
+          hmsMode={hmsMode} onToggleHmsMode={onToggleHmsMode}
         />
 
         {isFinished ? (
