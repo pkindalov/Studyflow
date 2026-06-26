@@ -124,7 +124,7 @@ const RecurrenceSection = function({
                 )}
               </div>
               {!endDate && (
-                <p className="text-xs text-amber-400 flex items-center gap-1.5">
+                <p className="text-xs text-amber-600 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-sm">warning</span>
                   {t.repeatsDailyNoEnd}
                 </p>
