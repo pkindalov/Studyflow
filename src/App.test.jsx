@@ -128,7 +128,8 @@ const mkColumnLayout = (o = {}) => ({
 const mkModal = () => ({
   isOpen: false, setIsOpen: vi.fn(), open: vi.fn(), reset: vi.fn(),
   text: '', setText: vi.fn(), priority: false, setPriority: vi.fn(),
-  recurrence: 'none', setRecurrence: vi.fn(),
+  recurrence: 'none', setRecurrence: vi.fn(), handleSetRecurrence: vi.fn(),
+  dateMode: 'single', setDateMode: vi.fn(), handleSetDateMode: vi.fn(),
   startDate: '', setStartDate: vi.fn(), endDate: '', setEndDate: vi.fn(),
   monthsAhead: 1, setMonthsAhead: vi.fn(), yearsAhead: 0, setYearsAhead: vi.fn(),
   taskId: null, isRecurringInstance: false,

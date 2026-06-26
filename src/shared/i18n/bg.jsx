@@ -23,20 +23,21 @@ export const bg = {
   imageUrlPlaceholder: "URL на изображение (по избор)",
   priorityTaskLabel: "Маркирай като приоритет",
   repeatLabel: "Повторение",
-  noRepeat: "Без повторение",
+  noRepeat: "Никакво",
   daily: "Всеки ден",
+  weekly: "Седмично",
   monthly: "Месечно",
   yearly: "Годишно",
-  custom: "По избор",
+  dateLabel: "Дата",
+  singleDay: "Единична",
+  dateRangeMode: "Диапазон",
   repeatForNext: "Повтори за следващите",
   months: "месеца",
   years: "години",
   fromDate: "От",
   toDate: "До",
   removeEndDate: "Премахни крайна дата",
-  repeatsDailyNoEnd:
-    "Повтаря се всеки ден — задайте крайна дата за автоматично спиране.",
-  customEndDateRequired: "Задайте крайна дата по-горе, за да запазите.",
+  periodEndDateRequired: "Задайте крайна дата за запазване на диапазона.",
   repeatsEveryDayUntil: (month) => `Повтаря се всеки ден до края на ${month}.`,
   recurringChangeNote:
     "Промените в повторението ще се прилагат към всички копия.",
@@ -275,8 +276,8 @@ export const bg = {
   helpRecurring: "Повтарящи се задачи",
   helpRecurringTip1: (b) => (
     <>
-      При създаване задай модел на повторение —{" "}
-      {b("Всеки ден, Месечно, Годишно")} или {b("По избор")} диапазон от дати.
+      При създаване използвай секция {b("Дата")} за единична дата или диапазон (От → До),
+      и секция {b("Повторение")} за ежедневно, седмично, месечно или годишно повторение.
     </>
   ),
   helpRecurringTip2: () => (

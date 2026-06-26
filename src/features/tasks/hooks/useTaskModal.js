@@ -23,6 +23,7 @@ export const useTaskModal = function({
   const [image, setImage] = useState("");
   const [priority, setPriority] = useState(false);
   const [recurrence, setRecurrence] = useState("none");
+  const [dateMode, setDateMode] = useState("single");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [monthsAhead, setMonthsAhead] = useState("3");
@@ -37,6 +38,7 @@ export const useTaskModal = function({
     setImage("");
     setPriority(false);
     setRecurrence("none");
+    setDateMode("single");
     setStartDate("");
     setEndDate("");
     setMonthsAhead("3");
@@ -48,7 +50,8 @@ export const useTaskModal = function({
 
   const open = useCallback((arg) => {
     if (mode === "add") {
-      if (arg?.startDate) setStartDate(arg.startDate);
+      setStartDate(arg?.startDate || dateKey);
+      setDateMode("single");
       setIsOpen(true);
       return;
     }
@@ -62,12 +65,14 @@ export const useTaskModal = function({
       setRecurrence(tpl?.recurrence || "none");
       setStartDate(tpl?.startDate || dateKey);
       setEndDate(tpl?.endDate || "");
+      setDateMode("single");
       setIsRecurringInstance(true);
       setTargetDate("");
     } else {
       setRecurrence("none");
       setStartDate(dateKey);
       setEndDate("");
+      setDateMode("single");
       setIsRecurringInstance(false);
       setTargetDate(dateKey);
     }
@@ -79,10 +84,12 @@ export const useTaskModal = function({
     const trimmedImage = image.trim();
     if (!trimmedText) return;
     const sd = startDate || dateKey;
+    const isRecurring = recurrence !== "none" || dateMode === "range";
+    const actualRecurrence = recurrence !== "none" ? recurrence : "daily";
+
     if (mode === "add") {
-      if (recurrence !== "none") {
-        const actualRecurrence = recurrence === "custom" ? "daily" : recurrence;
-        const ed = computeRecurringEndDate(recurrence, sd, monthsAhead, yearsAhead, endDate);
+      if (isRecurring) {
+        const ed = computeRecurringEndDate(actualRecurrence, sd, monthsAhead, yearsAhead, endDate);
         addRecurring(trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
       } else {
         addTask(dateKey, trimmedText, trimmedImage, priority);
@@ -101,9 +108,8 @@ export const useTaskModal = function({
       }
       const effectiveDateKey = (targetDate && targetDate !== dateKey) ? targetDate : dateKey;
       const task = (tasks[dateKey] || []).find((t) => t.id === taskId);
-      if (recurrence !== "none") {
-        const actualRecurrence = recurrence === "custom" ? "daily" : recurrence;
-        const ed = computeRecurringEndDate(recurrence, sd, monthsAhead, yearsAhead, endDate);
+      if (isRecurring) {
+        const ed = computeRecurringEndDate(actualRecurrence, sd, monthsAhead, yearsAhead, endDate);
         if (task?.recurringId) {
           deleteAllByRecurringId(task.recurringId);
           updateRecurring(task.recurringId, trimmedText, trimmedImage, priority, actualRecurrence, sd, ed);
@@ -119,7 +125,7 @@ export const useTaskModal = function({
     }
     reset();
   }, [
-    mode, dateKey, taskId, text, image, priority, recurrence,
+    mode, dateKey, taskId, text, image, priority, recurrence, dateMode,
     startDate, endDate, monthsAhead, yearsAhead, targetDate,
     tasks, addTask, addRecurring, editTask, moveTask, updateRecurring,
     linkRecurring, deleteRecurring, deleteAllByRecurringId,
@@ -128,11 +134,14 @@ export const useTaskModal = function({
 
   const handleSetRecurrence = useCallback((value) => {
     setRecurrence(value);
-    if (value === "custom" && mode === "add") {
-      setStartDate("");
+  }, []);
+
+  const handleSetDateMode = useCallback((newMode) => {
+    setDateMode(newMode);
+    if (newMode === "single") {
       setEndDate("");
     }
-  }, [mode]);
+  }, []);
 
   return {
     isOpen, setIsOpen,
@@ -140,6 +149,7 @@ export const useTaskModal = function({
     image, setImage,
     priority, setPriority,
     recurrence, setRecurrence, handleSetRecurrence,
+    dateMode, setDateMode, handleSetDateMode,
     startDate, setStartDate,
     endDate, setEndDate,
     monthsAhead, setMonthsAhead,

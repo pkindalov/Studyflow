@@ -34,6 +34,8 @@ const TaskModal = function({
   setPriority,
   recurrence,
   setRecurrence,
+  dateMode,
+  setDateMode,
   startDate,
   setStartDate,
   endDate,
@@ -64,7 +66,7 @@ const TaskModal = function({
   if (!isOpen) return null;
 
   const showRecurrence = !!setRecurrence;
-  const saveDisabled = !text.trim() || (recurrence === "custom" && !endDate);
+  const saveDisabled = !text.trim() || (dateMode === "range" && !endDate);
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") { onClose(); return; }
@@ -145,6 +147,8 @@ const TaskModal = function({
           <RecurrenceSection
             recurrence={recurrence}
             setRecurrence={setRecurrence}
+            dateMode={dateMode}
+            setDateMode={setDateMode}
             startDate={startDate}
             setStartDate={setStartDate}
             endDate={endDate}
@@ -163,8 +167,8 @@ const TaskModal = function({
         )}
 
         <div className="sticky bottom-0 bg-surface-container z-10 border-t border-outline-variant/20 -mx-5 sm:-mx-7 px-5 sm:px-7 pb-5 sm:pb-7 pt-3 flex flex-col gap-2">
-          {recurrence === "custom" && !endDate && (
-            <p className="text-xs text-amber-600 text-right">{t.customEndDateRequired}</p>
+          {dateMode === "range" && !endDate && (
+            <p className="text-xs text-amber-600 text-right">{t.periodEndDateRequired}</p>
           )}
           <div className="flex justify-end gap-2">
             <button

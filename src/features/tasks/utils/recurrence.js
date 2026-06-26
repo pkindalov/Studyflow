@@ -1,5 +1,7 @@
-export const computeRecurringEndDate = function(recurrence, startDate, monthsAhead, yearsAhead, customEndDate) {
+export const computeRecurringEndDate = function(recurrence, startDate, monthsAhead, yearsAhead, userEndDate) {
   const start = new Date(startDate + "T12:00:00");
+  if (userEndDate) return userEndDate;
+  if (recurrence === "weekly") return "";
   if (recurrence === "daily") {
     const lastDay = new Date(start.getFullYear(), start.getMonth() + 1, 0);
     return lastDay.toLocaleDateString("en-CA");
@@ -16,5 +18,5 @@ export const computeRecurringEndDate = function(recurrence, startDate, monthsAhe
     const targetDay = Math.min(start.getDate(), lastDayOfTarget);
     return new Date(targetYear, start.getMonth(), targetDay).toLocaleDateString("en-CA");
   }
-  return customEndDate || "";
+  return "";
 }

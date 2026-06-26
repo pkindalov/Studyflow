@@ -51,12 +51,26 @@ describe('computeRecurringEndDate', () => {
     })
   })
 
-  describe('other / custom', () => {
-    it('returns customEndDate when provided', () => {
+  describe('userEndDate priority', () => {
+    it('returns userEndDate for daily, overriding auto-computed end-of-month', () => {
+      expect(computeRecurringEndDate('daily', '2024-01-15', undefined, undefined, '2024-06-30')).toBe('2024-06-30')
+    })
+
+    it('returns userEndDate for monthly, overriding monthsAhead calculation', () => {
+      expect(computeRecurringEndDate('monthly', '2024-01-01', 3, undefined, '2025-12-31')).toBe('2025-12-31')
+    })
+
+    it('returns userEndDate for yearly, overriding yearsAhead calculation', () => {
+      expect(computeRecurringEndDate('yearly', '2024-01-01', undefined, 2, '2030-01-01')).toBe('2030-01-01')
+    })
+  })
+
+  describe('weekly / no auto-computed end date', () => {
+    it('returns userEndDate when provided, since weekly has no auto-computation', () => {
       expect(computeRecurringEndDate('weekly', '2024-01-01', undefined, undefined, '2024-06-30')).toBe('2024-06-30')
     })
 
-    it('returns empty string when no customEndDate', () => {
+    it('returns empty string when no userEndDate is provided', () => {
       expect(computeRecurringEndDate('weekly', '2024-01-01')).toBe('')
     })
   })

@@ -40,9 +40,10 @@ describe('useTaskModal', () => {
       expect(result.current.text).toBe('')
     })
 
-    it('starts with recurrence none and priority false', () => {
+    it('starts with recurrence none, dateMode single, and priority false', () => {
       const { result } = renderHook(() => useTaskModal(makeProps()))
       expect(result.current.recurrence).toBe('none')
+      expect(result.current.dateMode).toBe('single')
       expect(result.current.priority).toBe(false)
     })
   })
@@ -60,10 +61,10 @@ describe('useTaskModal', () => {
       expect(result.current.startDate).toBe(DATE2)
     })
 
-    it('leaves startDate empty when no arg is given', () => {
+    it('defaults startDate to dateKey when no arg is given', () => {
       const { result } = renderHook(() => useTaskModal(makeProps()))
       act(() => result.current.open())
-      expect(result.current.startDate).toBe('')
+      expect(result.current.startDate).toBe(DATE)
     })
   })
 
@@ -128,6 +129,52 @@ describe('useTaskModal', () => {
     })
   })
 
+  describe('handleSetRecurrence', () => {
+    it('sets the recurrence value', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => result.current.handleSetRecurrence('monthly'))
+      expect(result.current.recurrence).toBe('monthly')
+    })
+
+    it('preserves dates when switching between frequencies', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => {
+        result.current.setStartDate(DATE)
+        result.current.setEndDate('2024-12-31')
+        result.current.handleSetRecurrence('daily')
+      })
+      act(() => result.current.handleSetRecurrence('monthly'))
+      expect(result.current.startDate).toBe(DATE)
+      expect(result.current.endDate).toBe('2024-12-31')
+    })
+  })
+
+  describe('handleSetDateMode', () => {
+    it('clears endDate when switching to single', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => {
+        result.current.setEndDate('2024-12-31')
+        result.current.handleSetDateMode('single')
+      })
+      expect(result.current.endDate).toBe('')
+    })
+
+    it('preserves endDate when switching to range', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => {
+        result.current.setEndDate('2024-12-31')
+        result.current.handleSetDateMode('range')
+      })
+      expect(result.current.endDate).toBe('2024-12-31')
+    })
+
+    it('sets dateMode to range', () => {
+      const { result } = renderHook(() => useTaskModal(makeProps()))
+      act(() => result.current.handleSetDateMode('range'))
+      expect(result.current.dateMode).toBe('range')
+    })
+  })
+
   describe('handleSubmit — add mode, no recurrence', () => {
     it('calls addTask with dateKey, text, image, and priority', () => {
       const addTask = vi.fn()
@@ -167,16 +214,28 @@ describe('useTaskModal', () => {
       expect(addTask).not.toHaveBeenCalled()
     })
 
-    it('maps "custom" recurrence to "daily"', () => {
+    it('passes the selected recurrence directly to addRecurring for standard types', () => {
       const addRecurring = vi.fn().mockReturnValue('rid')
       const { result } = renderHook(() => useTaskModal(makeProps({ addRecurring })))
       act(() => {
         result.current.setText('Habit')
-        result.current.setRecurrence('custom')
+        result.current.setRecurrence('monthly')
         result.current.setStartDate(DATE)
       })
       act(() => result.current.handleSubmit())
-      // addRecurring(text, image, priority, actualRecurrence, startDate, endDate)
+      expect(addRecurring.mock.calls[0][3]).toBe('monthly')
+    })
+
+    it('uses "daily" when dateMode is "range" and recurrence is "none"', () => {
+      const addRecurring = vi.fn().mockReturnValue('rid')
+      const { result } = renderHook(() => useTaskModal(makeProps({ addRecurring })))
+      act(() => {
+        result.current.setText('Habit')
+        result.current.handleSetDateMode('range')
+        result.current.setStartDate(DATE)
+        result.current.setEndDate('2024-06-30')
+      })
+      act(() => result.current.handleSubmit())
       expect(addRecurring.mock.calls[0][3]).toBe('daily')
     })
   })
