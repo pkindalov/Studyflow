@@ -21,6 +21,7 @@ export const bg = {
   // ── Task modal ───────────────────────────────────────────────────────────────
   taskDescPlaceholder: "Описание на задачата...",
   imageUrlPlaceholder: "URL на изображение (по избор)",
+  addImageUrl: "Добави URL на изображение (по избор)",
   priorityTaskLabel: "Маркирай като приоритет",
   repeatLabel: "Повторение",
   noRepeat: "Никакво",

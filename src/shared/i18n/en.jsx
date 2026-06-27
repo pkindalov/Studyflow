@@ -21,6 +21,7 @@ export const en = {
   // ── Task modal ───────────────────────────────────────────────────────────────
   taskDescPlaceholder: "Task description...",
   imageUrlPlaceholder: "Image URL (optional)",
+  addImageUrl: "Add image URL (optional)",
   priorityTaskLabel: "Mark as priority",
   repeatLabel: "Repeat",
   noRepeat: "None",

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 import RecurrenceSection from "./RecurrenceSection";
 
@@ -52,6 +52,7 @@ const TaskModal = function({
   const { t } = useLang();
   const panelRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const [showImageInput, setShowImageInput] = useState(!!image);
 
   useEffect(() => {
     if (isOpen) {
@@ -123,15 +124,42 @@ const TaskModal = function({
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60 resize-none"
         />
 
-        <label className="sr-only" htmlFor="task-image">{t.imageUrlPlaceholder}</label>
-        <input
-          id="task-image"
-          type="url"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          placeholder={t.imageUrlPlaceholder}
-          className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
-        />
+        {!showImageInput ? (
+          <button
+            type="button"
+            onClick={() => setShowImageInput(true)}
+            className="text-sm text-on-surface-variant/70 hover:text-primary flex items-center gap-1.5 transition-colors self-start"
+          >
+            <span className="material-symbols-outlined text-base">add_photo_alternate</span>
+            {t.addImageUrl}
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            {image && (
+              <img src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={(e) => { e.target.style.display = "none"; }} />
+            )}
+            <div className="flex-1">
+              <label className="sr-only" htmlFor="task-image">{t.imageUrlPlaceholder}</label>
+              <input
+                id="task-image"
+                type="url"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder={t.imageUrlPlaceholder}
+                autoFocus={!image}
+                className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowImageInput(false); setImage(""); }}
+              className="p-2 rounded-xl text-on-surface-variant/50 hover:text-error hover:bg-error/10 transition-colors flex-shrink-0"
+              aria-label={t.close}
+            >
+              <span className="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <input
