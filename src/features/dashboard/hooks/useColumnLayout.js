@@ -3,7 +3,7 @@ import { PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core
 
 export const DEFAULT_LAYOUT = {
   left: ["calendar", "activity"],
-  right: ["studyTime", "priorityPercent", "quote", "todaysTasks", "music"],
+  right: ["scheduleSettings", "quote", "todaysTasks", "music"],
 };
 
 export function useColumnLayout() {

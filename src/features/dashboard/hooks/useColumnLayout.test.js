@@ -14,7 +14,7 @@ describe('useColumnLayout', () => {
     })
 
     it('loads a saved layout from localStorage', () => {
-      const saved = { left: ['activity', 'calendar'], right: ['music', 'quote', 'studyTime', 'priorityPercent', 'todaysTasks'] }
+      const saved = { left: ['activity', 'calendar'], right: ['scheduleSettings', 'music', 'quote', 'todaysTasks'] }
       localStorage.setItem('studyflow_column_layout', JSON.stringify(saved))
       const { result } = renderHook(() => useColumnLayout())
       expect(result.current.columnLayout).toEqual(saved)

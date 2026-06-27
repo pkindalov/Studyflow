@@ -1,5 +1,5 @@
 import CalendarSidebar from "../features/calendar/components/CalendarSidebar";
-import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from "../features/dashboard/components/RightSidebar";
+import { ScheduleSettingsSection, QuoteSection, TasksProgressSection } from "../features/dashboard/components/RightSidebar";
 import { ActivityPanel } from "../features/dashboard/components/ActivityPanel";
 import MusicPanel from "../features/music/components/MusicPanel";
 
@@ -35,8 +35,7 @@ export function buildSidebarSections({
       />
     ),
     activity: <ActivityPanel tasks={tasks} />,
-    studyTime: <StudyTimeSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} />,
-    priorityPercent: <PrioritySection priorityPercent={priorityPercent} setPriorityPercent={setPriorityPercent} />,
+    scheduleSettings: <ScheduleSettingsSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} priorityPercent={priorityPercent} setPriorityPercent={setPriorityPercent} />,
     quote: <QuoteSection />,
     todaysTasks: (
       <TasksProgressSection

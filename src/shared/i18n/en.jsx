@@ -119,6 +119,8 @@ export const en = {
   todayChip: "Today",
 
   // ── Right sidebar ─────────────────────────────────────────────────────────────
+  scheduleSettings: "Schedule Settings",
+  scheduleSettingsHint: "These settings control how your schedule is generated. Change them and press Generate to rebuild.",
   totalStudyTime: "Total Study Time",
   hoursUnit: "hours",
   priorityTimeLimit: "Priority Time Limit",

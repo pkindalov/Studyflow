@@ -3,8 +3,7 @@ import { buildSidebarSections } from './sidebarSections'
 
 vi.mock('../features/calendar/components/CalendarSidebar', () => ({ default: () => null }))
 vi.mock('../features/dashboard/components/RightSidebar', () => ({
-  StudyTimeSection: () => null,
-  PrioritySection: () => null,
+  ScheduleSettingsSection: () => null,
   QuoteSection: () => null,
   TasksProgressSection: () => null,
 }))
@@ -55,14 +54,9 @@ describe('buildSidebarSections', () => {
     expect(sections).toHaveProperty('activity')
   })
 
-  it('returns an object with a studyTime key', () => {
+  it('returns an object with a scheduleSettings key', () => {
     const sections = buildSidebarSections(baseArgs())
-    expect(sections).toHaveProperty('studyTime')
-  })
-
-  it('returns an object with a priorityPercent key', () => {
-    const sections = buildSidebarSections(baseArgs())
-    expect(sections).toHaveProperty('priorityPercent')
+    expect(sections).toHaveProperty('scheduleSettings')
   })
 
   it('returns an object with a quote key', () => {
@@ -80,8 +74,8 @@ describe('buildSidebarSections', () => {
     expect(sections).toHaveProperty('music')
   })
 
-  it('returns exactly 7 sections', () => {
+  it('returns exactly 6 sections', () => {
     const sections = buildSidebarSections(baseArgs())
-    expect(Object.keys(sections)).toHaveLength(7)
+    expect(Object.keys(sections)).toHaveLength(6)
   })
 })

@@ -63,54 +63,69 @@ const ACCENT_COLORS = [
   "bg-secondary/60",
 ];
 
-export function StudyTimeSection({ totalStudyTime, setTotalStudyTime }) {
+export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, priorityPercent, setPriorityPercent }) {
   const { t } = useLang();
+  const [showHint, setShowHint] = useState(false);
   return (
-    <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-2">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="material-symbols-outlined text-xl text-primary">schedule</span>
-        <span className="font-headline font-bold text-on-surface text-lg">{t.totalStudyTime}</span>
-      </div>
+    <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <input
-          type="number"
-          min={1}
-          max={24}
-          step={0.25}
-          value={totalStudyTime}
-          onChange={(e) => setTotalStudyTime(Math.max(1, Math.min(24, Number(e.target.value))))}
-
-          className="w-20 px-3 py-2 rounded-xl border border-outline-variant/50 bg-surface-container-highest text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-primary/60 border-outline/60"
-        />
-        <span className="text-on-surface-variant font-medium">{t.hoursUnit}</span>
+        <span className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant uppercase flex-1">{t.scheduleSettings}</span>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowHint((v) => !v)}
+            className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant/50 hover:text-on-surface-variant transition-colors"
+            aria-label={t.scheduleSettingsHint}
+          >
+            <span className="material-symbols-outlined text-sm">help_outline</span>
+          </button>
+          {showHint && (
+            <div className="absolute right-0 top-full mt-1 z-20 w-56 bg-surface-container-highest border border-outline-variant/50 rounded-xl shadow-xl p-3 text-xs text-on-surface-variant leading-relaxed">
+              {t.scheduleSettingsHint}
+            </div>
+          )}
+        </div>
       </div>
-    </section>
-  );
-}
-
-export function PrioritySection({ priorityPercent, setPriorityPercent }) {
-  const { t } = useLang();
-  return (
-    <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-2">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="material-symbols-outlined text-xl text-secondary">star</span>
-        <span className="font-headline font-bold text-on-surface text-lg">{t.priorityTimeLimit}</span>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="study-time-input" className="text-xs font-semibold text-on-surface-variant flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm text-primary">schedule</span>
+            {t.totalStudyTime}
+          </label>
+          <div className="flex items-center gap-1.5">
+            <input
+              id="study-time-input"
+              type="number"
+              min={1}
+              max={24}
+              step={0.25}
+              value={totalStudyTime}
+              onChange={(e) => setTotalStudyTime(Math.max(1, Math.min(24, Number(e.target.value))))}
+              className="w-16 px-2 py-1.5 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
+            />
+            <span className="text-xs text-on-surface-variant">{t.hoursUnit}</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="priority-pct-input" className="text-xs font-semibold text-on-surface-variant flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm text-secondary">star</span>
+            {t.priorityTimeLimit}
+          </label>
+          <div className="flex items-center gap-1.5">
+            <input
+              id="priority-pct-input"
+              type="number"
+              min={0}
+              max={100}
+              step={1}
+              value={priorityPercent}
+              onChange={(e) => setPriorityPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
+              className="w-16 px-2 py-1.5 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-secondary/60"
+            />
+            <span className="text-xs text-on-surface-variant">%</span>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          min={0}
-          max={100}
-          step={1}
-          value={priorityPercent}
-          onChange={(e) => setPriorityPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
-          className="w-20 px-3 py-2 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-base focus:outline-none focus:ring-2 focus:ring-secondary/60"
-        />
-        <span className="text-on-surface-variant font-medium">{t.percentOfTotal}</span>
-      </div>
-      <span className="text-xs text-on-surface-variant">
-        {t.priorityMaxNote}
-      </span>
     </section>
   );
 }

@@ -1,90 +1,94 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { LangProvider } from '../../../shared/i18n/LangContext'
-import { StudyTimeSection, PrioritySection, QuoteSection, TasksProgressSection } from './RightSidebar'
+import { ScheduleSettingsSection, QuoteSection, TasksProgressSection } from './RightSidebar'
 
 const wrap = (ui) => render(<LangProvider>{ui}</LangProvider>)
 
-// ── StudyTimeSection ─────────────────────────────────────────────────────────
+// ── ScheduleSettingsSection ──────────────────────────────────────────────────
 
-describe('StudyTimeSection', () => {
-  it('renders the heading', () => {
-    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={vi.fn()} />)
+const mkSettings = (overrides = {}) => ({
+  totalStudyTime: 4,
+  setTotalStudyTime: vi.fn(),
+  priorityPercent: 30,
+  setPriorityPercent: vi.fn(),
+  ...overrides,
+})
+
+describe('ScheduleSettingsSection', () => {
+  it('renders the Total Study Time heading', () => {
+    wrap(<ScheduleSettingsSection {...mkSettings()} />)
     expect(screen.getByText('Total Study Time')).toBeTruthy()
   })
 
-  it('displays the current value in the input', () => {
-    wrap(<StudyTimeSection totalStudyTime={6} setTotalStudyTime={vi.fn()} />)
-    expect(screen.getByRole('spinbutton').value).toBe('6')
+  it('renders the Priority Time Limit heading', () => {
+    wrap(<ScheduleSettingsSection {...mkSettings()} />)
+    expect(screen.getByText('Priority Time Limit')).toBeTruthy()
+  })
+
+  it('displays the current study time value in the input', () => {
+    wrap(<ScheduleSettingsSection {...mkSettings({ totalStudyTime: 6 })} />)
+    expect(screen.getByLabelText(/Total Study Time/i).value).toBe('6')
+  })
+
+  it('displays the current priority percent value in the input', () => {
+    wrap(<ScheduleSettingsSection {...mkSettings({ priorityPercent: 40 })} />)
+    expect(screen.getByLabelText(/Priority Time Limit/i).value).toBe('40')
   })
 
   it('calls setTotalStudyTime with a number when the input changes', () => {
     const set = vi.fn()
-    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '8' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setTotalStudyTime: set })} />)
+    fireEvent.change(screen.getByLabelText(/Total Study Time/i), { target: { value: '8' } })
     expect(set).toHaveBeenCalledWith(8)
   })
 
-  it('clamps value to 1 when input goes below 1', () => {
+  it('clamps study time to 1 when input goes below 1', () => {
     const set = vi.fn()
-    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '0' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setTotalStudyTime: set })} />)
+    fireEvent.change(screen.getByLabelText(/Total Study Time/i), { target: { value: '0' } })
     expect(set).toHaveBeenCalledWith(1)
   })
 
-  it('clamps value to 1 when input is negative', () => {
+  it('clamps study time to 1 when input is negative', () => {
     const set = vi.fn()
-    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '-5' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setTotalStudyTime: set })} />)
+    fireEvent.change(screen.getByLabelText(/Total Study Time/i), { target: { value: '-5' } })
     expect(set).toHaveBeenCalledWith(1)
   })
 
-  it('clamps value to 24 when input exceeds 24', () => {
+  it('clamps study time to 24 when input exceeds 24', () => {
     const set = vi.fn()
-    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '30' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setTotalStudyTime: set })} />)
+    fireEvent.change(screen.getByLabelText(/Total Study Time/i), { target: { value: '30' } })
     expect(set).toHaveBeenCalledWith(24)
   })
 
-  it('clamps empty input to 1', () => {
+  it('clamps empty study time input to 1', () => {
     const set = vi.fn()
-    wrap(<StudyTimeSection totalStudyTime={4} setTotalStudyTime={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setTotalStudyTime: set })} />)
+    fireEvent.change(screen.getByLabelText(/Total Study Time/i), { target: { value: '' } })
     expect(set).toHaveBeenCalledWith(1)
-  })
-})
-
-// ── PrioritySection ──────────────────────────────────────────────────────────
-
-describe('PrioritySection', () => {
-  it('renders the heading', () => {
-    wrap(<PrioritySection priorityPercent={40} setPriorityPercent={vi.fn()} />)
-    expect(screen.getByText('Priority Time Limit')).toBeTruthy()
-  })
-
-  it('displays the current value in the input', () => {
-    wrap(<PrioritySection priorityPercent={40} setPriorityPercent={vi.fn()} />)
-    expect(screen.getByRole('spinbutton').value).toBe('40')
   })
 
   it('calls setPriorityPercent with the entered value', () => {
     const set = vi.fn()
-    wrap(<PrioritySection priorityPercent={40} setPriorityPercent={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '60' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setPriorityPercent: set })} />)
+    fireEvent.change(screen.getByLabelText(/Priority Time Limit/i), { target: { value: '60' } })
     expect(set).toHaveBeenCalledWith(60)
   })
 
-  it('clamps value to 0 when input goes below 0', () => {
+  it('clamps priority percent to 0 when input goes below 0', () => {
     const set = vi.fn()
-    wrap(<PrioritySection priorityPercent={40} setPriorityPercent={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '-5' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setPriorityPercent: set })} />)
+    fireEvent.change(screen.getByLabelText(/Priority Time Limit/i), { target: { value: '-5' } })
     expect(set).toHaveBeenCalledWith(0)
   })
 
-  it('clamps value to 100 when input exceeds 100', () => {
+  it('clamps priority percent to 100 when input exceeds 100', () => {
     const set = vi.fn()
-    wrap(<PrioritySection priorityPercent={40} setPriorityPercent={set} />)
-    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '150' } })
+    wrap(<ScheduleSettingsSection {...mkSettings({ setPriorityPercent: set })} />)
+    fireEvent.change(screen.getByLabelText(/Priority Time Limit/i), { target: { value: '150' } })
     expect(set).toHaveBeenCalledWith(100)
   })
 })
