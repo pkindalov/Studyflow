@@ -52,7 +52,7 @@ const TaskModal = function({
   const { t } = useLang();
   const panelRef = useRef(null);
   const previousFocusRef = useRef(null);
-  const [showImageInput, setShowImageInput] = useState(!!image);
+  const [showImageInput, setShowImageInput] = useState(image !== undefined && image !== null && image !== "");
 
   useEffect(() => {
     if (isOpen) {
@@ -121,8 +121,14 @@ const TaskModal = function({
           onChange={(e) => setText(e.target.value)}
           placeholder={t.taskDescPlaceholder}
           rows={3}
+          maxLength={200}
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60 resize-none"
         />
+        {text.length > 150 && (
+          <p className="text-right text-[11px] text-on-surface-variant/50 -mt-3">
+            {text.length}/200
+          </p>
+        )}
 
         {!showImageInput ? (
           <button
