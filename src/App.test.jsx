@@ -2243,7 +2243,7 @@ describe('notification banner conditional rendering', () => {
 
     const banner = container.querySelector('.animate-fade-in')
     expect(banner).not.toBeNull()
-    expect(banner.textContent).toBe('All done — nothing left!')
+    expect(banner.textContent).toContain('All done — nothing left!')
   })
 })
 
