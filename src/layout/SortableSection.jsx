@@ -13,7 +13,7 @@ export default function SortableSection({ id, t, children }) {
       <div
         {...attributes}
         {...listeners}
-        className="flex justify-center mb-1 opacity-0 group-hover/sec:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+        className="flex justify-center mb-1 opacity-20 group-hover/sec:opacity-70 transition-opacity cursor-grab active:cursor-grabbing touch-none"
         title={t.dragToMoveHint}
       >
         <span className="material-symbols-outlined text-base text-on-surface-variant/50 hover:text-on-surface-variant transition-colors">drag_indicator</span>
