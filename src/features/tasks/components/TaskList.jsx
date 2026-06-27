@@ -7,18 +7,18 @@ import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 import { PAGE_SIZE } from "../../../shared/utils/uiConstants";
 
-const SortableTaskCard = function({ id, ...props }) {
+const SortableTaskCard = function({ id, scheduledMinutes, ...props }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   // Inline style required: dnd-kit applies CSS transform at runtime for drag animation
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style}>
-      <TaskCard {...props} dragging={isDragging} dragHandleListeners={listeners} dragHandleAttributes={attributes} />
+      <TaskCard {...props} dragging={isDragging} dragHandleListeners={listeners} dragHandleAttributes={attributes} scheduledMinutes={scheduledMinutes} />
     </div>
   );
 }
 
-const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder, onAddClick }) {
+const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder, onAddClick, scheduleMap }) {
   const { t } = useLang();
   const [page, setPage] = useState(0);
 
@@ -73,6 +73,15 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
         </div>
       </div>
 
+      {showSelectionControls && excludedTaskIds && excludedTaskIds.size > 0 && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded-xl border border-outline-variant/30">
+          <span className="material-symbols-outlined text-sm text-on-surface-variant/60 flex-shrink-0">info</span>
+          <span className="text-xs text-on-surface-variant">
+            {t.excludedCountHint(excludedTaskIds.size)}
+          </span>
+        </div>
+      )}
+
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center gap-3 mt-8">
           <p className="text-on-surface-variant text-sm text-center">{t.noTasksMessage}</p>
@@ -114,6 +123,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
                     onOpenTimer={onOpenTimer}
                     onSaveToBank={onSaveToBank}
                     isInList={savedListTexts ? savedListTexts.has(task.text) : false}
+                    scheduledMinutes={scheduleMap ? scheduleMap[task.id] : undefined}
                   />
                 ))}
               </div>

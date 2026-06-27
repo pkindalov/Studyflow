@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { useLang } from "../shared/i18n/LangContext";
 import SummaryCard from "../features/schedule/components/SummaryCard";
 import TaskList from "../features/tasks/components/TaskList";
@@ -28,6 +28,11 @@ export default function MainContent({
   const schedulePanelRef = useRef(null);
   const prevScheduleRef = useRef(null);
 
+  const scheduleMap = useMemo(() => {
+    if (!schedule) return null;
+    return Object.fromEntries(schedule.map((item) => [item.id, item.scheduledMinutes]));
+  }, [schedule]);
+
   useEffect(() => {
     if (schedule && !prevScheduleRef.current && schedulePanelRef.current) {
       schedulePanelRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
@@ -43,17 +48,6 @@ export default function MainContent({
         </h2>
       )}
       <SummaryCard total={total} completed={completed} remaining={remaining} progress={progress} />
-      {tasks.length > 0 && (
-        <div className="flex gap-4 justify-end">
-          <button
-            className="flex-1 sm:flex-none px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow hover:opacity-90 transition-all flex items-center justify-center gap-2"
-            onClick={onGenerateSchedule}
-          >
-            <span className="material-symbols-outlined">{schedule ? "refresh" : "play_circle"}</span>
-            {schedule ? t.regenerateSchedule : t.generateSchedule}
-          </button>
-        </div>
-      )}
       <TaskList
         tasks={tasks}
         onToggle={onToggle}
@@ -68,7 +62,19 @@ export default function MainContent({
         onReorder={onReorder}
         onEdit={onEdit}
         onAddClick={onAddClick}
+        scheduleMap={scheduleMap}
       />
+      {tasks.length > 0 && (
+        <div className="flex gap-4 justify-end">
+          <button
+            className="flex-1 sm:flex-none px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow-[0_0_20px_rgba(149,128,245,0.3)] hover:opacity-90 transition-all flex items-center justify-center gap-2"
+            onClick={onGenerateSchedule}
+          >
+            <span className="material-symbols-outlined">{schedule ? "refresh" : "play_circle"}</span>
+            {schedule ? t.regenerateSchedule : t.generateSchedule}
+          </button>
+        </div>
+      )}
       {schedule && (
         <div ref={schedulePanelRef}>
           <SchedulePanel

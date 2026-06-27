@@ -41,7 +41,7 @@ const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
   );
 };
 
-const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, dragHandleListeners, dragHandleAttributes }) {
+const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, dragHandleListeners, dragHandleAttributes, scheduledMinutes }) {
   const { t } = useLang();
   const isDone = !!task.done;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -134,11 +134,16 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {onOpenTimer && (
           <button
             onClick={() => onOpenTimer(task)}
-            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:text-primary hover:bg-primary/10 transition-colors"
+            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center gap-0.5 rounded-xl hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label={t.startTimerAria}
             title={t.startTimerTitle}
           >
-            <span className="material-symbols-outlined text-base">play_circle</span>
+            <span className="material-symbols-outlined text-base">
+              {scheduledMinutes ? "schedule" : "play_circle"}
+            </span>
+            {scheduledMinutes && (
+              <span className="text-[10px] font-bold leading-none">{scheduledMinutes}m</span>
+            )}
           </button>
         )}
         <button
