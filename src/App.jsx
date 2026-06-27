@@ -231,9 +231,9 @@ function App() {
           {notification}
         </div>
       )}
-      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} selectedDate={selectedDate} />
+      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <DndContext sensors={sectionSensors} collisionDetection={closestCenter} onDragStart={handleSectionDragStart} onDragOver={handleSectionDragOver} onDragEnd={handleSectionDragEnd}>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+        <div className={`max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6${isTimerMinimized && timerTask ? " pb-24 lg:pb-0" : ""}`}>
           <div className={sideColClass}>
             <SortableContext items={columnLayout.left} strategy={verticalListSortingStrategy}>
               {columnLayout.left.map((id) => (

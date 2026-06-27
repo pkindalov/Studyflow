@@ -38,13 +38,7 @@ function ToolbarButtons({ onShowHelp, lang, setLang, theme, setTheme, t }) {
   );
 }
 
-function formatHeaderDate(date, lang) {
-  if (!date) return "";
-  const locale = lang === "bg" ? "bg-BG" : "en-US";
-  return date.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" });
-}
-
-export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t, selectedDate }) {
+export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t }) {
   return (
     <>
       {/* Mobile toolbar */}
@@ -68,12 +62,6 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t, 
             <span className="text-[10px] uppercase tracking-widest text-on-surface-variant/60">{t.appTagline}</span>
           </div>
         </div>
-
-        {selectedDate && (
-          <span className="text-xs font-semibold text-on-surface-variant/70 uppercase tracking-widest">
-            {formatHeaderDate(selectedDate, lang)}
-          </span>
-        )}
 
         <div role="toolbar" aria-label={t.appSettingsToolbar} className="flex items-center gap-2">
           <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />

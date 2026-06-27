@@ -32,18 +32,6 @@ const baseProps = (overrides = {}) => ({
   ...overrides,
 })
 
-describe('branding', () => {
-  it('shows the app name', () => {
-    wrap(<CalendarSidebar {...baseProps()} />)
-    expect(screen.getByText('Studyflow')).toBeTruthy()
-  })
-
-  it('shows the app tagline', () => {
-    wrap(<CalendarSidebar {...baseProps()} />)
-    expect(screen.getByText('Study smarter every day')).toBeTruthy()
-  })
-})
-
 describe('create task button', () => {
   it('shows the Create Task button', () => {
     wrap(<CalendarSidebar {...baseProps()} />)

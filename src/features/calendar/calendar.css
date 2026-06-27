@@ -101,6 +101,12 @@
   opacity: 0.45;
 }
 
+/* Keyboard focus ring — uses primary token so it works in both themes */
+.react-calendar__tile:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 /* Legacy class support */
 .react-calendar-custom {
   border: none;
