@@ -43,12 +43,12 @@ const SchedulePanel = function({
           </div>
         </div>
       )}
-      <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-emerald-700/80 border-emerald-500/40" : "bg-surface-container border-outline-variant/50"}`}>
+      <div className={`mt-8 rounded-2xl border p-6 transition-all duration-700 ${allScheduleDone ? "bg-secondary-container border-secondary/30" : "bg-surface-container border-outline-variant/50"}`}>
         {allScheduleDone ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
-            <span className="material-symbols-outlined text-5xl text-emerald-200 icon-filled">verified</span>
-            <h3 className="font-headline font-bold text-2xl text-white">{t.scheduleAllDoneHeadline}</h3>
-            <p className="text-sm text-emerald-100 max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
+            <span className="material-symbols-outlined text-5xl text-secondary icon-filled">verified</span>
+            <h3 className="font-headline font-bold text-2xl text-on-surface">{t.scheduleAllDoneHeadline}</h3>
+            <p className="text-sm text-on-surface-variant max-w-xs leading-relaxed">{t.scheduleAllDoneBody}</p>
           </div>
         ) : (
           <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
@@ -89,10 +89,10 @@ const SchedulePanel = function({
           {t.delete}
         </button>
         <button
-          className="px-5 py-2.5 bg-secondary/15 text-secondary border border-secondary/30 rounded-xl font-semibold hover:bg-secondary/25 transition-all flex items-center gap-2 text-sm"
+          className="min-h-[44px] px-3 text-xs font-semibold text-secondary hover:text-secondary/70 transition-colors flex items-center gap-1"
           onClick={onSave}
         >
-          <span className="material-symbols-outlined text-base">save</span>
+          <span className="material-symbols-outlined text-sm">save</span>
           {t.saveSchedule}
         </button>
       </div>

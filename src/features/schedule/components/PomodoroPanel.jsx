@@ -45,8 +45,8 @@ const PomodoroPanel = function({
             <span className="text-xs text-on-surface-variant">{t.minUnit}</span>
           </div>
           {elapsedSeconds > 0 && (
-            <div className="flex items-center justify-between bg-error/8 border border-error/20 rounded-lg px-3 py-1.5">
-              <span className="text-xs text-error/80 font-semibold">{t.cycleLabel} {pomodoroCycle}</span>
+            <div className="flex items-center justify-between bg-primary/8 border border-primary/20 rounded-lg px-3 py-1.5">
+              <span className="text-xs text-primary font-semibold">{t.cycleLabel} {pomodoroCycle}</span>
               <span className="text-xs text-on-surface-variant font-mono">
                 {isRunning
                   ? `${t.breakIn} ${formatMmSs(pomodoroUntilBreak)}`
