@@ -44,8 +44,10 @@ const BankTaskRow = function({ task, isSelected, isDraggable, dragOverId, onTogg
   }
 
   return (
-    <label
+    <div
+      role="row"
       draggable={isDraggable}
+      onClick={() => onToggle(task.id)}
       onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", task.id); }}
       onDragOver={(e) => { e.preventDefault(); setDragOverId(task.id); }}
       onDragLeave={() => setDragOverId(null)}
@@ -60,16 +62,16 @@ const BankTaskRow = function({ task, isSelected, isDraggable, dragOverId, onTogg
           drag_indicator
         </span>
       )}
-      <input type="checkbox" checked={isSelected} onChange={() => onToggle(task.id)} className="w-4 h-4 accent-primary flex-shrink-0" />
+      <input type="checkbox" checked={isSelected} onChange={() => onToggle(task.id)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 accent-primary flex-shrink-0" />
       <span className={`flex-1 text-sm text-on-surface min-w-0 ${task.priority ? "font-semibold" : "font-medium"}`}>{task.text}</span>
       {task.priority && <span className="text-[10px] font-bold uppercase tracking-wider text-tertiary flex-shrink-0">{t.priorityBadge}</span>}
-      <button onClick={(e) => { e.preventDefault(); startEdit(); }} className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-primary hover:bg-primary/10 transition-all text-on-surface-variant/50 flex-shrink-0" aria-label={t.editListItem} title={t.editListItem}>
+      <button onClick={(e) => { e.stopPropagation(); startEdit(); }} className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-primary hover:bg-primary/10 transition-all text-on-surface-variant/50 flex-shrink-0" aria-label={t.editListItem} title={t.editListItem}>
         <span className="material-symbols-outlined text-base">edit</span>
       </button>
-      <button onClick={(e) => { e.preventDefault(); onRemove(task.id); }} className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-error hover:bg-error/10 transition-all text-on-surface-variant/50 flex-shrink-0" aria-label={t.removeFromList} title={t.removeFromList}>
+      <button onClick={(e) => { e.stopPropagation(); onRemove(task.id); }} className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-error hover:bg-error/10 transition-all text-on-surface-variant/50 flex-shrink-0" aria-label={t.removeFromList} title={t.removeFromList}>
         <span className="material-symbols-outlined text-base">delete</span>
       </button>
-    </label>
+    </div>
   );
 };
 
