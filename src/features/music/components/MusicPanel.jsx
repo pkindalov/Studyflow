@@ -6,7 +6,15 @@ import { useLang } from "../../../shared/i18n/LangContext";
 const VISIBLE_COUNT = 5;
 const MODAL_PAGE_SIZE = 8;
 
-function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, removeTitle }) {
+function TrackRow({
+  track,
+  isActive,
+  isPlaying,
+  isErrored,
+  onSelect,
+  onRemove,
+  removeTitle,
+}) {
   return (
     <div
       className={`flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all group ${
@@ -27,7 +35,9 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
               : "text-on-surface-variant/40"
         }`}
       >
-        {isActive && isPlaying ? "radio_button_checked" : "radio_button_unchecked"}
+        {isActive && isPlaying
+          ? "radio_button_checked"
+          : "radio_button_unchecked"}
       </span>
       <span
         className={`flex-1 text-sm truncate font-medium ${
@@ -37,7 +47,10 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
         {track.name}
       </span>
       <button
-        onClick={(e) => { e.stopPropagation(); onRemove(track.id); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(track.id);
+        }}
         aria-label={removeTitle}
         className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
         title={removeTitle}
@@ -48,7 +61,15 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
   );
 }
 
-function PlaylistModal({ onClose, playlist, activeTrackId, isPlaying, playbackError, onSelectTrack, onRemoveTrack }) {
+function PlaylistModal({
+  onClose,
+  playlist,
+  activeTrackId,
+  isPlaying,
+  playbackError,
+  onSelectTrack,
+  onRemoveTrack,
+}) {
   const { t } = useLang();
   const [modalPage, setModalPage] = useState(0);
 
@@ -57,7 +78,12 @@ function PlaylistModal({ onClose, playlist, activeTrackId, isPlaying, playbackEr
       <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-headline font-bold text-on-surface flex items-center gap-2">
-            <span className="material-symbols-outlined text-xl text-tertiary" aria-hidden="true">headphones</span>
+            <span
+              className="material-symbols-outlined text-xl text-tertiary"
+              aria-hidden="true"
+            >
+              headphones
+            </span>
             {t.playlistLabel}
           </h2>
           <button
@@ -71,7 +97,10 @@ function PlaylistModal({ onClose, playlist, activeTrackId, isPlaying, playbackEr
         </div>
         <div className="flex flex-col gap-1.5">
           {playlist
-            .slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE)
+            .slice(
+              modalPage * MODAL_PAGE_SIZE,
+              modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE,
+            )
             .map((track) => (
               <TrackRow
                 key={track.id}
@@ -148,7 +177,12 @@ function AddTrackForm({ onAddTrack }) {
               {t.add}
             </button>
             <button
-              onClick={() => { setShowAdd(false); setNewName(""); setNewUrl(""); setAddError(""); }}
+              onClick={() => {
+                setShowAdd(false);
+                setNewName("");
+                setNewUrl("");
+                setAddError("");
+              }}
               className="px-3 py-1.5 border border-outline-variant/60 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-all"
             >
               {t.cancel}
@@ -180,35 +214,61 @@ function MusicPanel({
   return (
     <section className="bg-surface-container rounded-2xl border border-outline-variant/50 flex flex-col gap-0 overflow-hidden">
       <div className="flex items-center gap-2 px-4 sm:px-5 pt-4 sm:pt-5 pb-3">
-        <span className="material-symbols-outlined text-xl text-tertiary">headphones</span>
-        <span className="font-headline font-bold text-on-surface text-lg flex-1">{t.focusMusicLabel}</span>
+        <span className="material-symbols-outlined text-xl text-tertiary">
+          headphones
+        </span>
+        <span className="font-headline font-bold text-on-surface text-lg flex-1">
+          {t.focusMusicLabel}
+        </span>
         {activeTrack && (
           <button
             onClick={onTogglePlay}
             aria-label={isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
             className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${
-              isPlaying ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30" : "bg-primary text-on-primary hover:opacity-90"
+              isPlaying
+                ? "bg-tertiary/20 text-tertiary hover:bg-tertiary/30"
+                : "bg-primary text-on-primary hover:opacity-90"
             }`}
             title={isPlaying ? t.pauseMusicTitle : t.playMusicTitle}
           >
-            <span className="material-symbols-outlined text-base">{isPlaying ? "pause" : "play_arrow"}</span>
+            <span className="material-symbols-outlined text-base">
+              {isPlaying ? "pause" : "play_arrow"}
+            </span>
           </button>
         )}
       </div>
 
       {activeTrack && (
-        <div className={`mx-4 mb-3 rounded-xl px-3 py-2 flex items-center gap-2 border transition-all ${isPlaying ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-high border-outline-variant/30"}`}>
-          <span className={`material-symbols-outlined text-base flex-shrink-0 ${isPlaying ? "text-tertiary" : "text-on-surface-variant"}`}>
+        <div
+          className={`mx-4 mb-3 rounded-xl px-3 py-2 flex items-center gap-2 border transition-all ${isPlaying ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-high border-outline-variant/30"}`}
+        >
+          <span
+            className={`material-symbols-outlined text-base flex-shrink-0 ${isPlaying ? "text-tertiary" : "text-on-surface-variant"}`}
+          >
             {isPlaying ? "music_note" : "music_off"}
           </span>
-          <span className="text-xs font-medium text-on-surface flex-1 truncate">{activeTrack.name}</span>
+          <span className="text-xs font-medium text-on-surface flex-1 truncate">
+            {activeTrack.name}
+          </span>
           {isPlaying && (
             <span className="flex gap-0.5 items-end h-3 flex-shrink-0">
               {/* Heights drive the static equalizer bar animation and must be inline */}
-              <span className="w-0.5 bg-tertiary rounded-full animate-[eq1_0.8s_ease_infinite]" style={{ height: "40%" }} />
-              <span className="w-0.5 bg-tertiary rounded-full animate-[eq2_0.6s_ease_infinite]" style={{ height: "70%" }} />
-              <span className="w-0.5 bg-tertiary rounded-full animate-[eq3_0.9s_ease_infinite]" style={{ height: "55%" }} />
-              <span className="w-0.5 bg-tertiary rounded-full animate-[eq1_0.7s_ease_infinite]" style={{ height: "85%" }} />
+              <span
+                className="w-0.5 bg-tertiary rounded-full animate-[eq1_0.8s_ease_infinite]"
+                style={{ height: "40%" }}
+              />
+              <span
+                className="w-0.5 bg-tertiary rounded-full animate-[eq2_0.6s_ease_infinite]"
+                style={{ height: "70%" }}
+              />
+              <span
+                className="w-0.5 bg-tertiary rounded-full animate-[eq3_0.9s_ease_infinite]"
+                style={{ height: "55%" }}
+              />
+              <span
+                className="w-0.5 bg-tertiary rounded-full animate-[eq1_0.7s_ease_infinite]"
+                style={{ height: "85%" }}
+              />
             </span>
           )}
         </div>
@@ -216,9 +276,18 @@ function MusicPanel({
 
       {playbackError && (
         <div className="mx-4 mb-3 rounded-xl px-3 py-2 flex items-start gap-2 bg-error/10 border border-error/30">
-          <span className="material-symbols-outlined text-base text-error flex-shrink-0 mt-0.5">error</span>
-          <p className="flex-1 text-xs text-error leading-snug">{t.trackPlaybackError}</p>
-          <button onClick={onClearPlaybackError} aria-label={t.trackPlaybackErrorDismiss} className="flex-shrink-0 text-error/60 hover:text-error transition-colors" title={t.trackPlaybackErrorDismiss}>
+          <span className="material-symbols-outlined text-base text-error flex-shrink-0 mt-0.5">
+            error
+          </span>
+          <p className="flex-1 text-xs text-error leading-snug">
+            {t.trackPlaybackError}
+          </p>
+          <button
+            onClick={onClearPlaybackError}
+            aria-label={t.trackPlaybackErrorDismiss}
+            className="flex-shrink-0 text-error/60 hover:text-error transition-colors"
+            title={t.trackPlaybackErrorDismiss}
+          >
             <span className="material-symbols-outlined text-sm">close</span>
           </button>
         </div>
@@ -226,14 +295,29 @@ function MusicPanel({
 
       {activeTrack && (
         <div className="mx-4 mb-3 flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">volume_down</span>
-          <input type="range" min={0} max={100} value={volume} onChange={(e) => onSetVolume(Number(e.target.value))} className="flex-1 h-1.5 accent-tertiary cursor-pointer" />
-          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">volume_up</span>
+          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
+            volume_down
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={volume}
+            onChange={(e) => onSetVolume(Number(e.target.value))}
+            className="flex-1 h-1.5 accent-tertiary cursor-pointer"
+          />
+          <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
+            volume_up
+          </span>
         </div>
       )}
 
       <div className="flex flex-col gap-1 px-4 sm:px-5 pb-2">
-        {playlist.length === 0 && <p className="text-xs text-on-surface-variant text-center py-3">{t.noTracksMsg}</p>}
+        {playlist.length === 0 && (
+          <p className="text-xs text-on-surface-variant text-center py-3">
+            {t.noTracksMsg}
+          </p>
+        )}
         {playlist.slice(0, VISIBLE_COUNT).map((track) => (
           <TrackRow
             key={track.id}
@@ -247,7 +331,10 @@ function MusicPanel({
           />
         ))}
         {playlist.length > VISIBLE_COUNT && (
-          <button onClick={() => setShowAll(true)} className="w-full text-center py-1.5 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors">
+          <button
+            onClick={() => setShowAll(true)}
+            className="w-full text-center py-1.5 text-xs text-tertiary hover:text-tertiary/80 font-semibold transition-colors"
+          >
             {t.moreViewAll(playlist.length - VISIBLE_COUNT)}
           </button>
         )}
