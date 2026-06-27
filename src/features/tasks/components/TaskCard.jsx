@@ -1,36 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
+import useFocusTrap from "../../../shared/hooks/useFocusTrap";
 
 const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
   const { t } = useLang();
   const panelRef = useRef(null);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement;
-    const id = setTimeout(() => panelRef.current?.querySelector("button")?.focus(), 0);
-    return () => {
-      clearTimeout(id);
-      if (previousFocus && document.contains(previousFocus)) previousFocus.focus();
-    };
-  }, []);
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") { onCancel(); return; }
-    if (e.key !== "Tab" || !panelRef.current) return;
-    const focusables = Array.from(panelRef.current.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    ));
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  };
+  const titleId = useId();
+  const handleKeyDown = useFocusTrap(panelRef, { onEscape: onCancel });
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -38,12 +14,12 @@ const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="delete-confirm-title"
+        aria-labelledby={titleId}
         onKeyDown={handleKeyDown}
         className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5"
       >
         <div className="flex flex-col gap-2">
-          <h3 id="delete-confirm-title" className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+          <h3 id={titleId} className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
             <span className="material-symbols-outlined text-error text-xl">delete</span>
             {t.deleteTaskConfirm}
           </h3>
@@ -196,7 +172,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
               className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
               aria-label={t.moreActionsAria}
               aria-haspopup="menu"
-              aria-expanded={showMore ? "true" : "false"}
+              aria-expanded={showMore}
             >
               <span className="material-symbols-outlined text-base">more_horiz</span>
             </button>

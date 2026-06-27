@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import ScheduleItem from "./ScheduleItem";
+import useFocusTrap from "../../../shared/hooks/useFocusTrap";
 
 const SchedulePanel = function({
   schedule,
@@ -19,34 +20,10 @@ const SchedulePanel = function({
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const dialogRef = useRef(null);
-
-  useEffect(() => {
-    if (!showDeleteConfirm) return;
-    const previousFocus = document.activeElement;
-    const id = setTimeout(() => dialogRef.current?.querySelector("button")?.focus(), 0);
-    return () => {
-      clearTimeout(id);
-      if (previousFocus && document.contains(previousFocus)) previousFocus.focus();
-    };
-  }, [showDeleteConfirm]);
-
-  const handleDialogKeyDown = (e) => {
-    if (e.key === "Escape") { setShowDeleteConfirm(false); return; }
-    if (e.key !== "Tab" || !dialogRef.current) return;
-    const focusables = Array.from(dialogRef.current.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    ));
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  };
+  const handleDialogKeyDown = useFocusTrap(dialogRef, {
+    isActive: showDeleteConfirm,
+    onEscape: () => setShowDeleteConfirm(false),
+  });
 
   return (
     <>
@@ -73,7 +50,7 @@ const SchedulePanel = function({
               <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-on-surface-variant border border-outline-variant/50 hover:bg-surface-container-high transition-all">
                 {t.cancel}
               </button>
-              <button onClick={() => { onDelete(); setShowDeleteConfirm(false); }} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error text-white hover:opacity-90 transition-all">
+              <button onClick={() => { setShowDeleteConfirm(false); onDelete(); }} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold bg-error text-white hover:opacity-90 transition-all">
                 {t.delete}
               </button>
             </div>

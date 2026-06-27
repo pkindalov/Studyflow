@@ -1,3 +1,4 @@
+import { useId } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useLang } from "../../../shared/i18n/LangContext";
@@ -32,6 +33,7 @@ function CalendarSidebar({
   onToggleCompletion,
 }) {
   const { t, lang } = useLang();
+  const labelId = useId();
 
   return (
     <aside className="flex flex-col p-5 sm:p-6 gap-5 rounded-2xl bg-surface-container border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
@@ -49,11 +51,11 @@ function CalendarSidebar({
           <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
             calendar_month
           </span>
-          <span id="month-overview-label" className="text-xs font-medium text-on-surface-variant truncate">
+          <span id={labelId} className="text-xs font-medium text-on-surface-variant truncate">
             {t.monthOverview}
           </span>
         </div>
-        <ToggleSwitch checked={showCompletion} onChange={onToggleCompletion} labelId="month-overview-label" />
+        <ToggleSwitch checked={showCompletion} onChange={onToggleCompletion} labelId={labelId} />
       </div>
 
       <Calendar

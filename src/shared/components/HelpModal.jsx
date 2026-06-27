@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useLang } from "../i18n/LangContext";
+import useFocusTrap from "../hooks/useFocusTrap";
 
 const Section = function({ icon, title, children }) {
   return (
@@ -28,33 +29,7 @@ const HelpModal = function({ onClose }) {
   const { t } = useLang();
   const b = (text) => <strong className="text-on-surface">{text}</strong>;
   const panelRef = useRef(null);
-
-  useEffect(() => {
-    const previousFocus = document.activeElement;
-    const id = setTimeout(() => panelRef.current?.querySelector("button")?.focus(), 0);
-    return () => {
-      clearTimeout(id);
-      if (previousFocus && document.contains(previousFocus)) previousFocus.focus();
-    };
-  }, []);
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") { onClose(); return; }
-    if (e.key !== "Tab" || !panelRef.current) return;
-    const focusables = Array.from(panelRef.current.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    ));
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  };
+  const handleKeyDown = useFocusTrap(panelRef, { onEscape: onClose });
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">

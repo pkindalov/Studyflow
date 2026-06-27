@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 import RecurrenceSection from "./RecurrenceSection";
+import useFocusTrap from "../../../shared/hooks/useFocusTrap";
 
 const imageHasValue = (img) => img !== undefined && img !== null && img !== "";
 
@@ -53,44 +54,14 @@ const TaskModal = function({
 }) {
   const { t } = useLang();
   const panelRef = useRef(null);
-  const previousFocusRef = useRef(null);
   const [showImageInput, setShowImageInput] = useState(imageHasValue(image));
-
-  useEffect(() => {
-    if (isOpen) {
-      previousFocusRef.current = document.activeElement;
-      const id = setTimeout(() => panelRef.current?.querySelector("textarea")?.focus(), 0);
-      return () => clearTimeout(id);
-    }
-    if (previousFocusRef.current && document.contains(previousFocusRef.current)) {
-      previousFocusRef.current.focus();
-    }
-    previousFocusRef.current = null;
-  }, [isOpen]);
+  const handleKeyDown = useFocusTrap(panelRef, { isActive: isOpen, onEscape: onClose, initialFocusSelector: "textarea" });
 
   if (!isOpen) return null;
 
   const showRecurrence = handleSetRecurrence !== undefined;
   const trimmedText = text.trim();
   const saveDisabled = !trimmedText || (dateMode === "range" && !endDate);
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") { onClose(); return; }
-    if (e.key !== "Tab" || !panelRef.current) return;
-    const focusables = Array.from(panelRef.current.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
-    ));
-    if (!focusables.length) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  };
 
   return (
     <div
@@ -144,7 +115,7 @@ const TaskModal = function({
         ) : (
           <div className="flex items-center gap-2">
             {image && (
-              <img src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={(e) => { e.target.classList.add("hidden"); }} />
+              <img key={image} src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={(e) => { e.target.classList.add("hidden"); }} />
             )}
             <div className="flex-1">
               <label className="sr-only" htmlFor="task-image">{t.imageUrlPlaceholder}</label>

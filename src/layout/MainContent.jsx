@@ -35,7 +35,7 @@ export default function MainContent({
 
   useEffect(() => {
     if (schedule && !prevScheduleRef.current && schedulePanelRef.current) {
-      schedulePanelRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      schedulePanelRef.current.scrollIntoView?.({ behavior: "smooth", block: "start" });
     }
     prevScheduleRef.current = schedule;
   }, [schedule]);

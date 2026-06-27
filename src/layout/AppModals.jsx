@@ -161,7 +161,7 @@ export default function AppModals({
         <SwitchTaskDialog
           fromTask={timerTask}
           toTask={pendingSwitchTask}
-          onConfirm={confirmSwitchTask}
+          onConfirm={() => { confirmSwitchTask(); setHmsMode(false); }}
           onCancel={() => setPendingSwitchTask(null)}
           t={t}
         />

@@ -21,6 +21,7 @@ const SortableTaskCard = function({ id, scheduledMinutes, ...props }) {
 const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder, onAddClick, scheduleMap }) {
   const { t } = useLang();
   const [page, setPage] = useState(0);
+  const safeExcludedTaskIds = excludedTaskIds ?? new Set();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -38,7 +39,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
   const paginated = tasks.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
 
   const showSelectionControls = onToggleSelect !== undefined;
-  const allSelected = showSelectionControls && tasks.every((task) => !excludedTaskIds?.has(task.id));
+  const allSelected = showSelectionControls && tasks.every((task) => !safeExcludedTaskIds.has(task.id));
 
   return (
     <section className="flex flex-col gap-6">
@@ -51,9 +52,9 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
             <button
               onClick={() => {
                 if (allSelected) {
-                  tasks.forEach((task) => { if (!excludedTaskIds.has(task.id)) onToggleSelect(task.id); });
+                  tasks.forEach((task) => { if (!safeExcludedTaskIds.has(task.id)) onToggleSelect(task.id); });
                 } else {
-                  tasks.forEach((task) => { if (excludedTaskIds.has(task.id)) onToggleSelect(task.id); });
+                  tasks.forEach((task) => { if (safeExcludedTaskIds.has(task.id)) onToggleSelect(task.id); });
                 }
               }}
               className="text-xs font-semibold text-secondary hover:text-secondary/80 transition-colors"
@@ -73,7 +74,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
         </div>
       </div>
 
-      {showSelectionControls && excludedTaskIds && excludedTaskIds.size > 0 && (
+      {showSelectionControls && safeExcludedTaskIds.size > 0 && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded-xl border border-outline-variant/30">
           <span className="material-symbols-outlined text-sm text-on-surface-variant/60 flex-shrink-0">info</span>
           <span className="text-xs text-on-surface-variant">
@@ -118,7 +119,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
                     onDelete={onDelete}
                     onEdit={onEdit}
                     onStopRecurring={onStopRecurring}
-                    selected={showSelectionControls ? !excludedTaskIds?.has(task.id) : true}
+                    selected={showSelectionControls ? !safeExcludedTaskIds.has(task.id) : true}
                     onToggleSelect={onToggleSelect}
                     onOpenTimer={onOpenTimer}
                     onSaveToBank={onSaveToBank}

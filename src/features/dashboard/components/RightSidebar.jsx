@@ -94,7 +94,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
             onClick={() => setShowHint((isVisible) => !isVisible)}
             className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant/50 hover:text-on-surface-variant transition-colors"
             aria-label={t.scheduleSettingsHint}
-            aria-expanded={showHint ? "true" : "false"}
+            aria-expanded={showHint}
             disabled={isDisabled}
           >
             <span className="material-symbols-outlined text-sm">help_outline</span>
