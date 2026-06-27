@@ -54,7 +54,7 @@ export default function AppModals({
           elapsedSeconds={scheduleTimers[timerTask.id] || 0}
           isRunning={runningTaskId === timerTask.id}
           onPlayPause={toggleTimer}
-          onClose={closeTimer}
+          onClose={() => { closeTimer(); setHmsMode(false); }}
           onRestart={restartTimer}
           onStartAgain={startAgainTimer}
           onMarkDone={markTimerTaskDone}
@@ -67,7 +67,7 @@ export default function AppModals({
           pomodoroResetAt={pomodoroResetAt}
           pomodoroBreakCount={pomodoroBreakCount}
           hmsMode={hmsMode}
-          onToggleHmsMode={() => setHmsMode((v) => !v)}
+          onToggleHmsMode={() => setHmsMode((isActive) => !isActive)}
         />
       )}
       {timerTask && isTimerMinimized && (

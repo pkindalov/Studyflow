@@ -75,7 +75,6 @@ export const bg = {
   noTasksAddFirst: "Добави първата си задача",
   skipToMainContent: "Към основното съдържание",
   excludedCountHint: (n) => `${n} ${n === 1 ? "задача изключена" : "задачи изключени"} от разписанието`,
-  includeAllHint: "Включи всички",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
   switchTaskTitle: "Смяна на задача?",

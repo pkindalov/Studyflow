@@ -132,7 +132,7 @@ export const useSchedule = function({
       const next = prev.filter((item) => item.id !== taskId);
       return next.length > 0 ? next : null;
     });
-    setScheduleTimers((prev) => { const { [taskId]: _, ...rest } = prev; return rest; });
+    setScheduleTimers((prev) => { const { [taskId]: _removed, ...rest } = prev; return rest; });
     setScheduleUnsaved(true);
   }, [runningTaskId, setRunningTaskId, setScheduleTimers]);
 

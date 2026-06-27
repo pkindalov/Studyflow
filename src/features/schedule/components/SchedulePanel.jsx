@@ -30,9 +30,15 @@ const SchedulePanel = function({
     <>
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5" onClick={(e) => e.stopPropagation()}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="schedule-delete-title"
+            className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex flex-col gap-2">
-              <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+              <h3 id="schedule-delete-title" className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
                 <span className="material-symbols-outlined text-error text-xl">delete</span>
                 {t.deleteScheduleConfirmTitle}
               </h3>

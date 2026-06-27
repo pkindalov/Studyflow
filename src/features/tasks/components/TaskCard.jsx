@@ -5,9 +5,14 @@ const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
   const { t } = useLang();
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-confirm-title"
+        className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5"
+      >
         <div className="flex flex-col gap-2">
-          <h3 className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
+          <h3 id="delete-confirm-title" className="font-headline font-bold text-on-surface text-lg flex items-center gap-2">
             <span className="material-symbols-outlined text-error text-xl">delete</span>
             {t.deleteTaskConfirm}
           </h3>
@@ -156,10 +161,10 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {hasSecondary && (
           <div ref={moreWrapRef} className="relative">
             <button
-              onClick={() => setShowMore((v) => !v)}
+              onClick={() => setShowMore((isVisible) => !isVisible)}
               className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
               aria-label={t.moreActionsAria}
-              aria-haspopup="true"
+              aria-haspopup="menu"
               aria-expanded={showMore ? "true" : "false"}
             >
               <span className="material-symbols-outlined text-base">more_horiz</span>

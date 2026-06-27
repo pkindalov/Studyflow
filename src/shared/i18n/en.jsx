@@ -73,7 +73,6 @@ export const en = {
   noTasksAddFirst: "Add your first task",
   skipToMainContent: "Skip to main content",
   excludedCountHint: (n) => `${n} task${n === 1 ? "" : "s"} excluded from schedule`,
-  includeAllHint: "Include all",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
   switchTaskTitle: "Switch task?",
