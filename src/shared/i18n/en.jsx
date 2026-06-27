@@ -180,6 +180,8 @@ export const en = {
   saveAndContinue: "Save & Continue",
   discardAndContinue: "Discard & Continue",
   scheduleDeleteError: "Error deleting schedule.",
+  deleteScheduleConfirmTitle: "Delete schedule?",
+  deleteScheduleConfirmMsg: "Today's schedule will be removed. Your tasks will not be affected.",
   scheduleAllDoneHeadline: "Session Complete!",
   scheduleAllDoneBody: "You crushed every task on the schedule. Take a breath, celebrate the win, and keep that momentum going!",
   completedStatus: "Completed",

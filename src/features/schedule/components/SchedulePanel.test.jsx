@@ -5,6 +5,7 @@ import SchedulePanel from './SchedulePanel'
 const t = {
   todaysSchedule: "Today's Schedule",
   saveSchedule: 'Save Schedule',
+  cancel: 'Cancel',
   delete: 'Delete',
   scheduleAllDoneHeadline: 'Session Complete!',
   scheduleAllDoneBody: 'You crushed every task on the schedule.',
@@ -98,9 +99,10 @@ describe('panel-level callbacks', () => {
     expect(defaultProps.onSave).toHaveBeenCalled()
   })
 
-  it('calls onDelete when Delete button is clicked', () => {
+  it('calls onDelete when Delete button is clicked and confirmed', () => {
     render(<SchedulePanel {...defaultProps} />)
     fireEvent.click(screen.getByRole('button', { name: /^delete/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
     expect(defaultProps.onDelete).toHaveBeenCalled()
   })
 })

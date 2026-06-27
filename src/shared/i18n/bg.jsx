@@ -185,6 +185,8 @@ export const bg = {
   saveAndContinue: "Запази и продължи",
   discardAndContinue: "Откажи и продължи",
   scheduleDeleteError: "Грешка при изтриване.",
+  deleteScheduleConfirmTitle: "Изтриване на разписание?",
+  deleteScheduleConfirmMsg: "Разписанието за днес ще бъде премахнато. Вашите задачи няма да бъдат засегнати.",
   scheduleAllDoneHeadline: "Сесията е завършена!",
   scheduleAllDoneBody:
     "Изпълни всички задачи от разписанието. Отдъхни, отпразнувай успеха и продължи напред със същия ритъм!",
