@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 import RecurrenceSection from "./RecurrenceSection";
 
+const imageHasValue = (img) => img !== undefined && img !== null && img !== "";
+
 const MoveToDateSection = function({ moveToDate, setMoveToDate, t }) {
   const today = new Date().toLocaleDateString("en-CA");
   return (
@@ -52,7 +54,7 @@ const TaskModal = function({
   const { t } = useLang();
   const panelRef = useRef(null);
   const previousFocusRef = useRef(null);
-  const [showImageInput, setShowImageInput] = useState(image !== undefined && image !== null && image !== "");
+  const [showImageInput, setShowImageInput] = useState(imageHasValue(image));
 
   useEffect(() => {
     if (isOpen) {
@@ -68,7 +70,7 @@ const TaskModal = function({
 
   if (!isOpen) return null;
 
-  const showRecurrence = !!handleSetRecurrence;
+  const showRecurrence = handleSetRecurrence !== undefined;
   const trimmedText = text.trim();
   const saveDisabled = !trimmedText || (dateMode === "range" && !endDate);
 
@@ -125,7 +127,7 @@ const TaskModal = function({
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60 resize-none"
         />
         {text.length > 150 && (
-          <p className="text-right text-[11px] text-on-surface-variant/50 -mt-3">
+          <p role="status" aria-live="polite" className="text-right text-[11px] text-on-surface-variant/50 -mt-3">
             {text.length}/200
           </p>
         )}
@@ -142,7 +144,7 @@ const TaskModal = function({
         ) : (
           <div className="flex items-center gap-2">
             {image && (
-              <img src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={(e) => { e.target.style.display = "none"; }} />
+              <img src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={(e) => { e.target.classList.add("hidden"); }} />
             )}
             <div className="flex-1">
               <label className="sr-only" htmlFor="task-image">{t.imageUrlPlaceholder}</label>

@@ -43,12 +43,12 @@ const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
 
 const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, dragHandleListeners, dragHandleAttributes, scheduledMinutes }) {
   const { t } = useLang();
-  const isDone = !!task.done;
+  const isDone = task.done === true;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const moreWrapRef = useRef(null);
 
-  const hasSecondary = !!(onSaveToBank || onToggleSelect || (task.recurringId && onStopRecurring));
+  const hasSecondary = onSaveToBank !== undefined || onToggleSelect !== undefined || (task.recurringId !== undefined && onStopRecurring !== undefined);
 
   useEffect(() => {
     if (!showMore) return;
@@ -159,7 +159,8 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
               onClick={() => setShowMore((v) => !v)}
               className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
               aria-label={t.moreActionsAria}
-              aria-expanded={showMore}
+              aria-haspopup="true"
+              aria-expanded={showMore ? "true" : "false"}
             >
               <span className="material-symbols-outlined text-base">more_horiz</span>
             </button>

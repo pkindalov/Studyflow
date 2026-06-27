@@ -114,6 +114,7 @@ export default function AppModals({
         />
       )}
       <TaskModal
+        key={isEditing ? editModal.taskId : "add"}
         isOpen={addModal.isOpen || editModal.isOpen}
         onClose={() => { isEditing ? editModal.reset() : addModal.reset(); }}
         onSave={isEditing ? editModal.handleSubmit : addModal.handleSubmit}

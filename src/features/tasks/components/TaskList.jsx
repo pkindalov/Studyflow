@@ -37,8 +37,8 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
   const currentPage = totalPages > 0 ? Math.min(page, totalPages - 1) : 0;
   const paginated = tasks.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE);
 
-  const showSelectionControls = !!onToggleSelect;
-  const allSelected = showSelectionControls && tasks.every((task) => !excludedTaskIds.has(task.id));
+  const showSelectionControls = onToggleSelect !== undefined;
+  const allSelected = showSelectionControls && tasks.every((task) => !excludedTaskIds?.has(task.id));
 
   return (
     <section className="flex flex-col gap-6">
@@ -118,7 +118,7 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
                     onDelete={onDelete}
                     onEdit={onEdit}
                     onStopRecurring={onStopRecurring}
-                    selected={showSelectionControls ? !excludedTaskIds.has(task.id) : true}
+                    selected={showSelectionControls ? !excludedTaskIds?.has(task.id) : true}
                     onToggleSelect={onToggleSelect}
                     onOpenTimer={onOpenTimer}
                     onSaveToBank={onSaveToBank}

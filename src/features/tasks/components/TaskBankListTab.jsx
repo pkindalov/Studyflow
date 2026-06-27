@@ -45,7 +45,6 @@ const BankTaskRow = function({ task, isSelected, isDraggable, dragOverId, onTogg
 
   return (
     <div
-      role="row"
       draggable={isDraggable}
       onClick={() => onToggle(task.id)}
       onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", task.id); }}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 
@@ -66,19 +66,34 @@ const ACCENT_COLORS = [
 export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, priorityPercent, setPriorityPercent, tasksCount = 0 }) {
   const { t } = useLang();
   const [showHint, setShowHint] = useState(false);
+  const hintRef = useRef(null);
   const isDisabled = tasksCount === 0;
+
+  useEffect(() => {
+    if (!showHint) return;
+    const handleKey = (e) => { if (e.key === "Escape") setShowHint(false); };
+    const handleClick = (e) => { if (!hintRef.current?.contains(e.target)) setShowHint(false); };
+    document.addEventListener("keydown", handleKey);
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, [showHint]);
+
   return (
     <section className={`bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4 transition-opacity ${isDisabled ? "opacity-50 pointer-events-none select-none" : ""}`}
       title={isDisabled ? t.summaryHintNoTasks : undefined}
     >
       <div className="flex items-center gap-2">
         <span className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant uppercase flex-1">{t.scheduleSettings}</span>
-        <div className="relative">
+        <div ref={hintRef} className="relative">
           <button
             type="button"
             onClick={() => setShowHint((v) => !v)}
             className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant/50 hover:text-on-surface-variant transition-colors"
             aria-label={t.scheduleSettingsHint}
+            aria-expanded={showHint ? "true" : "false"}
           >
             <span className="material-symbols-outlined text-sm">help_outline</span>
           </button>
@@ -104,6 +119,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
               step={0.25}
               value={totalStudyTime}
               onChange={(e) => setTotalStudyTime(Math.max(1, Math.min(24, Number(e.target.value))))}
+              disabled={isDisabled}
               className="w-16 px-2 py-1.5 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
             />
             <span className="text-xs text-on-surface-variant">{t.hoursUnit}</span>
@@ -123,6 +139,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
               step={1}
               value={priorityPercent}
               onChange={(e) => setPriorityPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
+              disabled={isDisabled}
               className="w-16 px-2 py-1.5 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-secondary/60"
             />
             <span className="text-xs text-on-surface-variant">%</span>
@@ -159,8 +176,10 @@ const MS_PER_DAY = 86400000;
 
 const getDailyQuote = function(quotes) {
   const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const dayOfYear = Math.floor((now - startOfYear) / MS_PER_DAY);
+  // Use UTC midnight arithmetic to avoid DST-day edge cases (23h/25h days).
+  const dayOfYear = Math.floor(
+    (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(now.getFullYear(), 0, 1)) / MS_PER_DAY
+  );
   return quotes[dayOfYear % quotes.length];
 };
 
