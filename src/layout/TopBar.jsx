@@ -1,4 +1,4 @@
-function ToolbarButtons({ onShowHelp, lang, setLang, theme, setTheme, t }) {
+const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, t }) {
   return (
     <>
       <button

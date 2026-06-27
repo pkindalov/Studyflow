@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import ScheduleItem from "./ScheduleItem";
@@ -18,22 +18,46 @@ const SchedulePanel = function({
   t,
 }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const dialogRef = useRef(null);
 
   useEffect(() => {
     if (!showDeleteConfirm) return;
-    const handleKey = (e) => { if (e.key === "Escape") setShowDeleteConfirm(false); };
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    const previousFocus = document.activeElement;
+    const id = setTimeout(() => dialogRef.current?.querySelector("button")?.focus(), 0);
+    return () => {
+      clearTimeout(id);
+      if (previousFocus && document.contains(previousFocus)) previousFocus.focus();
+    };
   }, [showDeleteConfirm]);
+
+  const handleDialogKeyDown = (e) => {
+    if (e.key === "Escape") { setShowDeleteConfirm(false); return; }
+    if (e.key !== "Tab" || !dialogRef.current) return;
+    const focusables = Array.from(dialogRef.current.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ));
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   return (
     <>
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
           <div
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="schedule-delete-title"
+            onKeyDown={handleDialogKeyDown}
             className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5"
             onClick={(e) => e.stopPropagation()}
           >

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useId } from "react";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 
@@ -68,6 +68,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
   const [showHint, setShowHint] = useState(false);
   const hintRef = useRef(null);
   const isDisabled = tasksCount === 0;
+  const instanceId = useId();
 
   useEffect(() => {
     if (!showHint) return;
@@ -107,13 +108,13 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="study-time-input" className="text-xs font-semibold text-on-surface-variant flex items-center gap-1">
+          <label htmlFor={`${instanceId}-study-time`} className="text-xs font-semibold text-on-surface-variant flex items-center gap-1">
             <span className="material-symbols-outlined text-sm text-primary">schedule</span>
             {t.totalStudyTime}
           </label>
           <div className="flex items-center gap-1.5">
             <input
-              id="study-time-input"
+              id={`${instanceId}-study-time`}
               type="number"
               min={1}
               max={24}
@@ -127,13 +128,13 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="priority-pct-input" className="text-xs font-semibold text-on-surface-variant flex items-center gap-1">
+          <label htmlFor={`${instanceId}-priority-pct`} className="text-xs font-semibold text-on-surface-variant flex items-center gap-1">
             <span className="material-symbols-outlined text-sm text-secondary">star</span>
             {t.priorityTimeLimit}
           </label>
           <div className="flex items-center gap-1.5">
             <input
-              id="priority-pct-input"
+              id={`${instanceId}-priority-pct`}
               type="number"
               min={0}
               max={100}

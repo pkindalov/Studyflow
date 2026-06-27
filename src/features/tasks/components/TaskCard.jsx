@@ -3,12 +3,43 @@ import { useLang } from "../../../shared/i18n/LangContext";
 
 const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
   const { t } = useLang();
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    const id = setTimeout(() => panelRef.current?.querySelector("button")?.focus(), 0);
+    return () => {
+      clearTimeout(id);
+      if (previousFocus && document.contains(previousFocus)) previousFocus.focus();
+    };
+  }, []);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") { onCancel(); return; }
+    if (e.key !== "Tab" || !panelRef.current) return;
+    const focusables = Array.from(panelRef.current.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ));
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-confirm-title"
+        onKeyDown={handleKeyDown}
         className="bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5"
       >
         <div className="flex flex-col gap-2">
