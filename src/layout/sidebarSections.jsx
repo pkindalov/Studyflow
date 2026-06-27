@@ -35,7 +35,7 @@ export function buildSidebarSections({
       />
     ),
     activity: <ActivityPanel tasks={tasks} />,
-    scheduleSettings: <ScheduleSettingsSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} priorityPercent={priorityPercent} setPriorityPercent={setPriorityPercent} />,
+    scheduleSettings: <ScheduleSettingsSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} priorityPercent={priorityPercent} setPriorityPercent={setPriorityPercent} tasksCount={tasksForDay.length} />,
     quote: <QuoteSection />,
     todaysTasks: (
       <TasksProgressSection

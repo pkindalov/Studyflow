@@ -96,14 +96,18 @@ describe('ScheduleSettingsSection', () => {
 // ── QuoteSection ─────────────────────────────────────────────────────────────
 
 describe('QuoteSection', () => {
-  it('renders the quote text', () => {
-    wrap(<QuoteSection />)
-    expect(screen.getByText(/The secret of getting ahead/)).toBeTruthy()
+  it('renders an italic quote paragraph', () => {
+    const { container } = wrap(<QuoteSection />)
+    const quoteEl = container.querySelector('p.italic')
+    expect(quoteEl).not.toBeNull()
+    expect(quoteEl.textContent.length).toBeGreaterThan(0)
   })
 
-  it('renders the author', () => {
-    wrap(<QuoteSection />)
-    expect(screen.getByText('Mark Twain')).toBeTruthy()
+  it('renders an author attribution', () => {
+    const { container } = wrap(<QuoteSection />)
+    const authorEl = container.querySelector('span.uppercase.tracking-widest')
+    expect(authorEl).not.toBeNull()
+    expect(authorEl.textContent.trim().length).toBeGreaterThan(0)
   })
 })
 

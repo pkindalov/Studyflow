@@ -63,11 +63,14 @@ const ACCENT_COLORS = [
   "bg-secondary/60",
 ];
 
-export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, priorityPercent, setPriorityPercent }) {
+export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, priorityPercent, setPriorityPercent, tasksCount = 0 }) {
   const { t } = useLang();
   const [showHint, setShowHint] = useState(false);
+  const isDisabled = tasksCount === 0;
   return (
-    <section className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4">
+    <section className={`bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4 transition-opacity ${isDisabled ? "opacity-50 pointer-events-none select-none" : ""}`}
+      title={isDisabled ? t.summaryHintNoTasks : undefined}
+    >
       <div className="flex items-center gap-2">
         <span className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant uppercase flex-1">{t.scheduleSettings}</span>
         <div className="relative">
@@ -130,20 +133,52 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
   );
 }
 
+const QUOTES_EN = [
+  { text: "\"The secret of getting ahead is getting started.\"", author: "Mark Twain" },
+  { text: "\"An investment in knowledge pays the best interest.\"", author: "Benjamin Franklin" },
+  { text: "\"The more that you read, the more things you will know.\"", author: "Dr. Seuss" },
+  { text: "\"Education is the passport to the future.\"", author: "Malcolm X" },
+  { text: "\"Live as if you were to die tomorrow. Learn as if you were to live forever.\"", author: "Mahatma Gandhi" },
+  { text: "\"The beautiful thing about learning is nobody can take it away from you.\"", author: "B.B. King" },
+  { text: "\"You don't have to be great to start, but you have to start to be great.\"", author: "Zig Ziglar" },
+  { text: "\"Study hard what interests you the most in the most undisciplined manner possible.\"", author: "Richard Feynman" },
+];
+
+const QUOTES_BG = [
+  { text: "\"Тайната на напредъка е да започнеш.\"", author: "Марк Твен" },
+  { text: "\"Инвестицията в знание носи най-добра лихва.\"", author: "Бенджамин Франклин" },
+  { text: "\"Колкото повече четеш, толкова повече ще знаеш.\"", author: "Д-р Сюс" },
+  { text: "\"Образованието е паспортът за бъдещето.\"", author: "Малкълм X" },
+  { text: "\"Живей като ще умреш утре. Учи като ще живееш вечно.\"", author: "Махатма Ганди" },
+  { text: "\"Хубавото на ученето е, че никой не може да ти го вземе.\"", author: "Б.Б. Кинг" },
+  { text: "\"Не трябва да си велик, за да започнеш, но трябва да започнеш, за да станеш велик.\"", author: "Зиг Зиглар" },
+  { text: "\"Учи усилено това, което те интересува най-много.\"", author: "Ричард Файнман" },
+];
+
+const MS_PER_DAY = 86400000;
+
+const getDailyQuote = function(quotes) {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((now - startOfYear) / MS_PER_DAY);
+  return quotes[dayOfYear % quotes.length];
+};
+
 export function QuoteSection() {
-  const { t } = useLang();
+  const { lang } = useLang();
+  const quote = getDailyQuote(lang === "bg" ? QUOTES_BG : QUOTES_EN);
   return (
     <section className="bg-primary/10 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="relative z-10 flex flex-col gap-4">
         <span className="material-symbols-outlined text-3xl text-primary/60">format_quote</span>
         <p className="font-headline font-medium text-base leading-relaxed italic text-on-surface">
-          {t.quote}
+          {quote.text}
         </p>
         <div className="flex items-center gap-3">
           <div className="w-6 h-px bg-primary/40" />
           <span className="text-xs uppercase tracking-widest font-semibold text-on-surface-variant">
-            {t.quoteAuthor}
+            {quote.author}
           </span>
         </div>
       </div>
