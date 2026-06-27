@@ -21,11 +21,11 @@ const PomodoroPanel = function({
   return (
     <div className="w-full border-t border-outline-variant/30 pt-4 flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-base text-error/70">timer</span>
+        <span className="material-symbols-outlined text-base text-primary">timer</span>
         <span className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider flex-1">{t.pomodoroLabel}</span>
         <button
           onClick={() => setPomodoroEnabled((v) => !v)}
-          className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${pomodoroEnabled ? "bg-error/70" : "bg-outline-variant/50"}`}
+          className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none ${pomodoroEnabled ? "bg-primary" : "bg-outline-variant/50"}`}
           title={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
           aria-label={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
         >
@@ -40,7 +40,7 @@ const PomodoroPanel = function({
               id="pomodoro-minutes"
               type="number" min="1" max="60" value={pomodoroMinutes}
               onChange={(e) => setPomodoroMinutes(Math.max(1, Math.min(60, Number(e.target.value))))}
-              className="w-14 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-error/40"
+              className="w-14 bg-surface-container-highest border border-outline/60 rounded-lg px-2 py-1 text-sm text-on-surface text-center focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
             <span className="text-xs text-on-surface-variant">{t.minUnit}</span>
           </div>
