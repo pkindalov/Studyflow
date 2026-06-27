@@ -225,12 +225,13 @@ function App() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[80] bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm flex items-center gap-2 max-w-[90vw]"
         >
+          <span className="material-symbols-outlined text-base icon-filled flex-shrink-0">check_circle</span>
           {notification}
         </div>
       )}
-      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} selectedDate={selectedDate} />
       <DndContext sensors={sectionSensors} collisionDetection={closestCenter} onDragStart={handleSectionDragStart} onDragOver={handleSectionDragOver} onDragEnd={handleSectionDragEnd}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           <div className={sideColClass}>

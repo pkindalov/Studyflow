@@ -38,11 +38,22 @@ export default function MainContent({
   return (
     <div id="main-content" className="lg:col-span-6 flex flex-col gap-6">
       {selectedDate && (
-        <h2 className="text-xs font-semibold text-on-surface-variant/70 uppercase tracking-widest px-1 m-0">
+        <h2 className="lg:hidden text-xs font-semibold text-on-surface-variant/70 uppercase tracking-widest px-1 m-0">
           {formatDateHeading(selectedDate, lang, t.todayChip)}
         </h2>
       )}
       <SummaryCard total={total} completed={completed} remaining={remaining} progress={progress} />
+      {tasks.length > 0 && (
+        <div className="flex gap-4 justify-end">
+          <button
+            className="flex-1 sm:flex-none px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow hover:opacity-90 transition-all flex items-center justify-center gap-2"
+            onClick={onGenerateSchedule}
+          >
+            <span className="material-symbols-outlined">{schedule ? "refresh" : "play_circle"}</span>
+            {schedule ? t.regenerateSchedule : t.generateSchedule}
+          </button>
+        </div>
+      )}
       <TaskList
         tasks={tasks}
         onToggle={onToggle}
@@ -58,17 +69,6 @@ export default function MainContent({
         onEdit={onEdit}
         onAddClick={onAddClick}
       />
-      {tasks.length > 0 && (
-        <div className="flex gap-4 justify-end mt-2">
-          <button
-            className="flex-1 sm:flex-none px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow hover:opacity-90 transition-all flex items-center justify-center gap-2"
-            onClick={onGenerateSchedule}
-          >
-            <span className="material-symbols-outlined">{schedule ? "refresh" : "play_circle"}</span>
-            {schedule ? t.regenerateSchedule : t.generateSchedule}
-          </button>
-        </div>
-      )}
       {schedule && (
         <div ref={schedulePanelRef}>
           <SchedulePanel
