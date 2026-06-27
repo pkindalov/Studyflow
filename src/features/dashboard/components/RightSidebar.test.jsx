@@ -106,11 +106,11 @@ describe('QuoteSection', () => {
 // ── TasksProgressSection ─────────────────────────────────────────────────────
 
 describe('TasksProgressSection', () => {
-  it('renders nothing when both recurringTasks and tasksForDay are empty', () => {
+  it('renders an empty-state section when both recurringTasks and tasksForDay are empty', () => {
     const { container } = wrap(
       <TasksProgressSection tasks={{}} recurringTasks={[]} tasksForDay={[]} />
     )
-    expect(container.querySelector('section')).toBeNull()
+    expect(container.querySelector('section')).not.toBeNull()
   })
 
   it('shows "Active Projects" heading when recurringTasks are present', () => {

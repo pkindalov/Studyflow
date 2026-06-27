@@ -2,17 +2,19 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { useLang } from "../../../shared/i18n/LangContext";
 
-function ToggleSwitch({ checked, onChange }) {
+function ToggleSwitch({ checked, onChange, labelId }) {
   return (
     <button
       role="switch"
       aria-checked={checked}
+      aria-labelledby={labelId}
       onClick={onChange}
       className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
         checked ? "bg-secondary" : "bg-surface-container-highest"
       }`}
     >
       <span
+        aria-hidden="true"
         className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
           checked ? "translate-x-5" : "translate-x-0"
         }`}
@@ -64,11 +66,11 @@ function CalendarSidebar({
           <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0">
             calendar_month
           </span>
-          <span className="text-xs font-medium text-on-surface-variant truncate">
+          <span id="month-overview-label" className="text-xs font-medium text-on-surface-variant truncate">
             {t.monthOverview}
           </span>
         </div>
-        <ToggleSwitch checked={showCompletion} onChange={onToggleCompletion} />
+        <ToggleSwitch checked={showCompletion} onChange={onToggleCompletion} labelId="month-overview-label" />
       </div>
 
       <Calendar

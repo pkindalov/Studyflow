@@ -40,7 +40,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
         onClick={() => onOpenTimer(task)}
         title={isFinished ? t.completedStatus : isRunning ? t.runningStatus : hasProgress ? t.resumeTimerStatus : t.startTimerStatus}
         aria-label={isFinished ? t.completedStatus : isRunning ? t.runningStatus : hasProgress ? t.resumeTimerStatus : t.startTimerStatus}
-        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 ${
+        className={`flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full transition-all flex-shrink-0 ${
           isFinished
             ? "bg-tertiary/20 text-tertiary"
             : isRunning
@@ -59,7 +59,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
           onClick={() => onMarkDone(task.id)}
           title={t.markDoneEarly}
           aria-label={t.markDoneEarly}
-          className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-tertiary hover:bg-tertiary/10"
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-tertiary hover:bg-tertiary/10"
         >
           <span className="material-symbols-outlined text-base">check_circle</span>
         </button>
@@ -68,7 +68,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
         onClick={() => onRemove(task.id)}
         title={t.removeFromSchedule}
         aria-label={t.removeFromSchedule}
-        className="flex items-center justify-center w-8 h-8 rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-error hover:bg-error/10"
+        className="flex items-center justify-center min-w-[44px] min-h-[44px] rounded-full transition-all flex-shrink-0 text-on-surface-variant/40 hover:text-error hover:bg-error/10"
       >
         <span className="material-symbols-outlined text-base">close</span>
       </button>

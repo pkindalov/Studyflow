@@ -199,7 +199,14 @@ export function TasksProgressSection({
   const overflow = items.length - MAX_VISIBLE;
   const sectionTitle = recurringTasks.length > 0 ? t.activeProjects : t.todaysTasks;
 
-  if (!hasAny) return null;
+  if (!hasAny) return (
+    <section className="flex flex-col gap-3">
+      <h3 className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant uppercase px-1">
+        {t.todaysTasks}
+      </h3>
+      <p className="text-xs text-on-surface-variant/50 px-1">{t.noTasksMessage}</p>
+    </section>
+  );
 
   return (
     <>

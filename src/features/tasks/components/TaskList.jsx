@@ -18,7 +18,7 @@ const SortableTaskCard = function({ id, ...props }) {
   );
 }
 
-const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder }) {
+const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onStopRecurring, excludedTaskIds, onToggleSelect, onOpenTimer, onSaveToBank, onOpenSavedList, savedListTexts, onReorder, onAddClick }) {
   const { t } = useLang();
   const [page, setPage] = useState(0);
 
@@ -76,12 +76,21 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center gap-3 mt-8">
           <p className="text-on-surface-variant text-sm text-center">{t.noTasksMessage}</p>
+          {onAddClick && (
+            <button
+              onClick={onAddClick}
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all shadow"
+            >
+              <span className="material-symbols-outlined text-base">add</span>
+              {t.noTasksAddFirst}
+            </button>
+          )}
           {onOpenSavedList && (
             <button
               onClick={onOpenSavedList}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-secondary/10 text-secondary border border-secondary/20 hover:bg-secondary/20 transition-all"
+              className="flex items-center gap-1 text-xs font-semibold text-on-surface-variant hover:text-secondary transition-colors"
             >
-              <span className="material-symbols-outlined text-base">bookmarks</span>
+              <span className="material-symbols-outlined text-sm">bookmarks</span>
               {t.useFromSavedList}
             </button>
           )}

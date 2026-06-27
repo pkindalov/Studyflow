@@ -8,6 +8,11 @@
 .icon-filled   { font-variation-settings: 'FILL' 1; }
 .icon-outlined { font-variation-settings: 'FILL' 0; }
 
+/* Destructive ghost button — color-mix() required because `error` is a CSS variable;
+   Tailwind opacity modifiers (bg-error/8) only work with RGB channel values */
+.btn-clear-ghost { background-color: color-mix(in srgb, var(--color-error) 8%, transparent); border-color: color-mix(in srgb, var(--color-error) 25%, transparent); }
+.btn-clear-ghost:hover { background-color: color-mix(in srgb, var(--color-error) 15%, transparent); }
+
 :root {
   /* Primary — soft indigo-violet */
   --color-primary: #9580f5;

@@ -46,7 +46,7 @@ describe('task rendering', () => {
 
   it('shows the section heading', () => {
     wrap(<TaskList tasks={[makeTask(1)]} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} />)
-    expect(screen.getByText('Priority Tasks')).toBeTruthy()
+    expect(screen.getByText("Today's Tasks")).toBeTruthy()
   })
 })
 

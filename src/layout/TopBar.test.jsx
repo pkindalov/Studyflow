@@ -33,24 +33,24 @@ describe('help button', () => {
 describe('language switcher', () => {
   it('calls setLang("en") when EN button is clicked', () => {
     render(<TopBar onShowHelp={onShowHelp} lang="bg" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    fireEvent.click(screen.getAllByRole('button', { name: 'EN' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'Switch to English' })[0])
     expect(setLang).toHaveBeenCalledWith('en')
   })
 
   it('calls setLang("bg") when БГ button is clicked', () => {
     render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    fireEvent.click(screen.getAllByRole('button', { name: 'БГ' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'Switch to Bulgarian' })[0])
     expect(setLang).toHaveBeenCalledWith('bg')
   })
 
   it('EN button has active class when lang is "en"', () => {
     render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    expect(screen.getAllByRole('button', { name: 'EN' })[0].className).toContain('bg-primary')
+    expect(screen.getAllByRole('button', { name: 'Switch to English' })[0].className).toContain('bg-primary')
   })
 
   it('БГ button has active class when lang is "bg"', () => {
     render(<TopBar onShowHelp={onShowHelp} lang="bg" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    expect(screen.getAllByRole('button', { name: 'БГ' })[0].className).toContain('bg-primary')
+    expect(screen.getAllByRole('button', { name: 'Switch to Bulgarian' })[0].className).toContain('bg-primary')
   })
 })
 

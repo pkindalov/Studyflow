@@ -64,11 +64,13 @@ export const bg = {
   cannotUndo: "Това не може да бъде отменено.",
 
   // ── Task list ────────────────────────────────────────────────────────────────
-  tasksHeading: "Задачи",
+  tasksHeading: "Задачи за деня",
   selectAll: "Избери всички",
   deselectAll: "Отмени избора",
   viewAllArchives: "Виж архива",
   noTasksMessage: "Няма задачи за този ден.",
+  noTasksAddFirst: "Добави първата си задача",
+  skipToMainContent: "Към основното съдържание",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
   switchTaskTitle: "Смяна на задача?",
@@ -108,10 +110,13 @@ export const bg = {
 
   // ── Summary card ─────────────────────────────────────────────────────────────
   focusProgressLabel: "Напредък",
-  greatProgressMsg: "Вървиш много добре днес.",
+  summaryMsgStart: "Готов за начало — добави задачи и стартирай сесията.",
+  summaryMsgProgress: "Вървиш много добре днес.",
+  summaryMsgAllDone: "Всичко завършено — страхотна работа!",
   totalLabel: "Всичко",
   doneLabel: "Готово",
   leftLabel: "Остават",
+  todayChip: "Днес",
 
   // ── Right sidebar ─────────────────────────────────────────────────────────────
   totalStudyTime: "Общо учебно време",
@@ -211,6 +216,7 @@ export const bg = {
   dragToMoveHint: "Плъзни за преместване в друга колона",
 
   // ── Theme toggle ──────────────────────────────────────────────────────────────
+  appSettingsToolbar: "Настройки на приложението",
   lightMode: "Светъл",
   darkMode: "Тъмен",
   switchToLight: "Превключи към светъл режим",

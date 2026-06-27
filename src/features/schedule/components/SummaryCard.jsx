@@ -15,7 +15,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
               {t.focusProgressLabel}
             </h3>
             <p className="text-sm text-on-surface-variant">
-              {t.greatProgressMsg}
+              {progress === 0 ? t.summaryMsgStart : progress === 100 ? t.summaryMsgAllDone : t.summaryMsgProgress}
             </p>
           </div>
           <div className="flex gap-4 sm:gap-10">
@@ -32,7 +32,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
                 {t.doneLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-secondary">
-                {completed.toString().padStart(2, "0")}
+                {completed}
               </span>
             </div>
             <div className="flex flex-col border-l border-outline-variant/20 pl-4 sm:pl-10">
@@ -40,7 +40,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
                 {t.leftLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-primary">
-                {remaining.toString().padStart(2, "0")}
+                {remaining}
               </span>
             </div>
           </div>

@@ -29,6 +29,9 @@ const SchedulePanel = function({
           <h3 className="font-headline font-bold text-xl mb-4 flex items-center gap-2 text-on-surface">
             <span className="material-symbols-outlined text-primary">schedule</span>
             {t.todaysSchedule}
+            {runningTaskId && schedule.some((item) => item.id === runningTaskId) && (
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse ml-1 flex-shrink-0" aria-hidden="true" />
+            )}
           </h3>
         )}
         {!allScheduleDone && (
@@ -52,20 +55,20 @@ const SchedulePanel = function({
           </DndContext>
         )}
       </div>
-      <div className="flex gap-3 justify-end mt-4 flex-wrap">
+      <div className="flex gap-3 justify-between items-center mt-4 flex-wrap">
         <button
-          className="flex-1 sm:flex-none px-5 py-2.5 bg-secondary/15 text-secondary border border-secondary/30 rounded-xl font-semibold hover:bg-secondary/25 transition-all flex items-center justify-center gap-2 text-sm"
+          className="text-xs font-semibold text-error/60 hover:text-error transition-colors flex items-center gap-1"
+          onClick={onDelete}
+        >
+          <span className="material-symbols-outlined text-sm">delete</span>
+          {t.delete}
+        </button>
+        <button
+          className="px-5 py-2.5 bg-secondary/15 text-secondary border border-secondary/30 rounded-xl font-semibold hover:bg-secondary/25 transition-all flex items-center gap-2 text-sm"
           onClick={onSave}
         >
           <span className="material-symbols-outlined text-base">save</span>
           {t.saveSchedule}
-        </button>
-        <button
-          className="flex-1 sm:flex-none px-5 py-2.5 bg-error/10 text-error border border-error/20 rounded-xl font-semibold hover:bg-error/20 transition-all flex items-center justify-center gap-2 text-sm"
-          onClick={onDelete}
-        >
-          <span className="material-symbols-outlined text-base">delete</span>
-          {t.delete}
         </button>
       </div>
     </>

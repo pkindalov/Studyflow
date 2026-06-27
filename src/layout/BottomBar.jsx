@@ -12,7 +12,8 @@ export default function BottomBar({ onExport, onImport, onShowClearConfirm, isCu
             <span className="material-symbols-outlined text-sm">restore</span>
             {t.importBtn}
           </button>
-          <button onClick={onShowClearConfirm} className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-sm transition-all" title={t.clearTitle}>
+          <div className="w-px h-5 bg-outline-variant/40 mx-1" aria-hidden="true" />
+          <button onClick={onShowClearConfirm} className="flex items-center gap-1.5 px-3 py-2 btn-clear-ghost border text-error rounded-xl text-xs font-semibold shadow-sm transition-all" title={t.clearTitle}>
             <span className="material-symbols-outlined text-sm">delete_sweep</span>
             {t.clearBtn}
           </button>
@@ -35,7 +36,8 @@ export default function BottomBar({ onExport, onImport, onShowClearConfirm, isCu
           <span className="material-symbols-outlined text-sm">restore</span>
           {t.importBtn}
         </button>
-        <button onClick={onShowClearConfirm} className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:border-error/40 hover:text-error hover:bg-error/5 shadow-lg transition-all" title={t.clearTitle}>
+        <div className="w-px h-5 bg-outline-variant/40 mx-1" aria-hidden="true" />
+        <button onClick={onShowClearConfirm} className="flex items-center gap-1.5 px-4 py-2.5 btn-clear-ghost border text-error rounded-xl text-xs font-semibold shadow-lg transition-all" title={t.clearTitle}>
           <span className="material-symbols-outlined text-sm">delete_sweep</span>
           {t.clearBtn}
         </button>

@@ -62,11 +62,13 @@ export const en = {
   cannotUndo: "This cannot be undone.",
 
   // ── Task list ────────────────────────────────────────────────────────────────
-  tasksHeading: "Priority Tasks",
+  tasksHeading: "Today's Tasks",
   selectAll: "Select all",
   deselectAll: "Deselect all",
   viewAllArchives: "View All Archives",
   noTasksMessage: "No tasks for this day.",
+  noTasksAddFirst: "Add your first task",
+  skipToMainContent: "Skip to main content",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
   switchTaskTitle: "Switch task?",
@@ -106,10 +108,13 @@ export const en = {
 
   // ── Summary card ─────────────────────────────────────────────────────────────
   focusProgressLabel: "Focus Progress",
-  greatProgressMsg: "You're making great progress today.",
+  summaryMsgStart: "Ready to begin — add tasks and start your session.",
+  summaryMsgProgress: "You're making great progress today.",
+  summaryMsgAllDone: "All done for today — fantastic work!",
   totalLabel: "Total",
   doneLabel: "Done",
   leftLabel: "Left",
+  todayChip: "Today",
 
   // ── Right sidebar ─────────────────────────────────────────────────────────────
   totalStudyTime: "Total Study Time",
@@ -205,6 +210,7 @@ export const en = {
   dragToMoveHint: "Drag to move to other column",
 
   // ── Theme toggle ──────────────────────────────────────────────────────────────
+  appSettingsToolbar: "App settings",
   lightMode: "Light",
   darkMode: "Dark",
   switchToLight: "Switch to light mode",

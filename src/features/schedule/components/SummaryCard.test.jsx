@@ -27,7 +27,7 @@ describe('i18n labels', () => {
     expect(screen.getByText('Focus Progress')).toBeTruthy()
   })
 
-  it('renders the greatProgressMsg text', () => {
+  it('renders the summaryMsgProgress text', () => {
     wrap(base)
     expect(screen.getByText("You're making great progress today.")).toBeTruthy()
   })
@@ -56,29 +56,29 @@ describe('stat values', () => {
     expect(screen.getByText('9')).toBeTruthy()
   })
 
-  it('zero-pads single-digit completed to two digits', () => {
-    wrap({ ...base, completed: 5, remaining: 4 })
-    expect(screen.getByText('05')).toBeTruthy()
+  it('shows single-digit completed as-is', () => {
+    wrap({ ...base, completed: 6, remaining: 3 })
+    expect(screen.getByText('6')).toBeTruthy()
   })
 
-  it('does not zero-pad completed when already two digits', () => {
+  it('shows multi-digit completed correctly', () => {
     wrap({ ...base, completed: 12 })
     expect(screen.getByText('12')).toBeTruthy()
   })
 
-  it('zero-pads single-digit remaining to two digits', () => {
+  it('shows single-digit remaining as-is', () => {
     wrap({ ...base, remaining: 4, completed: 1 })
-    expect(screen.getByText('04')).toBeTruthy()
+    expect(screen.getByText('4')).toBeTruthy()
   })
 
-  it('does not zero-pad remaining when already two digits', () => {
+  it('shows multi-digit remaining correctly', () => {
     wrap({ ...base, remaining: 11 })
     expect(screen.getByText('11')).toBeTruthy()
   })
 
-  it('zero-pads 0 completed to "00"', () => {
+  it('shows 0 completed as "0"', () => {
     wrap({ ...base, completed: 0, remaining: 5 })
-    expect(screen.getByText('00')).toBeTruthy()
+    expect(screen.getByText('0')).toBeTruthy()
   })
 
   it('renders progress% in the SVG center', () => {

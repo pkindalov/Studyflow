@@ -215,8 +215,14 @@ function App() {
 
   return (
     <div className={`min-h-dvh p-4 sm:p-6 pt-6 ${theme === "light" ? "bg-[#f0eeff]" : "bg-[#0c0c1a]"}`}>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-on-primary focus:rounded-xl focus:font-semibold focus:shadow-lg"
+      >
+        {t.skipToMainContent}
+      </a>
       {notification && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
           {notification}
         </div>
       )}
@@ -237,6 +243,7 @@ function App() {
             onToggleSelect={toggleTaskSelection} onOpenTimer={openTimerForTask}
             onSaveToBank={handleSaveToBank} onOpenSavedList={handleOpenSavedList}
             savedListTexts={savedListTexts} onReorder={handleReorder} onEdit={editModal.open}
+            onAddClick={addModal.open} selectedDate={selectedDate}
             onGenerateSchedule={handleGenerateSchedule} schedule={schedule}
             allScheduleDone={allScheduleDone} scheduleTimers={scheduleTimers}
             runningTaskId={runningTaskId} scheduleSensors={scheduleSensors}

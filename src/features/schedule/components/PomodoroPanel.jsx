@@ -29,7 +29,7 @@ const PomodoroPanel = function({
           title={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
           aria-label={pomodoroEnabled ? t.disablePomodoro : t.enablePomodoro}
         >
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${pomodoroEnabled ? "translate-x-4" : "translate-x-0"}`} />
+          <span aria-hidden="true" className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${pomodoroEnabled ? "translate-x-4" : "translate-x-0"}`} />
         </button>
       </div>
       {pomodoroEnabled && (

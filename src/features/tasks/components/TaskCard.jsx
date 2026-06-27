@@ -92,8 +92,9 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
       <div className="flex-grow flex flex-col gap-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h4
-            className={`font-semibold text-on-surface group-hover:text-primary transition-colors ${isDone ? "line-through" : ""}`}
+            className={`font-semibold text-on-surface group-hover:text-primary transition-colors cursor-pointer ${isDone ? "line-through" : ""}`}
             onDoubleClick={() => onEdit(task)}
+            title={t.editTaskAria}
           >
             {task.text}
           </h4>
@@ -113,7 +114,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {onOpenTimer && (
           <button
             onClick={() => onOpenTimer(task)}
-            className="p-1 sm:p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label={t.startTimerAria}
             title={t.startTimerTitle}
           >
@@ -123,7 +124,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {onSaveToBank && (
           <button
             onClick={() => onSaveToBank(task)}
-            className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
+            className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
               isInList
                 ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
                 : "text-on-surface-variant/50 hover:text-secondary hover:bg-secondary/10"
@@ -139,7 +140,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {onToggleSelect && (
           <button
             onClick={() => onToggleSelect(task.id)}
-            className={`p-1 sm:p-1.5 rounded-lg transition-colors ${
+            className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
               selected
                 ? "text-secondary hover:bg-secondary/10"
                 : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
@@ -154,7 +155,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         )}
         <button
           onClick={() => onEdit(task)}
-          className="p-1 sm:p-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+          className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
           aria-label={t.editTaskAria}
         >
           <span className="material-symbols-outlined text-base">edit</span>
@@ -162,7 +163,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {task.recurringId && onStopRecurring && (
           <button
             onClick={() => onStopRecurring(task.recurringId)}
-            className="p-1 sm:p-1.5 rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
+            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
             aria-label={t.stopRepeatingAria}
             title={t.stopRepeatingTitle}
           >
@@ -171,7 +172,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         )}
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="p-1 sm:p-1.5 rounded-lg hover:text-error hover:bg-error/10 transition-colors"
+          className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-error hover:bg-error/10 transition-colors"
           aria-label={t.deleteTaskAria}
         >
           <span className="material-symbols-outlined text-base">delete</span>
