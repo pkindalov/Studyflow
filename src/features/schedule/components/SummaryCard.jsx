@@ -17,6 +17,11 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
             <p className="text-sm text-on-surface-variant">
               {progress === 0 ? t.summaryMsgStart : progress === 100 ? t.summaryMsgAllDone : t.summaryMsgProgress}
             </p>
+            {total === 0 && (
+              <p className="text-xs text-on-surface-variant/50 mt-1.5">
+                {t.summaryHintNoTasks}
+              </p>
+            )}
           </div>
           <div className="flex gap-4 sm:gap-10">
             <div className="flex flex-col">
@@ -50,6 +55,8 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
           <svg
             className="w-full h-full transform -rotate-90"
             viewBox="0 0 128 128"
+            role="img"
+            aria-label={`${progress}% complete — ${completed} of ${total} tasks done`}
           >
             <circle
               className="text-surface-container-highest"
@@ -73,7 +80,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
               strokeWidth="8"
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
             <span className="text-base sm:text-2xl font-headline font-bold text-on-surface">
               {progress}%
             </span>
