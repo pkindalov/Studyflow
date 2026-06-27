@@ -126,7 +126,7 @@ describe('optional buttons', () => {
     const onStopRecurring = vi.fn()
     wrap(<TaskCard task={{ ...base, recurringId: 'r1' }} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onStopRecurring={onStopRecurring} />)
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Stop repeating' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /stop this task from repeating/i }))
     expect(onStopRecurring).toHaveBeenCalledWith('r1')
   })
 
@@ -134,7 +134,7 @@ describe('optional buttons', () => {
     const onSaveToBank = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onSaveToBank={onSaveToBank} />)
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Save to list' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /save to list/i }))
     expect(onSaveToBank).toHaveBeenCalledWith(base)
   })
 
@@ -142,7 +142,7 @@ describe('optional buttons', () => {
     const onSaveToBank = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onSaveToBank={onSaveToBank} isInList={true} />)
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Remove from list' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /remove from list/i }))
     expect(onSaveToBank).toHaveBeenCalledWith(base)
   })
 
@@ -150,7 +150,7 @@ describe('optional buttons', () => {
     const onToggleSelect = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onToggleSelect={onToggleSelect} />)
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
-    fireEvent.click(screen.getByTitle('Exclude from schedule'))
+    fireEvent.click(screen.getByRole('menuitem', { name: /exclude from schedule/i }))
     expect(onToggleSelect).toHaveBeenCalledWith('t1')
   })
 

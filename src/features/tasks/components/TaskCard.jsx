@@ -55,11 +55,16 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
     const close = (e) => {
       if (!moreWrapRef.current?.contains(e.target)) setShowMore(false);
     };
+    const handleKey = (e) => {
+      if (e.key === "Escape") setShowMore(false);
+    };
     document.addEventListener("mousedown", close);
     document.addEventListener("touchstart", close);
+    document.addEventListener("keydown", handleKey);
     return () => {
       document.removeEventListener("mousedown", close);
       document.removeEventListener("touchstart", close);
+      document.removeEventListener("keydown", handleKey);
     };
   }, [showMore]);
 
@@ -129,7 +134,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {onOpenTimer && (
           <button
             onClick={() => onOpenTimer(task)}
-            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label={t.startTimerAria}
             title={t.startTimerTitle}
           >
@@ -138,7 +143,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         )}
         <button
           onClick={() => onEdit(task)}
-          className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
+          className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:text-primary hover:bg-primary/10 transition-colors"
           aria-label={t.editTaskAria}
         >
           <span className="material-symbols-outlined text-base">edit</span>
@@ -147,54 +152,49 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
           <div ref={moreWrapRef} className="relative">
             <button
               onClick={() => setShowMore((v) => !v)}
-              className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
+              className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
               aria-label={t.moreActionsAria}
               aria-expanded={showMore}
             >
               <span className="material-symbols-outlined text-base">more_horiz</span>
             </button>
             {showMore && (
-              <div className="absolute right-0 top-full mt-1 z-30 bg-surface-container-highest border border-outline-variant/50 rounded-xl shadow-xl p-1 flex items-center gap-0.5">
+              <div
+                role="menu"
+                className="absolute right-0 top-full mt-1 z-30 bg-surface-container-highest border border-outline-variant/50 rounded-xl shadow-xl py-1 flex flex-col min-w-[180px]"
+              >
                 {onSaveToBank && (
                   <button
+                    role="menuitem"
                     onClick={() => { onSaveToBank(task); setShowMore(false); }}
-                    className={`p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
-                      isInList
-                        ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
-                        : "text-on-surface-variant/50 hover:text-secondary hover:bg-secondary/10"
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container-high ${
+                      isInList ? "text-secondary" : "text-on-surface-variant"
                     }`}
-                    aria-label={isInList ? t.removeFromList : t.saveToListAction}
-                    title={isInList ? t.savedListBtn : t.saveToListAction}
                   >
-                    <span className={`material-symbols-outlined text-base ${isInList ? "icon-filled" : "icon-outlined"}`}>
-                      bookmark
-                    </span>
+                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${isInList ? "icon-filled" : "icon-outlined"}`}>bookmark</span>
+                    {isInList ? t.removeFromList : t.saveToListAction}
                   </button>
                 )}
                 {onToggleSelect && (
                   <button
+                    role="menuitem"
                     onClick={() => { onToggleSelect(task.id); setShowMore(false); }}
-                    className={`p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
-                      selected
-                        ? "text-secondary hover:bg-secondary/10"
-                        : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container-high ${
+                      selected ? "text-secondary" : "text-on-surface-variant/60"
                     }`}
-                    aria-label={selected ? t.excludeFromSchedule : t.includeInSchedule}
-                    title={selected ? t.excludeFromSchedule : t.includeInSchedule}
                   >
-                    <span className={`material-symbols-outlined text-base ${selected ? "icon-filled" : "icon-outlined"}`}>
-                      event_available
-                    </span>
+                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${selected ? "icon-filled" : "icon-outlined"}`}>event_available</span>
+                    {selected ? t.excludeFromSchedule : t.includeInSchedule}
                   </button>
                 )}
                 {task.recurringId && onStopRecurring && (
                   <button
+                    role="menuitem"
                     onClick={() => { onStopRecurring(task.recurringId); setShowMore(false); }}
-                    className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
-                    aria-label={t.stopRepeatingAria}
-                    title={t.stopRepeatingTitle}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
                   >
-                    <span className="material-symbols-outlined text-base">repeat_off</span>
+                    <span className="material-symbols-outlined text-base flex-shrink-0">repeat_off</span>
+                    {t.stopRepeatingTitle}
                   </button>
                 )}
               </div>
@@ -203,7 +203,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         )}
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-error hover:bg-error/10 transition-colors"
+          className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:text-error hover:bg-error/10 transition-colors"
           aria-label={t.deleteTaskAria}
         >
           <span className="material-symbols-outlined text-base">delete</span>
