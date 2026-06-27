@@ -66,12 +66,14 @@ export const en = {
 
   // ── Task list ────────────────────────────────────────────────────────────────
   tasksHeading: "Today's Tasks",
-  selectAll: "Select all",
-  deselectAll: "Deselect all",
+  selectAll: "Include all",
+  deselectAll: "Exclude all",
   viewAllArchives: "View All Archives",
   noTasksMessage: "No tasks for this day.",
   noTasksAddFirst: "Add your first task",
   skipToMainContent: "Skip to main content",
+  excludedCountHint: (n) => `${n} task${n === 1 ? "" : "s"} excluded from schedule`,
+  includeAllHint: "Include all",
 
   // ── Timer modal ──────────────────────────────────────────────────────────────
   switchTaskTitle: "Switch task?",
@@ -112,6 +114,7 @@ export const en = {
   // ── Summary card ─────────────────────────────────────────────────────────────
   focusProgressLabel: "Focus Progress",
   summaryMsgStart: "Ready to begin — add tasks and start your session.",
+  summaryHintNoTasks: "Use 'Create Task' in the sidebar to add your first task.",
   summaryMsgProgress: "You're making great progress today.",
   summaryMsgAllDone: "All done for today — fantastic work!",
   totalLabel: "Total",
@@ -193,7 +196,7 @@ export const en = {
   // ── Bottom bar ────────────────────────────────────────────────────────────────
   exportBtn: "Export",
   importBtn: "Import",
-  clearBtn: "Clear",
+  clearBtn: "Clear All Data",
   exportTitle: "Export all data as a backup file",
   importTitle: "Restore data from a backup file",
   clearTitle: "Permanently delete all data",

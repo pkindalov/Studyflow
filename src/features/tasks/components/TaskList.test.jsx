@@ -53,35 +53,35 @@ describe('task rendering', () => {
 // ── selection controls ────────────────────────────────────────────────────────
 
 describe('selection controls', () => {
-  it('shows "Deselect all" when onToggleSelect is provided and no task is excluded', () => {
+  it('shows "Exclude all" when onToggleSelect is provided and no task is excluded', () => {
     const tasks = [makeTask(1), makeTask(2)]
     wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={vi.fn()} excludedTaskIds={new Set()} />)
-    expect(screen.getByText('Deselect all')).toBeTruthy()
+    expect(screen.getByText('Exclude all')).toBeTruthy()
   })
 
-  it('shows "Deselect all" when all tasks are selected (no exclusions)', () => {
+  it('shows "Exclude all" when all tasks are selected (no exclusions)', () => {
     const tasks = [makeTask(1)]
     wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={vi.fn()} excludedTaskIds={new Set()} />)
-    expect(screen.getByText('Deselect all')).toBeTruthy()
+    expect(screen.getByText('Exclude all')).toBeTruthy()
   })
 
-  it('shows "Select all" when some tasks are excluded', () => {
+  it('shows "Include all" when some tasks are excluded', () => {
     const tasks = [makeTask(1), makeTask(2)]
     wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={vi.fn()} excludedTaskIds={new Set(['t1'])} />)
-    expect(screen.getByText('Select all')).toBeTruthy()
+    expect(screen.getByText('Include all')).toBeTruthy()
   })
 
   it('hides selection controls when onToggleSelect is not provided', () => {
     wrap(<TaskList tasks={[makeTask(1)]} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} />)
-    expect(screen.queryByText('Select all')).toBeNull()
-    expect(screen.queryByText('Deselect all')).toBeNull()
+    expect(screen.queryByText('Include all')).toBeNull()
+    expect(screen.queryByText('Exclude all')).toBeNull()
   })
 
-  it('clicking "Deselect all" calls onToggleSelect for each non-excluded task', () => {
+  it('clicking "Exclude all" calls onToggleSelect for each non-excluded task', () => {
     const onToggleSelect = vi.fn()
     const tasks = [makeTask(1), makeTask(2)]
     wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={onToggleSelect} excludedTaskIds={new Set()} />)
-    fireEvent.click(screen.getByText('Deselect all'))
+    fireEvent.click(screen.getByText('Exclude all'))
     expect(onToggleSelect).toHaveBeenCalledTimes(2)
     expect(onToggleSelect).toHaveBeenCalledWith('t1')
     expect(onToggleSelect).toHaveBeenCalledWith('t2')
