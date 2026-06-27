@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useLang } from "../i18n/LangContext";
 
 const Section = function({ icon, title, children }) {
@@ -26,17 +27,50 @@ const Tip = function({ children }) {
 const HelpModal = function({ onClose }) {
   const { t } = useLang();
   const b = (text) => <strong className="text-on-surface">{text}</strong>;
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    const id = setTimeout(() => panelRef.current?.querySelector("button")?.focus(), 0);
+    return () => {
+      clearTimeout(id);
+      if (previousFocus && document.contains(previousFocus)) previousFocus.focus();
+    };
+  }, []);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") { onClose(); return; }
+    if (e.key !== "Tab" || !panelRef.current) return;
+    const focusables = Array.from(panelRef.current.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ));
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-modal-title"
+        onKeyDown={handleKeyDown}
         className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg flex flex-col max-h-[92dvh]"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-outline-variant/30 flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-xl text-primary">help</span>
-            <h2 className="font-headline font-bold text-on-surface text-lg">{t.howStudyflowWorks}</h2>
+            <h2 id="help-modal-title" className="font-headline font-bold text-on-surface text-lg">{t.howStudyflowWorks}</h2>
           </div>
           <button
             onClick={onClose}

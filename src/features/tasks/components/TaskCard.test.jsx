@@ -73,12 +73,6 @@ describe('edit', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit task' }))
     expect(onEdit).toHaveBeenCalledWith(base)
   })
-
-  it('calls onEdit on double-click of task text', () => {
-    wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />)
-    fireEvent.dblClick(screen.getByText('Learn React'))
-    expect(onEdit).toHaveBeenCalledWith(base)
-  })
 })
 
 // ── delete flow ───────────────────────────────────────────────────────────────
@@ -128,37 +122,40 @@ describe('optional buttons', () => {
     expect(screen.queryByRole('button', { name: 'Start timer' })).toBeNull()
   })
 
-  it('calls onStopRecurring with recurringId', () => {
+  it('calls onStopRecurring with recurringId after opening overflow', () => {
     const onStopRecurring = vi.fn()
     wrap(<TaskCard task={{ ...base, recurringId: 'r1' }} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onStopRecurring={onStopRecurring} />)
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Stop repeating' }))
     expect(onStopRecurring).toHaveBeenCalledWith('r1')
   })
 
-  it('calls onSaveToBank with task', () => {
+  it('calls onSaveToBank with task after opening overflow', () => {
     const onSaveToBank = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onSaveToBank={onSaveToBank} />)
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Save to list' }))
     expect(onSaveToBank).toHaveBeenCalledWith(base)
   })
 
-  it('calls onSaveToBank when isInList is true', () => {
+  it('calls onSaveToBank when isInList is true after opening overflow', () => {
     const onSaveToBank = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onSaveToBank={onSaveToBank} isInList={true} />)
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove from list' }))
     expect(onSaveToBank).toHaveBeenCalledWith(base)
   })
 
-  it('calls onToggleSelect with task id when selection button is clicked', () => {
+  it('calls onToggleSelect with task id after opening overflow', () => {
     const onToggleSelect = vi.fn()
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onToggleSelect={onToggleSelect} />)
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
     fireEvent.click(screen.getByTitle('Exclude from schedule'))
     expect(onToggleSelect).toHaveBeenCalledWith('t1')
   })
 
-  it('omits selection button when onToggleSelect is not provided', () => {
+  it('omits overflow button when no secondary actions are provided', () => {
     wrap(<TaskCard task={base} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />)
-    expect(screen.queryByTitle('Exclude from schedule')).toBeNull()
-    expect(screen.queryByTitle('Include in schedule')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull()
   })
 })

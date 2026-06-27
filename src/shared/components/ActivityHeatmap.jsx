@@ -107,9 +107,9 @@ const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
                     }
                   } : undefined}
                   className={[
-                    "w-2 h-2 rounded-[2px] flex-shrink-0 transition-opacity",
+                    "relative w-2 h-2 rounded-[2px] flex-shrink-0 transition-opacity",
                     cellClass(count, isFuture),
-                    isInteractive ? "cursor-pointer hover:opacity-80" : "",
+                    isInteractive ? "cursor-pointer hover:opacity-80 before:absolute before:content-[''] before:-inset-1.5" : "",
                     isSelected ? "ring-1 ring-primary ring-offset-[1px] ring-offset-surface-container" : "",
                   ].join(" ")}
                 />

@@ -39,7 +39,7 @@ function TrackRow({ track, isActive, isPlaying, isErrored, onSelect, onRemove, r
       <button
         onClick={(e) => { e.stopPropagation(); onRemove(track.id); }}
         aria-label={removeTitle}
-        className="opacity-0 group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
+        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-on-surface-variant hover:text-error transition-all flex-shrink-0"
         title={removeTitle}
       >
         <span className="material-symbols-outlined text-sm">close</span>

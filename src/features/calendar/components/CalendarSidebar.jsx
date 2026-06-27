@@ -34,7 +34,7 @@ function CalendarSidebar({
   const { t, lang } = useLang();
 
   return (
-    <aside className="flex flex-col p-5 sm:p-6 gap-5 rounded-3xl bg-surface-container border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
+    <aside className="flex flex-col p-5 sm:p-6 gap-5 rounded-2xl bg-surface-container border border-outline-variant/50 shadow-[0_4px_24px_rgba(0,0,0,0.3)]">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
           <img
@@ -43,9 +43,9 @@ function CalendarSidebar({
             className="w-10 h-10 rounded-xl object-cover"
           />
           <div className="flex flex-col">
-            <span className="font-headline font-bold text-lg text-on-surface leading-none">
+            <h1 className="font-headline font-bold text-lg text-on-surface leading-none m-0">
               {t.appName}
-            </span>
+            </h1>
             <span className="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">
               {t.appTagline}
             </span>

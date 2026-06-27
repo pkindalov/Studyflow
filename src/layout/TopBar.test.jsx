@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import TopBar from './TopBar'
 
 const t = {
+  appSettingsToolbar: 'App settings',
   howStudyflowWorks: 'How Studyflow works',
   switchToLight: 'Switch to light mode',
   switchToDark: 'Switch to dark mode',
@@ -23,7 +24,7 @@ beforeEach(() => {
 describe('help button', () => {
   it('calls onShowHelp when clicked', () => {
     render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    fireEvent.click(screen.getAllByRole('button', { name: 'Help' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'How Studyflow works' })[0])
     expect(onShowHelp).toHaveBeenCalled()
   })
 })

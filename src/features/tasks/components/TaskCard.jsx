@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 
 const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
@@ -45,10 +45,27 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   const { t } = useLang();
   const isDone = !!task.done;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const moreWrapRef = useRef(null);
+
+  const hasSecondary = !!(onSaveToBank || onToggleSelect || (task.recurringId && onStopRecurring));
+
+  useEffect(() => {
+    if (!showMore) return;
+    const close = (e) => {
+      if (!moreWrapRef.current?.contains(e.target)) setShowMore(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("touchstart", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("touchstart", close);
+    };
+  }, [showMore]);
 
   return (
     <div
-      className={`p-3 sm:p-5 rounded-xl border flex items-center gap-2 sm:gap-5 transition-all group ${
+      className={`relative p-3 sm:p-5 rounded-xl border flex items-center gap-2 sm:gap-5 transition-all group ${
         dragging ? "opacity-30" : ""
       } ${
         isDone ? "opacity-40" : ""
@@ -92,9 +109,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
       <div className="flex-grow flex flex-col gap-1">
         <div className="flex items-center gap-2 flex-wrap">
           <h4
-            className={`font-semibold text-on-surface group-hover:text-primary transition-colors cursor-pointer ${isDone ? "line-through" : ""}`}
-            onDoubleClick={() => onEdit(task)}
-            title={t.editTaskAria}
+            className={`font-semibold text-on-surface group-hover:text-primary transition-colors ${isDone ? "line-through" : ""}`}
           >
             {task.text}
           </h4>
@@ -121,38 +136,6 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
             <span className="material-symbols-outlined text-base">play_circle</span>
           </button>
         )}
-        {onSaveToBank && (
-          <button
-            onClick={() => onSaveToBank(task)}
-            className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
-              isInList
-                ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
-                : "text-on-surface-variant/50 hover:text-secondary hover:bg-secondary/10"
-            }`}
-            aria-label={isInList ? t.removeFromList : t.saveToListAction}
-            title={isInList ? t.savedListBtn : t.saveToListAction}
-          >
-            <span className={`material-symbols-outlined text-base ${isInList ? "icon-filled" : "icon-outlined"}`}>
-              bookmark
-            </span>
-          </button>
-        )}
-        {onToggleSelect && (
-          <button
-            onClick={() => onToggleSelect(task.id)}
-            className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
-              selected
-                ? "text-secondary hover:bg-secondary/10"
-                : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
-            }`}
-            aria-label={selected ? t.excludeFromSchedule : t.includeInSchedule}
-            title={selected ? t.excludeFromSchedule : t.includeInSchedule}
-          >
-            <span className={`material-symbols-outlined text-base ${selected ? "icon-filled" : "icon-outlined"}`}>
-              event_available
-            </span>
-          </button>
-        )}
         <button
           onClick={() => onEdit(task)}
           className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-primary hover:bg-primary/10 transition-colors"
@@ -160,15 +143,63 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         >
           <span className="material-symbols-outlined text-base">edit</span>
         </button>
-        {task.recurringId && onStopRecurring && (
-          <button
-            onClick={() => onStopRecurring(task.recurringId)}
-            className="p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
-            aria-label={t.stopRepeatingAria}
-            title={t.stopRepeatingTitle}
-          >
-            <span className="material-symbols-outlined text-base">repeat_off</span>
-          </button>
+        {hasSecondary && (
+          <div ref={moreWrapRef} className="relative">
+            <button
+              onClick={() => setShowMore((v) => !v)}
+              className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
+              aria-label={t.moreActionsAria}
+              aria-expanded={showMore}
+            >
+              <span className="material-symbols-outlined text-base">more_horiz</span>
+            </button>
+            {showMore && (
+              <div className="absolute right-0 top-full mt-1 z-30 bg-surface-container-highest border border-outline-variant/50 rounded-xl shadow-xl p-1 flex items-center gap-0.5">
+                {onSaveToBank && (
+                  <button
+                    onClick={() => { onSaveToBank(task); setShowMore(false); }}
+                    className={`p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
+                      isInList
+                        ? "text-secondary bg-secondary/10 hover:bg-secondary/20"
+                        : "text-on-surface-variant/50 hover:text-secondary hover:bg-secondary/10"
+                    }`}
+                    aria-label={isInList ? t.removeFromList : t.saveToListAction}
+                    title={isInList ? t.savedListBtn : t.saveToListAction}
+                  >
+                    <span className={`material-symbols-outlined text-base ${isInList ? "icon-filled" : "icon-outlined"}`}>
+                      bookmark
+                    </span>
+                  </button>
+                )}
+                {onToggleSelect && (
+                  <button
+                    onClick={() => { onToggleSelect(task.id); setShowMore(false); }}
+                    className={`p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${
+                      selected
+                        ? "text-secondary hover:bg-secondary/10"
+                        : "text-on-surface-variant/30 hover:bg-surface-container-high hover:text-on-surface-variant"
+                    }`}
+                    aria-label={selected ? t.excludeFromSchedule : t.includeInSchedule}
+                    title={selected ? t.excludeFromSchedule : t.includeInSchedule}
+                  >
+                    <span className={`material-symbols-outlined text-base ${selected ? "icon-filled" : "icon-outlined"}`}>
+                      event_available
+                    </span>
+                  </button>
+                )}
+                {task.recurringId && onStopRecurring && (
+                  <button
+                    onClick={() => { onStopRecurring(task.recurringId); setShowMore(false); }}
+                    className="p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:text-secondary hover:bg-secondary/10 transition-colors"
+                    aria-label={t.stopRepeatingAria}
+                    title={t.stopRepeatingTitle}
+                  >
+                    <span className="material-symbols-outlined text-base">repeat_off</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         )}
         <button
           onClick={() => setShowDeleteConfirm(true)}

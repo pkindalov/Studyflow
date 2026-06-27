@@ -27,6 +27,7 @@
 
   /* Tertiary — warm amber (priority) */
   --color-tertiary: #f0a540;
+  --color-on-tertiary: #1a0800;
 
   /* Surfaces — deep navy-black scale */
   --color-surface: #0f0f20;
@@ -64,6 +65,7 @@
 
   /* Tertiary — darker amber */
   --color-tertiary: #a86200;
+  --color-on-tertiary: #ffffff;
 
   /* Surfaces — warm lavender-white scale */
   --color-surface: #f5f2ff;

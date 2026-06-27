@@ -39,6 +39,7 @@ export const en = {
   removeEndDate: "Remove end date",
   periodEndDateRequired: "Set an end date to save the date range.",
   repeatsEveryDayUntil: (month) => `Repeats every day until the end of ${month}.`,
+  repeatsEveryWeekOn: (weekday) => weekday ? `Repeats every ${weekday}.` : "Repeats weekly.",
   recurringChangeNote: "Changes to the repeat pattern will apply to all instances.",
   moveToDate: "Move to date",
   addTaskTitle: "Add New Task",
@@ -54,6 +55,7 @@ export const en = {
   excludeFromSchedule: "Exclude from schedule",
   includeInSchedule: "Include in schedule",
   editTaskAria: "Edit task",
+  moreActionsAria: "More actions",
   stopRepeatingAria: "Stop repeating",
   stopRepeatingTitle: "Stop this task from repeating on future dates",
   deleteTaskAria: "Delete task",
@@ -162,6 +164,7 @@ export const en = {
 
   // ── Schedule (App.jsx) ────────────────────────────────────────────────────────
   generateSchedule: "Generate Schedule",
+  regenerateSchedule: "Regenerate Schedule",
   todaysSchedule: "Today's Schedule",
   saveSchedule: "Save Schedule",
   allDoneNothing: "All tasks are done — nothing left to schedule!",

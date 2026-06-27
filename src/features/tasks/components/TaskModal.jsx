@@ -15,7 +15,7 @@ const MoveToDateSection = function({ moveToDate, setMoveToDate, t }) {
         value={moveToDate}
         min={today}
         onChange={(e) => setMoveToDate(e.target.value)}
-        className="w-full bg-surface-container-highest border border-outline/60 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60 [color-scheme:dark]"
+        className="w-full bg-surface-container-highest border border-outline/60 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60"
       />
     </div>
   );
@@ -100,7 +100,7 @@ const TaskModal = function({
         onSubmit={(e) => { e.preventDefault(); if (!saveDisabled) onSave(); }}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
-        className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md pt-5 sm:pt-7 px-5 sm:px-7 flex flex-col gap-5 max-h-[92dvh] overflow-y-auto overscroll-contain"
+        className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md pt-5 sm:pt-7 px-5 sm:px-7 flex flex-col gap-5 max-h-dvh sm:max-h-[92dvh] overflow-y-auto overscroll-contain"
       >
         <button
           type="button"

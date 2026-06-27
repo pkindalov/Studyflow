@@ -57,7 +57,7 @@ const SchedulePanel = function({
       </div>
       <div className="flex gap-3 justify-between items-center mt-4 flex-wrap">
         <button
-          className="text-xs font-semibold text-error/60 hover:text-error transition-colors flex items-center gap-1"
+          className="min-h-[44px] px-3 text-xs font-semibold text-error/70 hover:text-error transition-colors flex items-center gap-1"
           onClick={onDelete}
         >
           <span className="material-symbols-outlined text-sm">delete</span>

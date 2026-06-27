@@ -222,7 +222,11 @@ function App() {
         {t.skipToMainContent}
       </a>
       {notification && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-primary text-on-primary px-5 py-3 rounded-xl shadow-lg font-semibold animate-fade-in text-sm text-center max-w-[90vw]"
+        >
           {notification}
         </div>
       )}

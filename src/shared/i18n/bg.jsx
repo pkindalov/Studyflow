@@ -39,6 +39,7 @@ export const bg = {
   removeEndDate: "Премахни крайна дата",
   periodEndDateRequired: "Задайте крайна дата за запазване на диапазона.",
   repeatsEveryDayUntil: (month) => `Повтаря се всеки ден до края на ${month}.`,
+  repeatsEveryWeekOn: (weekday) => weekday ? `Повтаря се всяка ${weekday}.` : "Повтаря се седмично.",
   recurringChangeNote:
     "Промените в повторението ще се прилагат към всички копия.",
   moveToDate: "Премести на дата",
@@ -55,6 +56,7 @@ export const bg = {
   excludeFromSchedule: "Изключи от разписанието",
   includeInSchedule: "Включи в разписанието",
   editTaskAria: "Редактирай задача",
+  moreActionsAria: "Още действия",
   stopRepeatingAria: "Спри повторението",
   stopRepeatingTitle: "Спри тази задача да се повтаря в бъдеще",
   deleteTaskAria: "Изтрий задача",
@@ -167,6 +169,7 @@ export const bg = {
 
   // ── Schedule (App.jsx) ────────────────────────────────────────────────────────
   generateSchedule: "Генерирай разписание",
+  regenerateSchedule: "Обнови разписанието",
   todaysSchedule: "Разписание за днес",
   saveSchedule: "Запази разписание",
   allDoneNothing: "Всички задачи са завършени — няма какво да се планира!",

@@ -11,6 +11,7 @@ export default {
         "secondary-container": "var(--color-secondary-container)",
         "secondary-dim": "var(--color-secondary-dim)",
         tertiary: "var(--color-tertiary)",
+        "on-tertiary": "var(--color-on-tertiary)",
         surface: "var(--color-surface)",
         "surface-bright": "var(--color-surface-bright)",
         "surface-container-lowest": "var(--color-surface-container-lowest)",

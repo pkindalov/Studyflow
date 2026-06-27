@@ -20,7 +20,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
           </div>
           <div className="flex gap-4 sm:gap-10">
             <div className="flex flex-col">
-              <span className="text-[9px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
+              <span className="text-[11px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
                 {t.totalLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
@@ -28,7 +28,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
               </span>
             </div>
             <div className="flex flex-col border-l border-outline-variant/20 pl-4 sm:pl-10">
-              <span className="text-[9px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
+              <span className="text-[11px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
                 {t.doneLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-secondary">
@@ -36,7 +36,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
               </span>
             </div>
             <div className="flex flex-col border-l border-outline-variant/20 pl-4 sm:pl-10">
-              <span className="text-[9px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
+              <span className="text-[11px] sm:text-label-md text-on-surface-variant font-bold tracking-widest uppercase">
                 {t.leftLabel}
               </span>
               <span className="text-2xl sm:text-3xl font-headline font-bold text-primary">

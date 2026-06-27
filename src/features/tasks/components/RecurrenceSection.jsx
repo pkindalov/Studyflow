@@ -7,6 +7,12 @@ const monthName = function(dateStr, locale) {
   return d.toLocaleDateString(locale, { month: "long", year: "numeric" });
 };
 
+const weekdayName = function(dateStr, locale) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString(locale, { weekday: "long" });
+};
+
 const RecurrenceSection = function({
   // Section 1: Date
   dateMode,
@@ -98,7 +104,7 @@ const RecurrenceSection = function({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-surface-container-highest border border-outline/60 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
+              className="w-full bg-surface-container-highest border border-outline/60 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50"
             />
           </label>
         )}
@@ -119,7 +125,7 @@ const RecurrenceSection = function({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
+                className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50"
               />
             </div>
 
@@ -137,7 +143,7 @@ const RecurrenceSection = function({
                 value={endDate}
                 min={startDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50 [color-scheme:dark]"
+                className="flex-1 bg-surface-container-highest border border-outline/60 rounded-lg px-3 py-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/50"
               />
               {endDate && (
                 <button
@@ -204,6 +210,15 @@ const RecurrenceSection = function({
             <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
               <span className="material-symbols-outlined text-sm text-secondary">info</span>
               {t.repeatsEveryDayUntil(monthName(taskDate || startDate, locale))}
+            </p>
+          </div>
+        )}
+
+        {recurrence === "weekly" && dateMode !== "range" && (
+          <div className="bg-surface-container-low rounded-xl p-3 border border-outline-variant/40">
+            <p className="text-xs text-on-surface-variant flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-sm text-secondary">info</span>
+              {t.repeatsEveryWeekOn(weekdayName(taskDate || startDate, locale))}
             </p>
           </div>
         )}

@@ -17,7 +17,13 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
       className={`relative flex items-center gap-4 p-3 rounded-xl border overflow-hidden transition-opacity ${isDragging ? "opacity-30" : ""} ${task.priority ? "bg-tertiary/10 border-tertiary/30" : "bg-surface-container-low border-outline-variant/50"}`}
     >
       {(hasProgress || isFinished) && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30">
+        <div
+          role="progressbar"
+          aria-valuenow={Math.round(isFinished ? 100 : Math.min(100, (elapsed / total) * 100))}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30"
+        >
           {/* width is a runtime %, not expressible as a static Tailwind class */}
           <div
             className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
@@ -44,7 +50,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
           isFinished
             ? "bg-tertiary/20 text-tertiary"
             : isRunning
-              ? "bg-primary/20 text-primary animate-pulse"
+              ? "bg-primary/20 text-primary motion-safe:animate-pulse"
               : hasProgress
                 ? "bg-secondary/20 text-secondary hover:bg-secondary/30"
                 : "bg-on-surface-variant/10 text-on-surface-variant hover:bg-on-surface-variant/20"

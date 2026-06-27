@@ -24,7 +24,7 @@ const MinimizedTimer = function({ task, elapsedSeconds, isRunning, onExpand, onP
   const dashOffset = circumference * (1 - progress);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed bottom-6 lg:bottom-20 left-1/2 -translate-x-1/2 z-50">
       <div className="flex items-center gap-2 bg-surface-container border border-outline-variant/60 shadow-[0_8px_32px_rgba(0,0,0,0.45)] rounded-2xl px-3 py-2 backdrop-blur-sm">
         {/* Mini circular progress + play/pause */}
         <button
