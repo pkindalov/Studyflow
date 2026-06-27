@@ -3,14 +3,14 @@ import { useLang } from "../i18n/LangContext";
 
 const WEEKS = 26;
 
-// Maps done-task count to a Tailwind colour class
+// Maps done-task count to a CSS class (heatmap-N uses secondary token so it respects the theme)
 const cellClass = function(count, isFuture) {
   if (isFuture) return "bg-transparent";
   if (!count) return "bg-surface-container-highest";
-  if (count === 1) return "bg-emerald-400/40";
-  if (count === 2) return "bg-emerald-400/65";
-  if (count <= 4) return "bg-emerald-500/85";
-  return "bg-emerald-500";
+  if (count === 1) return "heatmap-1";
+  if (count === 2) return "heatmap-2";
+  if (count <= 4) return "heatmap-3";
+  return "heatmap-4";
 }
 
 const buildGrid = function() {
@@ -122,7 +122,7 @@ const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-1 justify-end">
         <span className="text-[9px] text-on-surface-variant/50">{t.heatmapLessLabel}</span>
-        {["bg-surface-container-highest", "bg-emerald-400/40", "bg-emerald-400/65", "bg-emerald-500/85", "bg-emerald-500"].map((cls, i) => (
+        {["bg-surface-container-highest", "heatmap-1", "heatmap-2", "heatmap-3", "heatmap-4"].map((cls, i) => (
           <div key={i} className={`w-2 h-2 rounded-[2px] ${cls}`} />
         ))}
         <span className="text-[9px] text-on-surface-variant/50">{t.heatmapMoreLabel}</span>
