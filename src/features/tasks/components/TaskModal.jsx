@@ -55,11 +55,11 @@ const TaskModal = function({
   const { t } = useLang();
   const panelRef = useRef(null);
   const titleId = useId();
-  const [imageInputForced, setShowImageInput] = useState(false);
+  const [imageInputForced, setImageInputForced] = useState(false);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (prevIsOpen !== isOpen) {
     setPrevIsOpen(isOpen);
-    if (!isOpen) setShowImageInput(false);
+    if (!isOpen) setImageInputForced(false);
   }
   const showImageInput = imageInputForced || imageHasValue(image);
   const handleKeyDown = useFocusTrap(panelRef, { isActive: isOpen, onEscape: onClose, initialFocusSelector: "textarea" });
@@ -116,7 +116,7 @@ const TaskModal = function({
         {!showImageInput ? (
           <button
             type="button"
-            onClick={() => setShowImageInput(true)}
+            onClick={() => setImageInputForced(true)}
             className="text-sm text-on-surface-variant/70 hover:text-primary flex items-center gap-1.5 transition-colors self-start"
           >
             <span className="material-symbols-outlined text-base">add_photo_alternate</span>
@@ -141,7 +141,7 @@ const TaskModal = function({
             </div>
             <button
               type="button"
-              onClick={() => { setShowImageInput(false); setImage(""); }}
+              onClick={() => { setImageInputForced(false); setImage(""); }}
               className="p-2 rounded-xl text-on-surface-variant/50 hover:text-error hover:bg-error/10 transition-colors flex-shrink-0"
               aria-label={t.close}
             >

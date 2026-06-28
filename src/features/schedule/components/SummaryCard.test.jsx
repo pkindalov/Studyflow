@@ -48,6 +48,36 @@ describe('i18n labels', () => {
   })
 })
 
+// ── summary message branches ─────────────────────────────────────────────────────
+
+describe('summary message branches', () => {
+  it('shows the start message and no-tasks hint when there are no tasks', () => {
+    wrap({ total: 0, completed: 0, remaining: 0, progress: 0 })
+    expect(screen.getByText('Ready to begin — add tasks and start your session.')).toBeTruthy()
+    expect(screen.getByText("Use 'Create Task' in the sidebar to add your first task.")).toBeTruthy()
+  })
+
+  it('shows the all-done message only when every task is completed', () => {
+    wrap({ total: 5, completed: 5, remaining: 0, progress: 100 })
+    expect(screen.getByText('All done for today — fantastic work!')).toBeTruthy()
+  })
+
+  it('does not show all-done when progress rounds to 100 but a task remains', () => {
+    wrap({ total: 200, completed: 199, remaining: 1, progress: 100 })
+    expect(screen.queryByText('All done for today — fantastic work!')).toBeNull()
+    expect(screen.getByText("You're making great progress today.")).toBeTruthy()
+  })
+})
+
+// ── progress ring aria-label ─────────────────────────────────────────────────────
+
+describe('progress ring aria-label', () => {
+  it('describes progress, completed and total for assistive tech', () => {
+    wrap(base)
+    expect(screen.getByRole('img', { name: '60% complete — 3 of 5 tasks done' })).toBeTruthy()
+  })
+})
+
 // ── stat values ────────────────────────────────────────────────────────────────
 
 describe('stat values', () => {
