@@ -69,7 +69,7 @@ const SchedulePanel = function({
             <span className="material-symbols-outlined text-primary">schedule</span>
             {t.todaysSchedule}
             {runningTaskId && schedule.some((item) => item.id === runningTaskId) && (
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse ml-1 flex-shrink-0" aria-hidden="true" />
+              <span className="w-2 h-2 rounded-full bg-primary motion-safe:animate-pulse ml-1 flex-shrink-0" aria-hidden="true" />
             )}
           </h3>
         )}
