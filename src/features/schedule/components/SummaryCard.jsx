@@ -15,7 +15,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
               {t.focusProgressLabel}
             </h3>
             <p className="text-sm text-on-surface-variant">
-              {progress === 0 ? t.summaryMsgStart : progress === 100 ? t.summaryMsgAllDone : t.summaryMsgProgress}
+              {total === 0 ? t.summaryMsgStart : progress === 100 ? t.summaryMsgAllDone : t.summaryMsgProgress}
             </p>
             {total === 0 && (
               <p className="text-xs text-on-surface-variant/50 mt-1.5">

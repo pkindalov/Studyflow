@@ -57,7 +57,7 @@ const BankTaskRow = function({ task, isSelected, isDraggable, dragOverId, onTogg
       }`}
     >
       {isDraggable && (
-        <span className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 flex-shrink-0 cursor-grab active:cursor-grabbing transition-colors">
+        <span onClick={(e) => e.stopPropagation()} className="material-symbols-outlined text-base text-on-surface-variant/30 group-hover:text-on-surface-variant/60 flex-shrink-0 cursor-grab active:cursor-grabbing transition-colors">
           drag_indicator
         </span>
       )}

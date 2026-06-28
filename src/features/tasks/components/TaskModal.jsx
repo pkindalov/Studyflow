@@ -56,6 +56,11 @@ const TaskModal = function({
   const panelRef = useRef(null);
   const titleId = useId();
   const [imageInputForced, setShowImageInput] = useState(false);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) setShowImageInput(false);
+  }
   const showImageInput = imageInputForced || imageHasValue(image);
   const handleKeyDown = useFocusTrap(panelRef, { isActive: isOpen, onEscape: onClose, initialFocusSelector: "textarea" });
 
