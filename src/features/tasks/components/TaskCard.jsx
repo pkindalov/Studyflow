@@ -59,6 +59,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const moreWrapRef = useRef(null);
+  const menuRef = useRef(null);
 
   const hasSecondary = onSaveToBank !== undefined || onToggleSelect !== undefined || (task.recurringId !== undefined && onStopRecurring !== undefined);
 
@@ -79,6 +80,36 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
       document.removeEventListener("keydown", handleKey);
     };
   }, [showMore]);
+
+  // Move focus to the first item when the menu opens, matching the ARIA menu pattern.
+  useEffect(() => {
+    if (!showMore) return;
+    const firstItem = menuRef.current?.querySelector('[role="menuitem"]');
+    firstItem?.focus();
+  }, [showMore]);
+
+  // Roving focus across menu items: Up/Down cycle, Home/End jump to ends.
+  const handleMenuKeyDown = (event) => {
+    const navigationKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
+    if (!navigationKeys.includes(event.key)) return;
+
+    const items = Array.from(menuRef.current?.querySelectorAll('[role="menuitem"]') ?? []);
+    if (items.length === 0) return;
+
+    event.preventDefault();
+    const currentIndex = items.indexOf(document.activeElement);
+    let nextIndex;
+    if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = items.length - 1;
+    } else if (event.key === "ArrowDown") {
+      nextIndex = (currentIndex + 1) % items.length;
+    } else {
+      nextIndex = (currentIndex - 1 + items.length) % items.length;
+    }
+    items[nextIndex].focus();
+  };
 
   return (
     <div
@@ -178,7 +209,9 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
             </button>
             {showMore && (
               <div
+                ref={menuRef}
                 role="menu"
+                onKeyDown={handleMenuKeyDown}
                 className="absolute right-0 top-full mt-1 z-30 bg-surface-container-highest border border-outline-variant/50 rounded-xl shadow-xl py-1 flex flex-col min-w-[180px]"
               >
                 {onSaveToBank && (

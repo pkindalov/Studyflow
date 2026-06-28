@@ -131,6 +131,22 @@ describe('string function output — bg', () => {
       'Това ще замени всички текущи данни с резервното копие от 01.01.2024. Страницата ще се презареди.'
     )
   })
+
+  it('excludedCountHint — singular vs plural (en)', () => {
+    expect(en.excludedCountHint(1)).toBe('1 task excluded from schedule')
+    expect(en.excludedCountHint(3)).toBe('3 tasks excluded from schedule')
+  })
+
+  it('excludedCountHint — singular vs plural (bg)', () => {
+    expect(bg.excludedCountHint(1)).toBe('1 задача изключена от разписанието')
+    expect(bg.excludedCountHint(3)).toBe('3 задачи изключени от разписанието')
+  })
+
+  it('repeatsEveryWeekOn — with and without a weekday', () => {
+    expect(en.repeatsEveryWeekOn('Monday')).toBe('Repeats every Monday.')
+    expect(en.repeatsEveryWeekOn('')).toBe('Repeats weekly.')
+    expect(bg.repeatsEveryWeekOn('')).toBe('Повтаря се седмично.')
+  })
 })
 
 // ── JSX help function output ───────────────────────────────────────────────────
@@ -140,7 +156,7 @@ describe('JSX help functions return a non-null value', () => {
   const stringFnKeys = new Set([
     'moreViewAll', 'repeatsEveryDayUntil', 'nTotal',
     'tasksCompletedFn', 'selectedDayTasksFn', 'pausedLeft', 'restoreConfirmFn',
-    'summaryRingLabel',
+    'summaryRingLabel', 'excludedCountHint', 'repeatsEveryWeekOn',
   ])
   const jsxFnKeys = enKeys.filter((k) => typeof en[k] === 'function' && !stringFnKeys.has(k))
 

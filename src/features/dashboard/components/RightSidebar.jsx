@@ -70,6 +70,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
   const hintRef = useRef(null);
   const isDisabled = tasksCount === 0;
   const instanceId = useId();
+  const disabledHintId = `${instanceId}-disabled-hint`;
 
   useEffect(() => {
     if (!showHint) return;
@@ -87,6 +88,9 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
     <section className={`bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4 transition-opacity ${isDisabled ? "opacity-50" : ""}`}
       title={isDisabled ? t.summaryHintNoTasks : undefined}
     >
+      {isDisabled && (
+        <span id={disabledHintId} className="sr-only">{t.summaryHintNoTasks}</span>
+      )}
       <div className="flex items-center gap-2">
         <span className="text-[10px] font-bold tracking-[0.12em] text-on-surface-variant uppercase flex-1">{t.scheduleSettings}</span>
         <div ref={hintRef} className="relative">
@@ -123,6 +127,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
               value={totalStudyTime}
               onChange={(e) => setTotalStudyTime(Math.max(1, Math.min(24, Number(e.target.value))))}
               disabled={isDisabled}
+              aria-describedby={isDisabled ? disabledHintId : undefined}
               className="w-16 px-2 py-1.5 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
             />
             <span className="text-xs text-on-surface-variant">{t.hoursUnit}</span>
@@ -143,6 +148,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
               value={priorityPercent}
               onChange={(e) => setPriorityPercent(Math.max(0, Math.min(100, Number(e.target.value))))}
               disabled={isDisabled}
+              aria-describedby={isDisabled ? disabledHintId : undefined}
               className="w-16 px-2 py-1.5 rounded-xl border border-outline/60 bg-surface-container-highest text-on-surface font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-secondary/60"
             />
             <span className="text-xs text-on-surface-variant">%</span>
@@ -179,6 +185,7 @@ const QUOTES_BG = [
 export function QuoteSection() {
   const { lang } = useLang();
   const quote = getDailyQuote(lang === "bg" ? QUOTES_BG : QUOTES_EN);
+  if (!quote) return null;
   return (
     <section className="bg-primary/10 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />

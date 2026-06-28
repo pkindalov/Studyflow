@@ -5,6 +5,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
   const total = task.scheduledMinutes * 60;
   const isFinished = task.done || (total > 0 && elapsed >= total);
   const hasProgress = elapsed > 0 && !isFinished;
+  const progressPercent = isFinished ? 100 : total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   // @dnd-kit requires inline transform/transition for drag animation — not expressible as Tailwind classes
@@ -19,7 +20,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
       {(hasProgress || isFinished) && (
         <div
           role="progressbar"
-          aria-valuenow={Math.round(isFinished ? 100 : Math.min(100, (elapsed / total) * 100))}
+          aria-valuenow={Math.round(progressPercent)}
           aria-valuemin={0}
           aria-valuemax={100}
           className="absolute bottom-0 left-0 right-0 h-0.5 bg-outline-variant/30"
@@ -27,7 +28,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
           {/* width is a runtime %, not expressible as a static Tailwind class */}
           <div
             className={`h-full transition-all ${isFinished ? "bg-tertiary" : "bg-primary"}`}
-            style={{ width: `${isFinished ? 100 : Math.min(100, (elapsed / total) * 100)}%` }}
+            style={{ width: `${progressPercent}%` }}
           />
         </div>
       )}

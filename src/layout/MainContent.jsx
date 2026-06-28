@@ -26,19 +26,35 @@ export default function MainContent({
 }) {
   const { lang } = useLang();
   const schedulePanelRef = useRef(null);
+  const hasMountedRef = useRef(false);
   const prevScheduleRef = useRef(null);
+  const prevDateKeyRef = useRef(null);
+
+  const selectedDateKey = selectedDate ? selectedDate.toDateString() : null;
 
   const scheduleMap = useMemo(() => {
     if (!schedule) return null;
     return Object.fromEntries(schedule.map((item) => [item.id, item.scheduledMinutes]));
   }, [schedule]);
 
+  // Scroll to the schedule only when it is freshly generated within the session:
+  // skip the first render (returning users with a restored schedule) and skip
+  // day-switches that merely reveal a day's already-saved schedule.
   useEffect(() => {
-    if (schedule && !prevScheduleRef.current && schedulePanelRef.current) {
+    const isNewlyGeneratedForSameDay =
+      hasMountedRef.current &&
+      schedule &&
+      !prevScheduleRef.current &&
+      selectedDateKey === prevDateKeyRef.current;
+
+    if (isNewlyGeneratedForSameDay && schedulePanelRef.current) {
       schedulePanelRef.current.scrollIntoView?.({ behavior: "smooth", block: "start" });
     }
+
+    hasMountedRef.current = true;
     prevScheduleRef.current = schedule;
-  }, [schedule]);
+    prevDateKeyRef.current = selectedDateKey;
+  }, [schedule, selectedDateKey]);
 
   return (
     <div id="main-content" className="lg:col-span-6 flex flex-col gap-6">
