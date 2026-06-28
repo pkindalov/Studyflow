@@ -2,8 +2,56 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { LangProvider } from '../../../shared/i18n/LangContext'
 import { ScheduleSettingsSection, QuoteSection, TasksProgressSection } from './RightSidebar'
+import { getDailyQuote } from '../utils/getDailyQuote'
 
 const wrap = (ui) => render(<LangProvider>{ui}</LangProvider>)
+
+// ── getDailyQuote ─────────────────────────────────────────────────────────────
+
+const quotes = [
+  { text: 'Quote A', author: 'Author A' },
+  { text: 'Quote B', author: 'Author B' },
+  { text: 'Quote C', author: 'Author C' },
+]
+
+describe('getDailyQuote', () => {
+  it('returns the first quote on January 1 (dayOfYear = 0)', () => {
+    const jan1 = new Date(2025, 0, 1)
+    expect(getDailyQuote(quotes, jan1)).toEqual(quotes[0])
+  })
+
+  it('returns the second quote on January 2 (dayOfYear = 1)', () => {
+    const jan2 = new Date(2025, 0, 2)
+    expect(getDailyQuote(quotes, jan2)).toEqual(quotes[1])
+  })
+
+  it('wraps around using modulo when dayOfYear exceeds quotes.length', () => {
+    // Day index 3 % 3 = 0 → first quote
+    const jan4 = new Date(2025, 0, 4)
+    expect(getDailyQuote(quotes, jan4)).toEqual(quotes[0])
+  })
+
+  it('returns correct quote on Dec 31 of a non-leap year (dayOfYear = 364)', () => {
+    // 2025 is not a leap year: Dec 31 = day 364; 364 % 3 = 1 → second quote
+    const dec31 = new Date(2025, 11, 31)
+    const result = getDailyQuote(quotes, dec31)
+    expect(result).toEqual(quotes[364 % quotes.length])
+  })
+
+  it('returns correct quote on Dec 31 of a leap year (dayOfYear = 365)', () => {
+    // 2024 is a leap year: Dec 31 = day 365; 365 % 3 = 2 → third quote
+    const dec31leap = new Date(2024, 11, 31)
+    const result = getDailyQuote(quotes, dec31leap)
+    expect(result).toEqual(quotes[365 % quotes.length])
+  })
+
+  it('always returns an object with text and author fields', () => {
+    const today = new Date()
+    const result = getDailyQuote(quotes, today)
+    expect(typeof result.text).toBe('string')
+    expect(typeof result.author).toBe('string')
+  })
+})
 
 // ── ScheduleSettingsSection ──────────────────────────────────────────────────
 

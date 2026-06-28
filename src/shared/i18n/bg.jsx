@@ -52,6 +52,7 @@ export const bg = {
   markComplete: "Маркирай като завършена",
   taskVisualAlt: "Снимка на задачата",
   repeatBadge: "Повтаря",
+  recurringTaskTitle: "Повтаряща се задача",
   startTimerAria: "Стартирай таймер",
   startTimerTitle: "Стартирай таймер за тази задача",
   excludeFromSchedule: "Изключи от разписанието",

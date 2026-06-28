@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useId } from "react";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
+import { getDailyQuote } from "../utils/getDailyQuote";
 
 const MODAL_PAGE_SIZE = 5;
 const MAX_VISIBLE = 5;
@@ -83,7 +84,7 @@ export function ScheduleSettingsSection({ totalStudyTime, setTotalStudyTime, pri
   }, [showHint]);
 
   return (
-    <section className={`bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4 transition-opacity ${isDisabled ? "opacity-50 pointer-events-none select-none" : ""}`}
+    <section className={`bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant/50 flex flex-col gap-4 transition-opacity ${isDisabled ? "opacity-50" : ""}`}
       title={isDisabled ? t.summaryHintNoTasks : undefined}
     >
       <div className="flex items-center gap-2">
@@ -174,16 +175,6 @@ const QUOTES_BG = [
   { text: "\"Учи усилено това, което те интересува най-много.\"", author: "Ричард Файнман" },
 ];
 
-const MS_PER_DAY = 86400000;
-
-const getDailyQuote = function(quotes) {
-  const now = new Date();
-  // Use UTC midnight arithmetic to avoid DST-day edge cases (23h/25h days).
-  const dayOfYear = Math.floor(
-    (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(now.getFullYear(), 0, 1)) / MS_PER_DAY
-  );
-  return quotes[dayOfYear % quotes.length];
-};
 
 export function QuoteSection() {
   const { lang } = useLang();

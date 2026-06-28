@@ -86,6 +86,18 @@ describe('selection controls', () => {
     expect(onToggleSelect).toHaveBeenCalledWith('t1')
     expect(onToggleSelect).toHaveBeenCalledWith('t2')
   })
+
+  it('renders the excluded-count hint when some tasks are excluded', () => {
+    const tasks = [makeTask(1), makeTask(2), makeTask(3)]
+    wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={vi.fn()} excludedTaskIds={new Set(['t1', 't2'])} />)
+    expect(screen.getByText(/2 tasks excluded from schedule/)).toBeTruthy()
+  })
+
+  it('renders singular excluded-count hint when exactly one task is excluded', () => {
+    const tasks = [makeTask(1), makeTask(2)]
+    wrap(<TaskList tasks={tasks} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onReorder={onReorder} onToggleSelect={vi.fn()} excludedTaskIds={new Set(['t1'])} />)
+    expect(screen.getByText(/1 task excluded from schedule/)).toBeTruthy()
+  })
 })
 
 // ── pagination ────────────────────────────────────────────────────────────────

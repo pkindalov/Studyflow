@@ -51,6 +51,7 @@ export const en = {
   markComplete: "Mark as complete",
   taskVisualAlt: "Task visual",
   repeatBadge: "Repeat",
+  recurringTaskTitle: "Recurring task",
   startTimerAria: "Start timer",
   startTimerTitle: "Start timer for this task",
   excludeFromSchedule: "Exclude from schedule",

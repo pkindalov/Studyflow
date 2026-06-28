@@ -133,7 +133,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
           {task.recurringId && (
             <span
               className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 border border-secondary/20 rounded-full px-2 py-0.5 flex-shrink-0"
-              title="Recurring task"
+              title={t.recurringTaskTitle}
             >
               <span className="material-symbols-outlined text-xs">repeat</span>
               {t.repeatBadge}

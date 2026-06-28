@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 
 const FOCUSABLE_SELECTOR = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -15,7 +15,7 @@ const useFocusTrap = function(ref, { isActive = true, onEscape, initialFocusSele
     };
   }, [ref, isActive, initialFocusSelector]);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = useCallback((e) => {
     if (e.key === "Escape") { onEscape?.(); return; }
     if (e.key !== "Tab" || !ref.current) return;
     const focusables = Array.from(ref.current.querySelectorAll(FOCUSABLE_SELECTOR));
@@ -29,7 +29,7 @@ const useFocusTrap = function(ref, { isActive = true, onEscape, initialFocusSele
       e.preventDefault();
       first.focus();
     }
-  };
+  }, [ref, onEscape]);
 
   return handleKeyDown;
 };

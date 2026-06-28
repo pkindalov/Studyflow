@@ -28,7 +28,7 @@ const SchedulePanel = function({
   return (
     <>
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDeleteConfirm(false)}>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation" onClick={() => setShowDeleteConfirm(false)} onKeyDown={(e) => { if (e.key === "Escape") setShowDeleteConfirm(false); }}>
           <div
             ref={dialogRef}
             role="dialog"

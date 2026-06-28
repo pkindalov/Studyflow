@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import { useLang } from "../../../shared/i18n/LangContext";
 import RecurrenceSection from "./RecurrenceSection";
 import useFocusTrap from "../../../shared/hooks/useFocusTrap";
@@ -54,7 +54,9 @@ const TaskModal = function({
 }) {
   const { t } = useLang();
   const panelRef = useRef(null);
-  const [showImageInput, setShowImageInput] = useState(imageHasValue(image));
+  const titleId = useId();
+  const [imageInputForced, setShowImageInput] = useState(false);
+  const showImageInput = imageInputForced || imageHasValue(image);
   const handleKeyDown = useFocusTrap(panelRef, { isActive: isOpen, onEscape: onClose, initialFocusSelector: "textarea" });
 
   if (!isOpen) return null;
@@ -70,6 +72,9 @@ const TaskModal = function({
     >
       <form
         ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         noValidate
         onSubmit={(e) => { e.preventDefault(); if (!saveDisabled) onSave(); }}
         onClick={(e) => e.stopPropagation()}
@@ -85,7 +90,7 @@ const TaskModal = function({
           <span className="material-symbols-outlined text-xl">close</span>
         </button>
 
-        <h2 className="text-2xl font-headline font-bold text-on-surface mb-2 pr-8">{title}</h2>
+        <h2 id={titleId} className="text-2xl font-headline font-bold text-on-surface mb-2 pr-8">{title}</h2>
 
         <label className="sr-only" htmlFor="task-desc">{t.taskDescPlaceholder}</label>
         <textarea
