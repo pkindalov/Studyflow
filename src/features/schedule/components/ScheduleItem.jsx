@@ -5,7 +5,8 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
   const total = task.scheduledMinutes * 60;
   const isFinished = task.done || (total > 0 && elapsed >= total);
   const hasProgress = elapsed > 0 && !isFinished;
-  const progressPercent = isFinished ? 100 : total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+  const ongoingPercent = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+  const progressPercent = isFinished ? 100 : ongoingPercent;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   // @dnd-kit requires inline transform/transition for drag animation — not expressible as Tailwind classes

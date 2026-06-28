@@ -95,6 +95,9 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   }
   const hasSecondary = menuActions.length > 0;
 
+  // When the menu opens: wire up the close-on-outside/Escape listeners and move
+  // focus to the first item (matching the ARIA menu pattern). The active index is
+  // reset to 0 in the toggle handler, so focus and tabIndex stay in sync.
   useEffect(() => {
     if (!showMore) return;
     const close = (e) => {
@@ -106,19 +109,15 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
     document.addEventListener("mousedown", close);
     document.addEventListener("touchstart", close);
     document.addEventListener("keydown", handleKey);
+
+    const firstItem = menuRef.current?.querySelector('[role="menuitem"]');
+    firstItem?.focus();
+
     return () => {
       document.removeEventListener("mousedown", close);
       document.removeEventListener("touchstart", close);
       document.removeEventListener("keydown", handleKey);
     };
-  }, [showMore]);
-
-  // Move focus to the first item when the menu opens, matching the ARIA menu pattern.
-  // The active index is reset to 0 in the toggle handler, so focus and tabIndex stay in sync.
-  useEffect(() => {
-    if (!showMore) return;
-    const firstItem = menuRef.current?.querySelector('[role="menuitem"]');
-    firstItem?.focus();
   }, [showMore]);
 
   // Roving focus across menu items: Up/Down cycle, Home/End jump to ends.
