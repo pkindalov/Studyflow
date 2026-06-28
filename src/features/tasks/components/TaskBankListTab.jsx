@@ -61,7 +61,7 @@ const BankTaskRow = function({ task, isSelected, isDraggable, dragOverId, onTogg
           drag_indicator
         </span>
       )}
-      <input type="checkbox" checked={isSelected} onChange={() => onToggle(task.id)} onClick={(e) => e.stopPropagation()} className="w-4 h-4 accent-primary flex-shrink-0" />
+      <input type="checkbox" checked={isSelected} onChange={() => onToggle(task.id)} onClick={(e) => e.stopPropagation()} aria-label={task.text} className="w-4 h-4 accent-primary flex-shrink-0" />
       <span className={`flex-1 text-sm text-on-surface min-w-0 ${task.priority ? "font-semibold" : "font-medium"}`}>{task.text}</span>
       {task.priority && <span className="text-[10px] font-bold uppercase tracking-wider text-tertiary flex-shrink-0">{t.priorityBadge}</span>}
       <button onClick={(e) => { e.stopPropagation(); startEdit(); }} className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:text-primary hover:bg-primary/10 transition-all text-on-surface-variant/50 flex-shrink-0" aria-label={t.editListItem} title={t.editListItem}>
