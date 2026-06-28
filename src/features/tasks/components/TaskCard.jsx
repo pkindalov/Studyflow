@@ -58,10 +58,42 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   const isDone = task.done === true;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [activeMenuIndex, setActiveMenuIndex] = useState(0);
   const moreWrapRef = useRef(null);
   const menuRef = useRef(null);
 
-  const hasSecondary = onSaveToBank !== undefined || onToggleSelect !== undefined || (task.recurringId !== undefined && onStopRecurring !== undefined);
+  const menuActions = [];
+  if (onSaveToBank) {
+    menuActions.push({
+      key: "save-to-list",
+      onClick: () => { onSaveToBank(task); setShowMore(false); },
+      icon: "bookmark",
+      iconStateClass: isInList ? "icon-filled" : "icon-outlined",
+      textClass: isInList ? "text-secondary" : "text-on-surface-variant",
+      label: isInList ? t.removeFromList : t.saveToListAction,
+    });
+  }
+  if (onToggleSelect) {
+    menuActions.push({
+      key: "toggle-select",
+      onClick: () => { onToggleSelect(task.id); setShowMore(false); },
+      icon: "event_available",
+      iconStateClass: selected ? "icon-filled" : "icon-outlined",
+      textClass: selected ? "text-secondary" : "text-on-surface-variant/60",
+      label: selected ? t.excludeFromSchedule : t.includeInSchedule,
+    });
+  }
+  if (task.recurringId && onStopRecurring) {
+    menuActions.push({
+      key: "stop-recurring",
+      onClick: () => { onStopRecurring(task.recurringId); setShowMore(false); },
+      icon: "repeat_off",
+      iconStateClass: "",
+      textClass: "text-on-surface-variant",
+      label: t.stopRepeatingTitle,
+    });
+  }
+  const hasSecondary = menuActions.length > 0;
 
   useEffect(() => {
     if (!showMore) return;
@@ -82,6 +114,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   }, [showMore]);
 
   // Move focus to the first item when the menu opens, matching the ARIA menu pattern.
+  // The active index is reset to 0 in the toggle handler, so focus and tabIndex stay in sync.
   useEffect(() => {
     if (!showMore) return;
     const firstItem = menuRef.current?.querySelector('[role="menuitem"]');
@@ -89,6 +122,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   }, [showMore]);
 
   // Roving focus across menu items: Up/Down cycle, Home/End jump to ends.
+  // The active item carries tabIndex 0 and the rest -1, so Tab leaves the menu.
   const handleMenuKeyDown = (event) => {
     const navigationKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
     if (!navigationKeys.includes(event.key)) return;
@@ -108,6 +142,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
     } else {
       nextIndex = (currentIndex - 1 + items.length) % items.length;
     }
+    setActiveMenuIndex(nextIndex);
     items[nextIndex].focus();
   };
 
@@ -199,7 +234,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         {hasSecondary && (
           <div ref={moreWrapRef} className="relative">
             <button
-              onClick={() => setShowMore((isVisible) => !isVisible)}
+              onClick={() => { setShowMore((isVisible) => !isVisible); setActiveMenuIndex(0); }}
               className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
               aria-label={t.moreActionsAria}
               aria-haspopup="menu"
@@ -214,40 +249,18 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
                 onKeyDown={handleMenuKeyDown}
                 className="absolute right-0 top-full mt-1 z-30 bg-surface-container-highest border border-outline-variant/50 rounded-xl shadow-xl py-1 flex flex-col min-w-[180px]"
               >
-                {onSaveToBank && (
+                {menuActions.map((action, index) => (
                   <button
+                    key={action.key}
                     role="menuitem"
-                    onClick={() => { onSaveToBank(task); setShowMore(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container-high ${
-                      isInList ? "text-secondary" : "text-on-surface-variant"
-                    }`}
+                    tabIndex={index === activeMenuIndex ? 0 : -1}
+                    onClick={action.onClick}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container-high ${action.textClass}`}
                   >
-                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${isInList ? "icon-filled" : "icon-outlined"}`}>bookmark</span>
-                    {isInList ? t.removeFromList : t.saveToListAction}
+                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${action.iconStateClass}`}>{action.icon}</span>
+                    {action.label}
                   </button>
-                )}
-                {onToggleSelect && (
-                  <button
-                    role="menuitem"
-                    onClick={() => { onToggleSelect(task.id); setShowMore(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container-high ${
-                      selected ? "text-secondary" : "text-on-surface-variant/60"
-                    }`}
-                  >
-                    <span className={`material-symbols-outlined text-base flex-shrink-0 ${selected ? "icon-filled" : "icon-outlined"}`}>event_available</span>
-                    {selected ? t.excludeFromSchedule : t.includeInSchedule}
-                  </button>
-                )}
-                {task.recurringId && onStopRecurring && (
-                  <button
-                    role="menuitem"
-                    onClick={() => { onStopRecurring(task.recurringId); setShowMore(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
-                  >
-                    <span className="material-symbols-outlined text-base flex-shrink-0">repeat_off</span>
-                    {t.stopRepeatingTitle}
-                  </button>
-                )}
+                ))}
               </div>
             )}
           </div>

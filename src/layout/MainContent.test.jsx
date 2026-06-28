@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import MainContent from './MainContent'
 
@@ -126,5 +126,41 @@ describe('SchedulePanel', () => {
     render(<MainContent {...baseProps({ schedule, scheduleTimers })} />)
     expect(lastSchedulePanelProps.schedule).toBe(schedule)
     expect(lastSchedulePanelProps.scheduleTimers).toBe(scheduleTimers)
+  })
+})
+
+describe('schedule auto-scroll', () => {
+  const schedule = [{ id: 's1', text: 'Item 1', done: false }]
+  let scrollSpy
+
+  beforeEach(() => {
+    // jsdom does not implement scrollIntoView; install a spy so the call is observable.
+    scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
+  })
+
+  afterEach(() => {
+    delete Element.prototype.scrollIntoView
+  })
+
+  it('does not scroll on initial mount when a schedule is already present', () => {
+    render(<MainContent {...baseProps({ schedule, selectedDate: new Date(2026, 0, 1) })} />)
+    expect(scrollSpy).not.toHaveBeenCalled()
+  })
+
+  it('scrolls when a schedule is generated in-session on the same day', () => {
+    const sameDay = new Date(2026, 0, 1)
+    const { rerender } = render(<MainContent {...baseProps({ schedule: null, selectedDate: sameDay })} />)
+    expect(scrollSpy).not.toHaveBeenCalled()
+
+    rerender(<MainContent {...baseProps({ schedule, selectedDate: sameDay })} />)
+    expect(scrollSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not scroll when switching to a different day that already has a schedule', () => {
+    const { rerender } = render(<MainContent {...baseProps({ schedule: null, selectedDate: new Date(2026, 0, 1) })} />)
+
+    rerender(<MainContent {...baseProps({ schedule, selectedDate: new Date(2026, 0, 2) })} />)
+    expect(scrollSpy).not.toHaveBeenCalled()
   })
 })

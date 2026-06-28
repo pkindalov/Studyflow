@@ -159,3 +159,62 @@ describe('optional buttons', () => {
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull()
   })
 })
+
+// ── overflow menu keyboard navigation ───────────────────────────────────────────
+
+describe('overflow menu keyboard navigation', () => {
+  // A recurring task with all three secondary actions yields three menu items.
+  const openMenu = () => {
+    wrap(
+      <TaskCard
+        task={{ ...base, recurringId: 'r1' }}
+        onToggle={onToggle}
+        onDelete={onDelete}
+        onEdit={onEdit}
+        onSaveToBank={vi.fn()}
+        onToggleSelect={vi.fn()}
+        onStopRecurring={vi.fn()}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    return screen.getAllByRole('menuitem')
+  }
+
+  it('focuses the first item when the menu opens', () => {
+    const items = openMenu()
+    expect(document.activeElement).toBe(items[0])
+    expect(items[0].tabIndex).toBe(0)
+    expect(items[1].tabIndex).toBe(-1)
+  })
+
+  it('moves focus down on ArrowDown and rolls the tabindex to the active item', () => {
+    const items = openMenu()
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' })
+    expect(document.activeElement).toBe(items[1])
+    expect(items[1].tabIndex).toBe(0)
+    expect(items[0].tabIndex).toBe(-1)
+  })
+
+  it('wraps from the first item to the last on ArrowUp', () => {
+    const items = openMenu()
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowUp' })
+    expect(document.activeElement).toBe(items[items.length - 1])
+  })
+
+  it('jumps to the ends with End and Home', () => {
+    const items = openMenu()
+    const menu = screen.getByRole('menu')
+    fireEvent.keyDown(menu, { key: 'End' })
+    expect(document.activeElement).toBe(items[items.length - 1])
+    fireEvent.keyDown(menu, { key: 'Home' })
+    expect(document.activeElement).toBe(items[0])
+  })
+
+  it('keeps exactly one item in the Tab order so Tab leaves the menu', () => {
+    const items = openMenu()
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' })
+    const tabbable = items.filter((item) => item.tabIndex === 0)
+    expect(tabbable).toHaveLength(1)
+    expect(tabbable[0]).toBe(items[1])
+  })
+})
