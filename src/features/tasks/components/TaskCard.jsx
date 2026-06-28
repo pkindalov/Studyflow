@@ -151,9 +151,9 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
             title={t.startTimerTitle}
           >
             <span className="material-symbols-outlined text-base">
-              {scheduledMinutes ? "schedule" : "play_circle"}
+              {scheduledMinutes > 0 ? "schedule" : "play_circle"}
             </span>
-            {scheduledMinutes && (
+            {scheduledMinutes > 0 && (
               <span className="text-[10px] font-bold leading-none">{scheduledMinutes}m</span>
             )}
           </button>
