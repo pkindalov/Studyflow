@@ -6,22 +6,26 @@ export const DEFAULT_LAYOUT = {
   right: ["scheduleSettings", "quote", "todaysTasks", "music"],
 };
 
+const KNOWN_SECTION_IDS = [...DEFAULT_LAYOUT.left, ...DEFAULT_LAYOUT.right];
+
 export function useColumnLayout() {
   const [columnLayout, setColumnLayout] = useState(() => {
     try {
       const saved = localStorage.getItem("studyflow_column_layout");
       if (!saved) return DEFAULT_LAYOUT;
       const parsed = JSON.parse(saved);
-      const allSaved = [...(parsed.left || []), ...(parsed.right || [])];
+      // Drop saved IDs that no longer exist (e.g. renamed/merged sections),
+      // otherwise they render as empty draggable rows for returning users.
+      const savedLeft = (parsed.left || []).filter((id) => KNOWN_SECTION_IDS.includes(id));
+      const savedRight = (parsed.right || []).filter((id) => KNOWN_SECTION_IDS.includes(id));
+      const allSaved = [...savedLeft, ...savedRight];
+      // Append any new default sections the saved layout doesn't include yet.
       const missingLeft = DEFAULT_LAYOUT.left.filter((id) => !allSaved.includes(id));
       const missingRight = DEFAULT_LAYOUT.right.filter((id) => !allSaved.includes(id));
-      if (missingLeft.length > 0 || missingRight.length > 0) {
-        return {
-          left: [...(parsed.left || []), ...missingLeft],
-          right: [...missingRight, ...(parsed.right || [])],
-        };
-      }
-      return parsed;
+      return {
+        left: [...savedLeft, ...missingLeft],
+        right: [...missingRight, ...savedRight],
+      };
     } catch { return DEFAULT_LAYOUT; }
   });
 

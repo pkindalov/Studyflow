@@ -248,7 +248,7 @@ function App() {
             onToggleSelect={toggleTaskSelection} onOpenTimer={openTimerForTask}
             onSaveToBank={handleSaveToBank} onOpenSavedList={handleOpenSavedList}
             savedListTexts={savedListTexts} onReorder={handleReorder} onEdit={editModal.open}
-            onAddClick={addModal.open} selectedDate={selectedDate}
+            onAddClick={() => addModal.open()} selectedDate={selectedDate}
             onGenerateSchedule={handleGenerateSchedule} schedule={schedule}
             allScheduleDone={allScheduleDone} scheduleTimers={scheduleTimers}
             runningTaskId={runningTaskId} scheduleSensors={scheduleSensors}

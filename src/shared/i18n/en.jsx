@@ -117,6 +117,7 @@ export const en = {
   summaryHintNoTasks: "Use 'Create Task' in the sidebar to add your first task.",
   summaryMsgProgress: "You're making great progress today.",
   summaryMsgAllDone: "All done for today — fantastic work!",
+  summaryRingLabel: (progress, completed, total) => `${progress}% complete — ${completed} of ${total} tasks done`,
   totalLabel: "Total",
   doneLabel: "Done",
   leftLabel: "Left",

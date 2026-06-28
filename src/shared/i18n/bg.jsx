@@ -119,6 +119,7 @@ export const bg = {
   summaryHintNoTasks: "Използвай 'Създай задача' в страничната лента, за да добавиш първата задача.",
   summaryMsgProgress: "Вървиш много добре днес.",
   summaryMsgAllDone: "Всичко завършено — страхотна работа!",
+  summaryRingLabel: (progress, completed, total) => `${progress}% завършени — ${completed} от ${total} задачи`,
   totalLabel: "Всичко",
   doneLabel: "Готово",
   leftLabel: "Остават",

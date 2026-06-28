@@ -15,7 +15,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
               {t.focusProgressLabel}
             </h3>
             <p className="text-sm text-on-surface-variant">
-              {total === 0 ? t.summaryMsgStart : progress === 100 ? t.summaryMsgAllDone : t.summaryMsgProgress}
+              {total === 0 ? t.summaryMsgStart : completed === total ? t.summaryMsgAllDone : t.summaryMsgProgress}
             </p>
             {total === 0 && (
               <p className="text-xs text-on-surface-variant/50 mt-1.5">
@@ -56,7 +56,7 @@ const SummaryCard = function({ total, completed, remaining, progress }) {
             className="w-full h-full transform -rotate-90"
             viewBox="0 0 128 128"
             role="img"
-            aria-label={`${progress}% complete — ${completed} of ${total} tasks done`}
+            aria-label={t.summaryRingLabel(progress, completed, total)}
           >
             <circle
               className="text-surface-container-highest"

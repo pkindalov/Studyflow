@@ -140,6 +140,7 @@ describe('JSX help functions return a non-null value', () => {
   const stringFnKeys = new Set([
     'moreViewAll', 'repeatsEveryDayUntil', 'nTotal',
     'tasksCompletedFn', 'selectedDayTasksFn', 'pausedLeft', 'restoreConfirmFn',
+    'summaryRingLabel',
   ])
   const jsxFnKeys = enKeys.filter((k) => typeof en[k] === 'function' && !stringFnKeys.has(k))
 
