@@ -59,7 +59,6 @@ export const bg = {
   includeInSchedule: "Включи в разписанието",
   editTaskAria: "Редактирай задача",
   moreActionsAria: "Още действия",
-  stopRepeatingAria: "Спри повторението",
   stopRepeatingTitle: "Спри тази задача да се повтаря в бъдеще",
   deleteTaskAria: "Изтрий задача",
   deleteTaskConfirm: "Изтриване на задача?",
