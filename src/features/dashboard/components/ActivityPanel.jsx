@@ -74,7 +74,7 @@ function SelectedDayDetail({ selectedDate, selectedFocus, doneTasks, onDeselect,
         <button type="button" onClick={onGoToCalendar} aria-label={t.showDayOnCalendar} title={t.showDayOnCalendar} className="flex-shrink-0 p-1 -my-1 rounded-md text-on-surface-variant/50 hover:text-primary hover:bg-surface-container-highest active:text-primary/80 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
           <span className="material-symbols-outlined text-base leading-none">calendar_month</span>
         </button>
-        <button onClick={onDeselect} aria-label="Deselect" className="text-on-surface-variant/50 hover:text-on-surface-variant transition-colors leading-none text-base material-symbols-outlined flex-shrink-0" title="Deselect">
+        <button onClick={onDeselect} aria-label={t.deselectDay} className="text-on-surface-variant/50 hover:text-on-surface-variant transition-colors leading-none text-base material-symbols-outlined flex-shrink-0" title={t.deselectDay}>
           close
         </button>
       </div>

@@ -149,6 +149,7 @@ export const en = {
   selectedDayLabel: "Selected day",
   selectedDayTasksFn: (n) => `${n} task${n === 1 ? "" : "s"} done`,
   showDayOnCalendar: "Show this day on the calendar",
+  deselectDay: "Deselect",
   heatmapNoTasksDone: "No tasks done",
   heatmapLessLabel: "Less",
   heatmapMoreLabel: "More",

@@ -153,6 +153,7 @@ export const bg = {
   selectedDayTasksFn: (n) =>
     `${n} ${n === 1 ? "задача завършена" : "задачи завършени"}`,
   showDayOnCalendar: "Покажи този ден в календара",
+  deselectDay: "Отмени избора",
   heatmapNoTasksDone: "Няма завършени задачи",
   heatmapLessLabel: "По-малко",
   heatmapMoreLabel: "Повече",
