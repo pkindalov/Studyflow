@@ -122,4 +122,43 @@ describe('selected day detail', () => {
     fireEvent.click(screen.getByTitle('Deselect'))
     expect(screen.queryByText('Selected day')).toBeNull()
   })
+
+  it('lists only the done tasks for the selected day', () => {
+    const tasks = {
+      '2025-06-10': [
+        { id: 't1', text: 'Read chapter 1', done: true },
+        { id: 't2', text: 'Draft essay', done: false },
+        { id: 't3', text: 'Review flashcards', done: true, priority: true },
+      ],
+    }
+    wrap(<ActivityPanel tasks={tasks} />)
+    fireEvent.click(screen.getByTestId('activity-heatmap'))
+
+    expect(screen.getByText('Read chapter 1')).toBeTruthy()
+    expect(screen.getByText('Review flashcards')).toBeTruthy()
+    expect(screen.queryByText('Draft essay')).toBeNull()
+    expect(screen.getByText('2 tasks done')).toBeTruthy()
+  })
+
+  it('shows the empty-state message when the selected day has no done tasks', () => {
+    const tasks = {
+      '2025-06-10': [{ id: 't1', text: 'Draft essay', done: false }],
+    }
+    wrap(<ActivityPanel tasks={tasks} />)
+    fireEvent.click(screen.getByTestId('activity-heatmap'))
+
+    expect(screen.getByText('No tasks done')).toBeTruthy()
+    expect(screen.getByText('0 tasks done')).toBeTruthy()
+  })
+
+  it('calls onNavigateToDate with the selected day when the calendar button is clicked', () => {
+    const onNavigateToDate = vi.fn()
+    wrap(<ActivityPanel tasks={{}} onNavigateToDate={onNavigateToDate} />)
+    fireEvent.click(screen.getByTestId('activity-heatmap'))
+    fireEvent.click(screen.getByTitle('Show this day on the calendar'))
+
+    expect(onNavigateToDate).toHaveBeenCalledTimes(1)
+    const passedDate = onNavigateToDate.mock.calls[0][0]
+    expect(passedDate).toEqual(new Date('2025-06-10T00:00:00'))
+  })
 })

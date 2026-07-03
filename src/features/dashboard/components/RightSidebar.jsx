@@ -43,13 +43,18 @@ const TasksProgressModal = function({ sectionTitle, items, onClose }) {
   const modalTotalPages = Math.ceil(items.length / MODAL_PAGE_SIZE);
   const modalItems = items.slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE);
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Decorative backdrop: mouse click-to-dismiss is a convenience; keyboard/AT users dismiss via Escape (focus trap) or the Close button. */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
         className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain"
       >
