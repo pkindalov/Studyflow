@@ -21,6 +21,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
       {(hasProgress || isFinished) && (
         <div
           role="progressbar"
+          aria-label={task.text}
           aria-valuenow={Math.round(progressPercent)}
           aria-valuemin={0}
           aria-valuemax={100}
@@ -38,7 +39,7 @@ const ScheduleItem = function({ task, elapsed, isRunning, onOpenTimer, onMarkDon
         {...attributes}
         {...listeners}
       >drag_indicator</span>
-      <span className={`inline-block w-2 h-2 rounded-xl flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
+      <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${task.priority ? "bg-tertiary" : "bg-on-surface-variant"}`} />
       <span className="flex-1 font-medium text-on-surface text-sm">{task.text}</span>
       <span className="text-xs text-on-surface-variant font-mono">{task.scheduledMinutes} {t.minUnit}</span>
       {task.priority && (

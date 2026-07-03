@@ -40,6 +40,8 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
 
   const showSelectionControls = onToggleSelect !== undefined;
   const allSelected = showSelectionControls && tasks.every((task) => !safeExcludedTaskIds.has(task.id));
+  // Count only currently-visible excluded tasks; excludedTaskIds can hold stale ids for deleted tasks.
+  const excludedVisibleCount = tasks.filter((task) => safeExcludedTaskIds.has(task.id)).length;
 
   return (
     <section className="flex flex-col gap-6">
@@ -74,11 +76,11 @@ const TaskList = function({ tasks, isGridView, onToggle, onDelete, onEdit, onSto
         </div>
       </div>
 
-      {showSelectionControls && safeExcludedTaskIds.size > 0 && (
+      {showSelectionControls && excludedVisibleCount > 0 && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded-xl border border-outline-variant/30">
           <span className="material-symbols-outlined text-sm text-on-surface-variant/60 flex-shrink-0">info</span>
           <span className="text-xs text-on-surface-variant">
-            {t.excludedCountHint(safeExcludedTaskIds.size)}
+            {t.excludedCountHint(excludedVisibleCount)}
           </span>
         </div>
       )}

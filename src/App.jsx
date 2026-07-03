@@ -213,7 +213,7 @@ function App() {
 
   const sideColClass = "lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl min-h-16";
   // Extra bottom padding reserves room for the minimized timer bar so it never overlaps content.
-  const isMinimizedTimerVisible = isTimerMinimized && timerTask;
+  const isMinimizedTimerVisible = Boolean(isTimerMinimized && timerTask);
   const gridClass = `max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6${isMinimizedTimerVisible ? " pb-24 lg:pb-0" : ""}`;
 
   return (
