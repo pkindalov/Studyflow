@@ -212,6 +212,9 @@ function App() {
   });
 
   const sideColClass = "lg:col-span-3 flex flex-col gap-4 lg:gap-6 rounded-2xl min-h-16";
+  // Extra bottom padding reserves room for the minimized timer bar so it never overlaps content.
+  const isMinimizedTimerVisible = isTimerMinimized && timerTask;
+  const gridClass = `max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6${isMinimizedTimerVisible ? " pb-24 lg:pb-0" : ""}`;
 
   return (
     <div className={`min-h-dvh p-4 sm:p-6 pt-6 ${theme === "light" ? "bg-[#f0eeff]" : "bg-[#0c0c1a]"}`}>
@@ -233,7 +236,7 @@ function App() {
       )}
       <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
       <DndContext sensors={sectionSensors} collisionDetection={closestCenter} onDragStart={handleSectionDragStart} onDragOver={handleSectionDragOver} onDragEnd={handleSectionDragEnd}>
-        <div className={`max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6${isTimerMinimized && timerTask ? " pb-24 lg:pb-0" : ""}`}>
+        <div className={gridClass}>
           <div className={sideColClass}>
             <SortableContext items={columnLayout.left} strategy={verticalListSortingStrategy}>
               {columnLayout.left.map((id) => (

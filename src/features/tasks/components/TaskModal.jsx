@@ -5,6 +5,9 @@ import useFocusTrap from "../../../shared/hooks/useFocusTrap";
 
 const imageHasValue = (img) => img !== undefined && img !== null && img !== "";
 
+const DESCRIPTION_MAX_LENGTH = 200;
+const DESCRIPTION_COUNTER_THRESHOLD = 150;
+
 const MoveToDateSection = function({ moveToDate, setMoveToDate, t }) {
   const today = new Date().toLocaleDateString("en-CA");
   return (
@@ -56,10 +59,16 @@ const TaskModal = function({
   const panelRef = useRef(null);
   const titleId = useId();
   const [imageInputForced, setImageInputForced] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (prevIsOpen !== isOpen) {
     setPrevIsOpen(isOpen);
     if (!isOpen) setImageInputForced(false);
+  }
+  const [prevImage, setPrevImage] = useState(image);
+  if (prevImage !== image) {
+    setPrevImage(image);
+    setImageError(false);
   }
   const showImageInput = imageInputForced || imageHasValue(image);
   const handleKeyDown = useFocusTrap(panelRef, { isActive: isOpen, onEscape: onClose, initialFocusSelector: "textarea" });
@@ -104,12 +113,12 @@ const TaskModal = function({
           onChange={(e) => setText(e.target.value)}
           placeholder={t.taskDescPlaceholder}
           rows={3}
-          maxLength={200}
+          maxLength={DESCRIPTION_MAX_LENGTH}
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60 resize-none"
         />
-        {text.length > 150 && (
+        {text.length > DESCRIPTION_COUNTER_THRESHOLD && (
           <p role="status" aria-live="polite" className="text-right text-[11px] text-on-surface-variant/50 -mt-3">
-            {text.length}/200
+            {text.length}/{DESCRIPTION_MAX_LENGTH}
           </p>
         )}
 
@@ -124,8 +133,8 @@ const TaskModal = function({
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            {image && (
-              <img key={image} src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={(e) => { e.target.classList.add("hidden"); }} />
+            {image && !imageError && (
+              <img src={image} alt="" className="w-12 h-12 rounded-xl object-cover border border-outline-variant/20 flex-shrink-0 bg-surface-container-high" onError={() => setImageError(true)} />
             )}
             <div className="flex-1">
               <label className="sr-only" htmlFor="task-image">{t.imageUrlPlaceholder}</label>
@@ -135,7 +144,7 @@ const TaskModal = function({
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
                 placeholder={t.imageUrlPlaceholder}
-                autoFocus={!image}
+                autoFocus={!imageHasValue(image)}
                 className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60"
               />
             </div>

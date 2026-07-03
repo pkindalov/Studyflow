@@ -61,6 +61,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   const [activeMenuIndex, setActiveMenuIndex] = useState(0);
   const moreWrapRef = useRef(null);
   const menuRef = useRef(null);
+  const moreButtonRef = useRef(null);
 
   const menuActions = [];
   if (onSaveToBank) {
@@ -95,6 +96,14 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
   }
   const hasSecondary = menuActions.length > 0;
 
+  // Close the menu, optionally returning focus to the trigger button. Focus is
+  // restored on Escape and item activation (per the ARIA menu pattern) but not on
+  // outside-click, where focus should follow whatever the user clicked instead.
+  const closeMenu = (restoreFocus) => {
+    setShowMore(false);
+    if (restoreFocus) moreButtonRef.current?.focus();
+  };
+
   // When the menu opens: wire up the close-on-outside/Escape listeners and move
   // focus to the first item (matching the ARIA menu pattern). The active index is
   // reset to 0 in the toggle handler, so focus and tabIndex stay in sync.
@@ -104,7 +113,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
       if (!moreWrapRef.current?.contains(e.target)) setShowMore(false);
     };
     const handleKey = (e) => {
-      if (e.key === "Escape") setShowMore(false);
+      if (e.key === "Escape") closeMenu(true);
     };
     document.addEventListener("mousedown", close);
     document.addEventListener("touchstart", close);
@@ -119,6 +128,13 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
       document.removeEventListener("keydown", handleKey);
     };
   }, [showMore]);
+
+  // Tabbing (or otherwise moving focus) out of the menu closes it, so it never
+  // stays open while focus lives elsewhere. relatedTarget is the element gaining
+  // focus; if it's outside the wrapper the menu is no longer focused.
+  const handleMenuBlur = (event) => {
+    if (!moreWrapRef.current?.contains(event.relatedTarget)) setShowMore(false);
+  };
 
   // Roving focus across menu items: Up/Down cycle, Home/End jump to ends.
   // The active item carries tabIndex 0 and the rest -1, so Tab leaves the menu.
@@ -231,8 +247,9 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
           <span className="material-symbols-outlined text-base">edit</span>
         </button>
         {hasSecondary && (
-          <div ref={moreWrapRef} className="relative">
+          <div ref={moreWrapRef} className="relative" onBlur={handleMenuBlur}>
             <button
+              ref={moreButtonRef}
               onClick={() => { setShowMore((isVisible) => !isVisible); setActiveMenuIndex(0); }}
               className={`p-1 sm:p-1.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl transition-colors ${showMore ? "text-primary bg-primary/10" : "hover:text-primary hover:bg-primary/10"}`}
               aria-label={t.moreActionsAria}
@@ -253,7 +270,7 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
                     key={action.key}
                     role="menuitem"
                     tabIndex={index === activeMenuIndex ? 0 : -1}
-                    onClick={action.onClick}
+                    onClick={() => { action.onClick(); moreButtonRef.current?.focus(); }}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-surface-container-high ${action.textClass}`}
                   >
                     <span className={`material-symbols-outlined text-base flex-shrink-0 ${action.iconStateClass}`}>{action.icon}</span>
