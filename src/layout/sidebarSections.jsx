@@ -34,7 +34,7 @@ export function buildSidebarSections({
         onToggleCompletion={() => setShowCalendarCompletion((v) => !v)}
       />
     ),
-    activity: <ActivityPanel tasks={tasks} />,
+    activity: <ActivityPanel tasks={tasks} onNavigateToDate={handleDateChange} />,
     scheduleSettings: <ScheduleSettingsSection totalStudyTime={totalStudyTime} setTotalStudyTime={setTotalStudyTime} priorityPercent={priorityPercent} setPriorityPercent={setPriorityPercent} tasksCount={tasksForDay.length} />,
     quote: <QuoteSection />,
     todaysTasks: (

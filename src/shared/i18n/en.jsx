@@ -148,6 +148,7 @@ export const en = {
   last6Months: "Last 6 months",
   selectedDayLabel: "Selected day",
   selectedDayTasksFn: (n) => `${n} task${n === 1 ? "" : "s"} done`,
+  showDayOnCalendar: "Show this day on the calendar",
   heatmapNoTasksDone: "No tasks done",
   heatmapLessLabel: "Less",
   heatmapMoreLabel: "More",

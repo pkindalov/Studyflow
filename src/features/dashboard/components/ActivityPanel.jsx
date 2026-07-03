@@ -3,6 +3,11 @@ import { useActivityStats } from "../../../shared/hooks/useActivityStats";
 import ActivityHeatmap from "../../../shared/components/ActivityHeatmap";
 import { useLang } from "../../../shared/i18n/LangContext";
 
+// Parse a date-key ("YYYY-MM-DD") as local midnight so the calendar day survives the round-trip in any timezone.
+function parseDateKey(dateKey) {
+  return new Date(dateKey + "T00:00:00");
+}
+
 function formatFocusTime(totalSeconds, t) {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -47,8 +52,8 @@ function ActivityStatsGrid({ streak, activeToday, todayFocus, focus, totalDone, 
   );
 }
 
-function SelectedDayDetail({ selectedDate, selectedFocus, doneTasks, onDeselect, t }) {
-  const dateLabel = new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+function SelectedDayDetail({ selectedDate, selectedFocus, doneTasks, onDeselect, onGoToCalendar, t }) {
+  const dateLabel = parseDateKey(selectedDate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   return (
     <div className="bg-surface-container-high rounded-xl px-3 py-2.5 flex flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -66,6 +71,9 @@ function SelectedDayDetail({ selectedDate, selectedFocus, doneTasks, onDeselect,
             <span className="text-[10px] text-on-surface-variant">{t.selectedDayTasksFn(doneTasks.length)}</span>
           </div>
         </div>
+        <button type="button" onClick={onGoToCalendar} aria-label={t.showDayOnCalendar} title={t.showDayOnCalendar} className="flex-shrink-0 p-1 -my-1 rounded-md text-on-surface-variant/50 hover:text-primary hover:bg-surface-container-highest active:text-primary/80 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors">
+          <span className="material-symbols-outlined text-base leading-none">calendar_month</span>
+        </button>
         <button onClick={onDeselect} aria-label="Deselect" className="text-on-surface-variant/50 hover:text-on-surface-variant transition-colors leading-none text-base material-symbols-outlined flex-shrink-0" title="Deselect">
           close
         </button>
@@ -76,7 +84,7 @@ function SelectedDayDetail({ selectedDate, selectedFocus, doneTasks, onDeselect,
           {doneTasks.map((task) => (
             <li key={task.id} className="flex items-center gap-2 bg-surface-container rounded-lg px-2 py-1.5">
               <span className="material-symbols-outlined text-sm text-tertiary flex-shrink-0 leading-none">check_circle</span>
-              <span className="flex-1 text-xs text-on-surface truncate">{task.text}</span>
+              <span className="flex-1 min-w-0 text-xs text-on-surface truncate" title={task.text}>{task.text}</span>
               {task.priority && (
                 <span className="text-[9px] font-bold uppercase tracking-wider text-tertiary flex-shrink-0">{t.priorityBadge}</span>
               )}
@@ -90,7 +98,7 @@ function SelectedDayDetail({ selectedDate, selectedFocus, doneTasks, onDeselect,
   );
 }
 
-export function ActivityPanel({ tasks }) {
+export function ActivityPanel({ tasks, onNavigateToDate }) {
   const { t } = useLang();
   const { streak, activeToday, totalFocusSeconds, todayFocusSeconds, heatmap } = useActivityStats(tasks);
   const focus = formatFocusTime(totalFocusSeconds, t);
@@ -135,6 +143,7 @@ export function ActivityPanel({ tasks }) {
           selectedFocus={selectedFocus}
           doneTasks={selectedDoneTasks}
           onDeselect={() => setSelectedDate(null)}
+          onGoToCalendar={() => onNavigateToDate?.(parseDateKey(selectedDate))}
           t={t}
         />
       )}
