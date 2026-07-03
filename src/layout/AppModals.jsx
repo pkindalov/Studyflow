@@ -106,7 +106,7 @@ export default function AppModals({
           withGenerate={taskBankModalAutoGenerate}
           onConfirm={(selectedTasks) => {
             selectedTasks.forEach(({ text, priority, imageUrl }) =>
-              addTaskDirect(dateKey, { id: generateId(), text, priority: !!priority, imageUrl: imageUrl || "", done: false })
+              addTaskDirect(dateKey, { id: generateId(), text, priority: Boolean(priority), imageUrl: imageUrl || "", done: false })
             );
             setShowTaskBankModal(false);
             if (taskBankModalAutoGenerate) setTimeout(onGenerateSchedule, 0);

@@ -90,7 +90,7 @@ const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
               const dateStr = date.toLocaleDateString("en-CA");
               const count = heatmap[dateStr] || 0;
               const isSelected = selectedDate === dateStr;
-              const isInteractive = !isFuture && !!onSelectDate;
+              const isInteractive = !isFuture && onSelectDate !== undefined;
               const tooltip = isFuture ? "" : formatTooltip(date, count, lang, t);
               return (
                 <div
@@ -109,7 +109,8 @@ const ActivityHeatmap = function({ heatmap, selectedDate, onSelectDate }) {
                   className={[
                     "relative w-2 h-2 rounded-[2px] flex-shrink-0 transition-opacity",
                     cellClass(count, isFuture),
-                    isInteractive ? "cursor-pointer hover:opacity-80 before:absolute before:content-[''] before:-inset-1.5" : "",
+                    // before:-inset-px caps the click target's expansion at the 2px inter-cell gap so it never overlaps a neighbouring day
+                    isInteractive ? "cursor-pointer hover:opacity-80 before:absolute before:content-[''] before:-inset-px" : "",
                     isSelected ? "ring-1 ring-primary ring-offset-[1px] ring-offset-surface-container" : "",
                   ].join(" ")}
                 />

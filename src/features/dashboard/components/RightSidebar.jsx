@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useId } from "react";
 import Pagination from "../../../shared/components/Pagination";
 import { useLang } from "../../../shared/i18n/LangContext";
 import { getDailyQuote } from "../utils/getDailyQuote";
+import useFocusTrap from "../../../shared/hooks/useFocusTrap";
 
 const MODAL_PAGE_SIZE = 5;
 const MAX_VISIBLE = 5;
@@ -36,13 +37,24 @@ function ProgressRow({ label, progress, colorClass, priority }) {
 const TasksProgressModal = function({ sectionTitle, items, onClose }) {
   const { t } = useLang();
   const [modalPage, setModalPage] = useState(0);
+  const panelRef = useRef(null);
+  const titleId = useId();
+  const handleKeyDown = useFocusTrap(panelRef, { onEscape: onClose });
   const modalTotalPages = Math.ceil(items.length / MODAL_PAGE_SIZE);
   const modalItems = items.slice(modalPage * MODAL_PAGE_SIZE, modalPage * MODAL_PAGE_SIZE + MODAL_PAGE_SIZE);
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+        className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-sm p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain"
+      >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-headline font-bold text-on-surface">{sectionTitle}</h2>
+          <h2 id={titleId} className="text-lg font-headline font-bold text-on-surface">{sectionTitle}</h2>
           <button onClick={onClose} aria-label={t.close} className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all">
             <span className="material-symbols-outlined text-xl">close</span>
           </button>

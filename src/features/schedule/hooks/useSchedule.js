@@ -33,7 +33,7 @@ export const useSchedule = function({
   }
 
   const allScheduleDone = useMemo(() =>
-    !!schedule && schedule.length > 0 && schedule.every((task) =>
+    Array.isArray(schedule) && schedule.length > 0 && schedule.every((task) =>
       task.done || (scheduleTimers[task.id] || 0) >= task.scheduledMinutes * 60
     ),
   [schedule, scheduleTimers]);
