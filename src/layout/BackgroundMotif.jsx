@@ -1,24 +1,18 @@
 import { useState } from "react";
+import backgroundMotifs from "./backgroundMotifs";
 
-// Study-themed kanji paired with a simple line-art figure and an EN/BG
-// translation caption, composed as a single watermark. A random subset is
-// placed at random positions once per mount (i.e. once per page load/refresh).
-const MOTIFS = [
-  { kanji: "集中", figure: "mountain", en: "Focus", bg: "Фокус" },
-  { kanji: "努力", figure: "wave", en: "Effort", bg: "Усилие" },
-  { kanji: "頑張れ", figure: "sun", en: "Do your best", bg: "Дай всичко от себе си" },
-  { kanji: "継続", figure: "blossom", en: "Perseverance", bg: "Постоянство" },
-  { kanji: "静寂", figure: "moon", en: "Stillness", bg: "Спокойствие" },
-  { kanji: "夢", figure: "tree", en: "Dream", bg: "Мечта" },
-];
-
+// Positions the watermark cards can be placed at, inset from the viewport
+// edges so the text never gets clipped. Edit backgroundMotifs.js to
+// add/change the messages shown.
 const POSITIONS = [
-  "-top-10 -left-8 sm:-top-16 sm:-left-12",
-  "-top-10 -right-8 sm:-top-16 sm:-right-12",
-  "-bottom-10 -left-8 sm:-bottom-16 sm:-left-12",
-  "-bottom-10 -right-8 sm:-bottom-16 sm:-right-12",
-  "top-1/3 -left-10 sm:-left-16",
-  "top-1/3 -right-10 sm:-right-16",
+  "top-4 left-4 sm:top-8 sm:left-8",
+  "top-4 right-4 sm:top-8 sm:right-8",
+  "bottom-4 left-4 sm:bottom-8 sm:left-8",
+  "bottom-4 right-4 sm:bottom-8 sm:right-8",
+  "top-1/2 left-2 -translate-y-1/2 sm:left-6",
+  "top-1/2 right-2 -translate-y-1/2 sm:right-6",
+  "top-6 left-1/2 -translate-x-1/2 sm:top-10",
+  "bottom-6 left-1/2 -translate-x-1/2 sm:bottom-10",
 ];
 
 const MOTIF_COUNT = 4;
@@ -33,7 +27,7 @@ const shuffle = (items) => {
 };
 
 const pickPlacements = () => {
-  const motifs = shuffle(MOTIFS).slice(0, MOTIF_COUNT);
+  const motifs = shuffle(backgroundMotifs).slice(0, MOTIF_COUNT);
   const positions = shuffle(POSITIONS).slice(0, MOTIF_COUNT);
   return motifs.map((motif, index) => ({ motif, positionClass: positions[index] }));
 };
@@ -69,6 +63,34 @@ const FIGURES = {
       <path d="M70 145 L100 90 L130 145 Z" fill="none" stroke="currentColor" strokeWidth="2" />
     </>
   ),
+  bamboo: (
+    <>
+      <line x1="60" y1="180" x2="60" y2="40" stroke="currentColor" strokeWidth="3" />
+      <line x1="60" y1="70" x2="75" y2="70" stroke="currentColor" strokeWidth="2" />
+      <line x1="60" y1="110" x2="75" y2="110" stroke="currentColor" strokeWidth="2" />
+      <line x1="100" y1="180" x2="100" y2="60" stroke="currentColor" strokeWidth="3" />
+      <line x1="100" y1="90" x2="115" y2="90" stroke="currentColor" strokeWidth="2" />
+      <line x1="100" y1="130" x2="115" y2="130" stroke="currentColor" strokeWidth="2" />
+      <line x1="140" y1="180" x2="140" y2="80" stroke="currentColor" strokeWidth="3" />
+      <line x1="140" y1="110" x2="155" y2="110" stroke="currentColor" strokeWidth="2" />
+    </>
+  ),
+  bird: (
+    <>
+      <path d="M30 110 Q 70 70 100 100 Q 130 70 170 110" fill="none" stroke="currentColor" strokeWidth="2" />
+      <line x1="100" y1="100" x2="100" y2="140" stroke="currentColor" strokeWidth="2" />
+      <path d="M100 100 Q 85 80 70 85" fill="none" stroke="currentColor" strokeWidth="2" />
+    </>
+  ),
+  rain: (
+    <>
+      <path d="M50 50 a25 20 0 1 1 90 10" fill="none" stroke="currentColor" strokeWidth="2" />
+      <line x1="60" y1="90" x2="45" y2="130" stroke="currentColor" strokeWidth="2" />
+      <line x1="90" y1="90" x2="75" y2="140" stroke="currentColor" strokeWidth="2" />
+      <line x1="120" y1="90" x2="105" y2="130" stroke="currentColor" strokeWidth="2" />
+      <line x1="150" y1="90" x2="135" y2="140" stroke="currentColor" strokeWidth="2" />
+    </>
+  ),
 };
 
 function BackgroundMotif() {
@@ -80,18 +102,16 @@ function BackgroundMotif() {
         <div
           key={motif.kanji}
           aria-hidden="true"
-          className={`fixed z-0 pointer-events-none select-none flex flex-col items-center text-on-surface-variant ${positionClass}`}
+          className={`fixed z-0 pointer-events-none select-none flex flex-col items-center text-center max-w-[13rem] sm:max-w-[15rem] text-on-surface-variant ${positionClass}`}
         >
-          <svg width="320" height="320" viewBox="0 0 200 200" className="w-56 h-56 sm:w-72 sm:h-72 opacity-[0.1]">
+          <svg width="96" height="96" viewBox="0 0 200 200" className="w-16 h-16 sm:w-20 sm:h-20 opacity-[0.12]">
             {FIGURES[motif.figure]}
-            <text x="30" y="55" fontSize="46" fontFamily="serif" fill="currentColor">
-              {motif.kanji}
-            </text>
           </svg>
-          <div className="-mt-4 text-center opacity-30">
-            <p className="text-[0.65rem] sm:text-xs font-medium tracking-wide">{motif.en}</p>
-            <p className="text-[0.6rem] sm:text-[0.7rem] tracking-wide">{motif.bg}</p>
-          </div>
+          <p className="mt-1 font-headline text-base sm:text-lg tracking-wide opacity-[0.16]">{motif.kanji}</p>
+          <p className="italic text-[0.65rem] sm:text-xs opacity-[0.22]">({motif.romaji})</p>
+          <p className="mt-1 text-xs sm:text-sm font-medium opacity-30">{motif.en}</p>
+          <p className="text-[0.65rem] sm:text-xs opacity-25">{motif.reminder}</p>
+          <p className="text-[0.6rem] sm:text-[0.7rem] opacity-25">{motif.bg}</p>
         </div>
       ))}
     </>
