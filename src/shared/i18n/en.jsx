@@ -225,6 +225,8 @@ export const en = {
   darkMode: "Dark",
   switchToLight: "Switch to light mode",
   switchToDark: "Switch to dark mode",
+  showBackgroundArt: "Show background art",
+  hideBackgroundArt: "Hide background art",
 
   // ── Quick-timer prompt ────────────────────────────────────────────────────────
   howManyMinutes: "How many minutes do you want to work on it?",

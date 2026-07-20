@@ -1,4 +1,4 @@
-const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, t }) {
+const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, showBackgroundArt, setShowBackgroundArt, t }) {
   return (
     <>
       <button
@@ -24,6 +24,17 @@ const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, t 
         >БГ</button>
       </div>
       <button
+        onClick={() => setShowBackgroundArt((prev) => !prev)}
+        className="flex items-center justify-center w-9 h-9 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl hover:bg-surface-container-high transition-all"
+        title={showBackgroundArt ? t.hideBackgroundArt : t.showBackgroundArt}
+        aria-label={showBackgroundArt ? t.hideBackgroundArt : t.showBackgroundArt}
+        aria-pressed={showBackgroundArt}
+      >
+        <span className="material-symbols-outlined text-base">
+          {showBackgroundArt ? "landscape" : "hide_image"}
+        </span>
+      </button>
+      <button
         onClick={() => setTheme((prev) => prev === "dark" ? "light" : "dark")}
         className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-all"
         title={theme === "dark" ? t.switchToLight : t.switchToDark}
@@ -38,7 +49,7 @@ const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, t 
   );
 }
 
-export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t }) {
+export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, showBackgroundArt, setShowBackgroundArt, t }) {
   return (
     <>
       {/* Mobile toolbar */}
@@ -47,7 +58,7 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t }
           <span className="font-headline font-bold text-base text-on-surface">{t.appName}</span>
         </div>
         <div role="toolbar" aria-label={t.appSettingsToolbar} className="flex items-center gap-1.5">
-          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
         </div>
       </div>
 
@@ -64,7 +75,7 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, t }
         </div>
 
         <div role="toolbar" aria-label={t.appSettingsToolbar} className="flex items-center gap-2">
-          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
         </div>
       </header>
     </>

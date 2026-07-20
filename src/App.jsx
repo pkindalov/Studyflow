@@ -36,6 +36,9 @@ runMigrations();
 function App() {
   const { lang, setLang, t } = useLang();
   const [theme, setTheme] = useState(() => localStorage.getItem("studyflow_theme") || "dark");
+  const [showBackgroundArt, setShowBackgroundArt] = useState(
+    () => localStorage.getItem("studyflow_background_art") !== "false"
+  );
   const [showCalendarCompletion, setShowCalendarCompletion] = useState(
     () => localStorage.getItem("studyflow_calendar_completion") === "true"
   );
@@ -144,6 +147,10 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
+    localStorage.setItem("studyflow_background_art", String(showBackgroundArt));
+  }, [showBackgroundArt]);
+
+  useEffect(() => {
     localStorage.setItem("studyflow_calendar_completion", String(showCalendarCompletion));
   }, [showCalendarCompletion]);
 
@@ -219,7 +226,7 @@ function App() {
 
   return (
     <div className="min-h-dvh p-4 sm:p-6 pt-6">
-      <BackgroundMotif />
+      {showBackgroundArt && <BackgroundMotif />}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-on-primary focus:rounded-xl focus:font-semibold focus:shadow-lg"
@@ -236,7 +243,7 @@ function App() {
           {notification}
         </div>
       )}
-      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} t={t} />
+      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
       <DndContext sensors={sectionSensors} collisionDetection={closestCenter} onDragStart={handleSectionDragStart} onDragOver={handleSectionDragOver} onDragEnd={handleSectionDragEnd}>
         <div className={gridClass}>
           <div className={sideColClass}>

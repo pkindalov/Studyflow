@@ -231,6 +231,8 @@ export const bg = {
   darkMode: "Тъмен",
   switchToLight: "Превключи към светъл режим",
   switchToDark: "Превключи към тъмен режим",
+  showBackgroundArt: "Покажи фоновото изкуство",
+  hideBackgroundArt: "Скрий фоновото изкуство",
 
   // ── Quick-timer prompt ────────────────────────────────────────────────────────
   howManyMinutes: "Колко минути искаш да работиш върху нея?",
