@@ -871,20 +871,20 @@ describe('savedListTexts forwarded to MainContent', () => {
 // ── root background class ──────────────────────────────────────────────────────
 
 describe('root background class', () => {
-  it('applies dark background class by default', () => {
-    const { container } = render(<App />)
-    expect(container.firstChild.className).toContain('bg-[#0c0c1a]')
+  it('sets the dark data-theme attribute by default, driving the dark CSS background', () => {
+    render(<App />)
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
   })
 
-  it('applies light background class when theme is light', () => {
+  it('sets the light data-theme attribute when theme is light, driving the light CSS background', () => {
     localStorage.setItem('studyflow_theme', 'light')
-    const { container } = render(<App />)
-    expect(container.firstChild.className).toContain('bg-[#f0eeff]')
+    render(<App />)
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
   })
 
-  it('does not apply light class when theme is dark', () => {
-    const { container } = render(<App />)
-    expect(container.firstChild.className).not.toContain('bg-[#f0eeff]')
+  it('does not set the light data-theme attribute when theme is dark', () => {
+    render(<App />)
+    expect(document.documentElement.getAttribute('data-theme')).not.toBe('light')
   })
 })
 
