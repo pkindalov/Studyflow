@@ -96,6 +96,10 @@
 
 [data-theme="light"] body {
   background-color: #f0eeff;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% -10%, rgba(91, 70, 223, 0.16), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(14, 150, 112, 0.14), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(168, 98, 0, 0.09), transparent 60%);
 }
 
 [data-theme="light"] body::before {
@@ -128,6 +132,11 @@ button, a, input, select, textarea, [role="button"] {
 
 body {
   background-color: #0c0c1a;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% -10%, rgba(149, 128, 245, 0.35), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(79, 217, 170, 0.18), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(240, 165, 64, 0.12), transparent 60%);
+  background-attachment: fixed;
   color: var(--color-on-surface);
   font-family: "Outfit", system-ui, sans-serif;
   min-height: 100vh;

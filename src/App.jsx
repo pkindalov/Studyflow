@@ -25,6 +25,7 @@ import TopBar from "./layout/TopBar";
 import BottomBar from "./layout/BottomBar";
 import MainContent from "./layout/MainContent";
 import AppModals from "./layout/AppModals";
+import BackgroundMotif from "./layout/BackgroundMotif";
 import "./features/calendar/calendar.css";
 import "./animations.css";
 
@@ -217,7 +218,8 @@ function App() {
   const gridClass = `max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6${isMinimizedTimerVisible ? " pb-24 lg:pb-0" : ""}`;
 
   return (
-    <div className={`min-h-dvh p-4 sm:p-6 pt-6 ${theme === "light" ? "bg-[#f0eeff]" : "bg-[#0c0c1a]"}`}>
+    <div className="min-h-dvh p-4 sm:p-6 pt-6">
+      <BackgroundMotif />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-on-primary focus:rounded-xl focus:font-semibold focus:shadow-lg"
