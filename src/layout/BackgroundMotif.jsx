@@ -4,18 +4,27 @@ import backgroundMotifs from "./backgroundMotifs";
 // Positions the watermark cards can be placed at, inset from the viewport
 // edges so the text never gets clipped. Edit backgroundMotifs.js to
 // add/change the messages shown.
-const POSITIONS = [
+//
+// On mobile the single-column layout leaves no side/corner whitespace, so
+// only the top/bottom-center positions are shown there (fewer motifs, less
+// text per motif). The corner and mid-side positions only appear at sm+,
+// where the centered desktop layout gives them room to breathe.
+const CENTER_POSITIONS = [
+  "top-6 left-1/2 -translate-x-1/2 sm:top-10",
+  "bottom-6 left-1/2 -translate-x-1/2 sm:bottom-10",
+];
+
+const EDGE_POSITIONS = [
   "top-4 left-4 sm:top-8 sm:left-8",
   "top-4 right-4 sm:top-8 sm:right-8",
   "bottom-4 left-4 sm:bottom-8 sm:left-8",
   "bottom-4 right-4 sm:bottom-8 sm:right-8",
   "top-1/2 left-2 -translate-y-1/2 sm:left-6",
   "top-1/2 right-2 -translate-y-1/2 sm:right-6",
-  "top-6 left-1/2 -translate-x-1/2 sm:top-10",
-  "bottom-6 left-1/2 -translate-x-1/2 sm:bottom-10",
 ];
 
-const MOTIF_COUNT = 4;
+const MOBILE_MOTIF_COUNT = 2;
+const DESKTOP_EXTRA_COUNT = 2;
 
 const shuffle = (items) => {
   const shuffled = [...items];
@@ -27,9 +36,20 @@ const shuffle = (items) => {
 };
 
 const pickPlacements = () => {
-  const motifs = shuffle(backgroundMotifs).slice(0, MOTIF_COUNT);
-  const positions = shuffle(POSITIONS).slice(0, MOTIF_COUNT);
-  return motifs.map((motif, index) => ({ motif, positionClass: positions[index] }));
+  const motifs = shuffle(backgroundMotifs);
+  const centerPositions = shuffle(CENTER_POSITIONS);
+  const edgePositions = shuffle(EDGE_POSITIONS).slice(0, DESKTOP_EXTRA_COUNT);
+
+  const centerPlacements = motifs.slice(0, MOBILE_MOTIF_COUNT).map((motif, index) => ({
+    motif,
+    positionClass: centerPositions[index],
+    mobileVisible: true,
+  }));
+  const edgePlacements = motifs
+    .slice(MOBILE_MOTIF_COUNT, MOBILE_MOTIF_COUNT + DESKTOP_EXTRA_COUNT)
+    .map((motif, index) => ({ motif, positionClass: edgePositions[index], mobileVisible: false }));
+
+  return [...centerPlacements, ...edgePlacements];
 };
 
 const FIGURES = {
@@ -98,20 +118,26 @@ function BackgroundMotif() {
 
   return (
     <>
-      {placements.map(({ motif, positionClass }) => (
+      {placements.map(({ motif, positionClass, mobileVisible }) => (
         <div
           key={motif.kanji}
           aria-hidden="true"
-          className={`fixed z-0 pointer-events-none select-none flex flex-col items-center text-center max-w-[13rem] sm:max-w-[15rem] text-on-surface-variant ${positionClass}`}
+          className={`fixed z-0 pointer-events-none select-none flex-col items-center text-center max-w-[13rem] sm:max-w-[15rem] text-on-surface-variant ${positionClass} ${mobileVisible ? "flex" : "hidden sm:flex"}`}
         >
           <svg width="96" height="96" viewBox="0 0 200 200" className="w-16 h-16 sm:w-20 sm:h-20 opacity-[0.12]">
             {FIGURES[motif.figure]}
           </svg>
           <p className="mt-1 font-headline text-base sm:text-lg tracking-wide opacity-[0.16]">{motif.kanji}</p>
-          <p className="italic text-[0.65rem] sm:text-xs opacity-[0.22]">({motif.romaji})</p>
+          <p className={`italic text-[0.65rem] sm:text-xs opacity-[0.22] ${mobileVisible ? "hidden sm:block" : ""}`}>
+            ({motif.romaji})
+          </p>
           <p className="mt-1 text-xs sm:text-sm font-medium opacity-30">{motif.en}</p>
-          <p className="text-[0.65rem] sm:text-xs opacity-25">{motif.reminder}</p>
-          <p className="text-[0.6rem] sm:text-[0.7rem] opacity-25">{motif.bg}</p>
+          <p className={`text-[0.65rem] sm:text-xs opacity-25 ${mobileVisible ? "hidden sm:block" : ""}`}>
+            {motif.reminder}
+          </p>
+          <p className={`text-[0.6rem] sm:text-[0.7rem] opacity-25 ${mobileVisible ? "hidden sm:block" : ""}`}>
+            {motif.bg}
+          </p>
         </div>
       ))}
     </>
