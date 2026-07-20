@@ -204,10 +204,11 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
         />
       )}
 
-      <div className="flex-grow flex flex-col gap-1">
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex-grow flex flex-col gap-1 min-w-0">
+        <div className="flex items-center gap-2">
           <h4
-            className={`font-semibold text-on-surface group-hover:text-primary transition-colors ${isDone ? "line-through" : ""}`}
+            className={`min-w-0 flex-1 truncate font-semibold text-on-surface group-hover:text-primary transition-colors ${isDone ? "line-through" : ""}`}
+            title={task.text}
           >
             {task.text}
           </h4>
