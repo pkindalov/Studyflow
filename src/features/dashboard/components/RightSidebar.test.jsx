@@ -220,6 +220,21 @@ describe('TasksProgressSection', () => {
     expect(screen.getByText('Study math')).toBeTruthy()
   })
 
+  it('does not duplicate a recurring task\'s own materialized instance in the daily list', () => {
+    const recurring = [{ id: 'r1', text: 'Read 30 min', priority: false }]
+    // The materialization effect links today's generated instance back to its template via recurringId.
+    const todayInstance = { id: 't1', text: 'Read 30 min', done: false, priority: false, recurringId: 'r1' }
+    wrap(
+      <TasksProgressSection
+        tasks={{ '2026-07-21': [todayInstance] }}
+        recurringTasks={recurring}
+        tasksForDay={[todayInstance]}
+      />
+    )
+    expect(screen.getAllByText('Read 30 min').length).toBe(1)
+    expect(screen.queryByText("Today's Tasks")).toBeNull()
+  })
+
   it('renders a progress bar at 100% width for a done task', () => {
     const tasks = [{ id: 't1', text: 'Study math', done: true, priority: false }]
     wrap(<TasksProgressSection tasks={{}} recurringTasks={[]} tasksForDay={tasks} />)

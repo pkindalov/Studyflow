@@ -251,9 +251,10 @@ export function TasksProgressSection({
       };
     });
 
-    if (tasksForDay.length === 0) return recurringItems;
+    const oneOffTasksForDay = tasksForDay.filter((task) => !task.recurringId);
+    if (oneOffTasksForDay.length === 0) return recurringItems;
 
-    const taskRows = tasksForDay.map((task, idx) => {
+    const taskRows = oneOffTasksForDay.map((task, idx) => {
       let progress = 0;
       if (task.done) {
         progress = 100;
