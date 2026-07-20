@@ -201,13 +201,22 @@ describe('TasksProgressSection', () => {
     expect(screen.getAllByText("Today's Tasks").length).toBeGreaterThan(0)
   })
 
-  it('ignores an expired recurring task and falls back to "Today\'s Tasks" for the daily list', () => {
+  it('ignores a recurring task that has expired by the viewed date and falls back to "Today\'s Tasks"', () => {
     const expiredRecurring = [{ id: 'r1', text: 'Old Project', priority: false, endDate: '2000-01-01' }]
     const tasks = [{ id: 't1', text: 'Study math', done: false, priority: false }]
-    wrap(<TasksProgressSection tasks={{}} recurringTasks={expiredRecurring} tasksForDay={tasks} />)
+    wrap(<TasksProgressSection tasks={{}} recurringTasks={expiredRecurring} tasksForDay={tasks} dateKey="2026-07-21" />)
     expect(screen.queryByText('Recurring Tasks')).toBeNull()
     expect(screen.getAllByText("Today's Tasks").length).toBeGreaterThan(0)
     expect(screen.getByText('Study math')).toBeTruthy()
+  })
+
+  it('keeps a recurring task visible when browsing a past date within its original active window', () => {
+    // Its endDate has since passed relative to real "today", but the viewed date is still within range.
+    const recurring = [{ id: 'r1', text: 'Old Project', priority: false, endDate: '2020-06-01' }]
+    const tasks = { '2020-05-15': [{ id: 't1', recurringId: 'r1', done: true }] }
+    wrap(<TasksProgressSection tasks={tasks} recurringTasks={recurring} tasksForDay={[]} dateKey="2020-05-15" />)
+    expect(screen.getByText('Recurring Tasks')).toBeTruthy()
+    expect(screen.getByText('Old Project')).toBeTruthy()
   })
 
   it('shows both an active recurring task and today\'s one-off tasks together instead of hiding one', () => {
@@ -229,6 +238,7 @@ describe('TasksProgressSection', () => {
         tasks={{ '2026-07-21': [todayInstance] }}
         recurringTasks={recurring}
         tasksForDay={[todayInstance]}
+        dateKey="2026-07-21"
       />
     )
     expect(screen.getAllByText('Read 30 min').length).toBe(1)

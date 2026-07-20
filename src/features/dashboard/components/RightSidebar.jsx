@@ -226,15 +226,15 @@ export function TasksProgressSection({
   tasks,
   recurringTasks,
   tasksForDay,
+  dateKey,
   scheduleTimers = {},
   taskAllocations = {},
 }) {
   const { t } = useLang();
   const [showAll, setShowAll] = useState(false);
-  const todayKey = new Date().toLocaleDateString("en-CA");
   const activeRecurringTasks = useMemo(
-    () => recurringTasks.filter((tpl) => !tpl.endDate || tpl.endDate >= todayKey),
-    [recurringTasks, todayKey],
+    () => recurringTasks.filter((tpl) => !tpl.endDate || tpl.endDate >= dateKey),
+    [recurringTasks, dateKey],
   );
 
   const items = useMemo(() => {

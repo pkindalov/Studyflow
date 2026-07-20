@@ -42,6 +42,7 @@ export function buildSidebarSections({
         tasks={tasks}
         recurringTasks={recurringTasks}
         tasksForDay={tasksForDay}
+        dateKey={dateKey}
         scheduleTimers={scheduleTimers}
         taskAllocations={taskAllocations}
       />
