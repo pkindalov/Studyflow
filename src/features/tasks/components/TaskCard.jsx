@@ -53,10 +53,70 @@ const DeleteConfirmDialog = function({ task, onCancel, onConfirm }) {
   );
 };
 
+const TaskDetailModal = function({ task, onClose }) {
+  const { t } = useLang();
+  const panelRef = useRef(null);
+  const titleId = useId();
+  const handleKeyDown = useFocusTrap(panelRef, { onEscape: onClose });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Decorative backdrop: mouse click-to-dismiss is a convenience; keyboard/AT users dismiss via Escape (focus trap) or the Close button. */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        onKeyDown={handleKeyDown}
+        className="relative bg-surface-container border border-outline-variant/60 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl w-full max-w-lg p-6 flex flex-col gap-4 max-h-[80dvh] overflow-y-auto overscroll-contain"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <h2 id={titleId} className="text-lg font-headline font-bold text-on-surface">{t.taskDetailsTitle}</h2>
+          <button
+            onClick={onClose}
+            aria-label={t.close}
+            className="flex-shrink-0 text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all"
+          >
+            <span className="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        {task.imageUrl && (
+          <img
+            src={task.imageUrl}
+            alt={t.taskVisualAlt}
+            className="w-full max-h-56 rounded-xl object-cover border border-outline-variant/20 bg-white"
+          />
+        )}
+
+        <p className={`text-base leading-relaxed whitespace-pre-wrap break-words text-on-surface ${task.done ? "line-through opacity-60" : ""}`}>
+          {task.text}
+        </p>
+
+        {task.recurringId && (
+          <span
+            className="inline-flex self-start items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 border border-secondary/20 rounded-full px-2 py-0.5"
+            title={t.recurringTaskTitle}
+          >
+            <span className="material-symbols-outlined text-xs">repeat</span>
+            {t.repeatBadge}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, selected = true, onToggleSelect, onOpenTimer, onSaveToBank, isInList = false, dragging, dragHandleListeners, dragHandleAttributes, scheduledMinutes }) {
   const { t } = useLang();
   const isDone = task.done === true;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [activeMenuIndex, setActiveMenuIndex] = useState(0);
   const moreWrapRef = useRef(null);
@@ -206,12 +266,14 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
 
       <div className="flex-grow flex flex-col gap-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h4
-            className={`min-w-0 flex-1 truncate font-semibold text-on-surface group-hover:text-primary transition-colors ${isDone ? "line-through" : ""}`}
+          <button
+            type="button"
+            onClick={() => setShowDetail(true)}
+            className={`min-w-0 flex-1 truncate text-left font-semibold text-on-surface group-hover:text-primary hover:underline transition-colors ${isDone ? "line-through" : ""}`}
             title={task.text}
           >
             {task.text}
-          </h4>
+          </button>
           {task.recurringId && (
             <span
               className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 border border-secondary/20 rounded-full px-2 py-0.5 flex-shrink-0"
@@ -297,6 +359,10 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
           onCancel={() => setShowDeleteConfirm(false)}
           onConfirm={() => { onDelete(task.id); setShowDeleteConfirm(false); }}
         />
+      )}
+
+      {showDetail && (
+        <TaskDetailModal task={task} onClose={() => setShowDetail(false)} />
       )}
     </div>
   );

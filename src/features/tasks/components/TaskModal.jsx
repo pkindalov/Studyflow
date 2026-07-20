@@ -5,8 +5,8 @@ import useFocusTrap from "../../../shared/hooks/useFocusTrap";
 
 const imageHasValue = (img) => img !== undefined && img !== null && img !== "";
 
-const DESCRIPTION_MAX_LENGTH = 200;
-const DESCRIPTION_COUNTER_THRESHOLD = 150;
+const DESCRIPTION_MAX_LENGTH = 600;
+const DESCRIPTION_COUNTER_THRESHOLD = 450;
 
 const MoveToDateSection = function({ moveToDate, setMoveToDate, t }) {
   const today = new Date().toLocaleDateString("en-CA");
@@ -112,7 +112,7 @@ const TaskModal = function({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={t.taskDescPlaceholder}
-          rows={3}
+          rows={5}
           maxLength={DESCRIPTION_MAX_LENGTH}
           className="w-full border border-outline/60 bg-surface-container-highest rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 text-on-surface placeholder:text-on-surface-variant/60 resize-none"
         />

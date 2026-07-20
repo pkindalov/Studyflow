@@ -57,6 +57,7 @@ export const en = {
   excludeFromSchedule: "Exclude from schedule",
   includeInSchedule: "Include in schedule",
   editTaskAria: "Edit task",
+  taskDetailsTitle: "Task details",
   moreActionsAria: "More actions",
   stopRepeatingTitle: "Stop this task from repeating on future dates",
   deleteTaskAria: "Delete task",
