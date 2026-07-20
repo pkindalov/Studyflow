@@ -129,7 +129,7 @@ export const en = {
   totalStudyTime: "Total Study Time",
   hoursUnit: "hours",
   priorityTimeLimit: "Priority Time Limit",
-  activeProjects: "Active Projects",
+  activeProjects: "Recurring Tasks",
   todaysTasks: "Today's Tasks",
   nTotal: (n) => `${n} total`,
 

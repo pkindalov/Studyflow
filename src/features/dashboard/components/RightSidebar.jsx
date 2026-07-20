@@ -231,59 +231,59 @@ export function TasksProgressSection({
 }) {
   const { t } = useLang();
   const [showAll, setShowAll] = useState(false);
+  const todayKey = new Date().toLocaleDateString("en-CA");
+  const activeRecurringTasks = useMemo(
+    () => recurringTasks.filter((tpl) => !tpl.endDate || tpl.endDate >= todayKey),
+    [recurringTasks, todayKey],
+  );
 
   const items = useMemo(() => {
-    if (recurringTasks.length > 0) {
-      return recurringTasks.map((tpl, idx) => {
-        const instances = Object.values(tasks).flat().filter((task) => task.recurringId === tpl.id);
-        const done = instances.filter((task) => task.done).length;
-        const progress = instances.length > 0 ? Math.round((done / instances.length) * 100) : 0;
-        return {
-          key: tpl.id,
-          label: tpl.text,
-          progress,
-          priority: tpl.priority,
-          colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length],
-        };
-      });
-    }
+    const recurringItems = activeRecurringTasks.map((tpl, idx) => {
+      const instances = Object.values(tasks).flat().filter((task) => task.recurringId === tpl.id);
+      const done = instances.filter((task) => task.done).length;
+      const progress = instances.length > 0 ? Math.round((done / instances.length) * 100) : 0;
+      return {
+        key: tpl.id,
+        label: tpl.text,
+        progress,
+        priority: tpl.priority,
+        colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length],
+      };
+    });
 
-    if (tasksForDay.length > 0) {
-      const taskRows = tasksForDay.map((task, idx) => {
-        let progress = 0;
-        if (task.done) {
-          progress = 100;
-        } else {
-          const elapsed = scheduleTimers[task.id] || 0;
-          const totalSec = (taskAllocations[task.id] || 0) * 60;
-          if (totalSec > 0) progress = Math.min(100, Math.round((elapsed / totalSec) * 100));
-        }
-        return {
-          key: task.id,
-          label: task.text,
-          progress,
-          priority: task.priority,
-          colorClass: ACCENT_COLORS[idx % ACCENT_COLORS.length],
-        };
-      });
+    if (tasksForDay.length === 0) return recurringItems;
 
-      const overallProgress = taskRows.length > 0
-        ? Math.round(taskRows.reduce((sum, r) => sum + r.progress, 0) / taskRows.length)
-        : 0;
+    const taskRows = tasksForDay.map((task, idx) => {
+      let progress = 0;
+      if (task.done) {
+        progress = 100;
+      } else {
+        const elapsed = scheduleTimers[task.id] || 0;
+        const totalSec = (taskAllocations[task.id] || 0) * 60;
+        if (totalSec > 0) progress = Math.min(100, Math.round((elapsed / totalSec) * 100));
+      }
+      return {
+        key: task.id,
+        label: task.text,
+        progress,
+        priority: task.priority,
+        colorClass: ACCENT_COLORS[(recurringItems.length + idx) % ACCENT_COLORS.length],
+      };
+    });
 
-      return [
-        { key: "__today__", label: t.todaysTasks, progress: overallProgress, priority: false, colorClass: "bg-primary" },
-        ...taskRows,
-      ];
-    }
+    const overallProgress = Math.round(taskRows.reduce((sum, r) => sum + r.progress, 0) / taskRows.length);
 
-    return [];
-  }, [recurringTasks, tasks, tasksForDay, scheduleTimers, taskAllocations, t]);
+    return [
+      ...recurringItems,
+      { key: "__today__", label: t.todaysTasks, progress: overallProgress, priority: false, colorClass: "bg-primary" },
+      ...taskRows,
+    ];
+  }, [activeRecurringTasks, tasks, tasksForDay, scheduleTimers, taskAllocations, t]);
 
   const hasAny = items.length > 0;
   const visible = items.slice(0, MAX_VISIBLE);
   const overflow = items.length - MAX_VISIBLE;
-  const sectionTitle = recurringTasks.length > 0 ? t.activeProjects : t.todaysTasks;
+  const sectionTitle = activeRecurringTasks.length > 0 ? t.activeProjects : t.todaysTasks;
 
   if (!hasAny) return (
     <section className="flex flex-col gap-3">

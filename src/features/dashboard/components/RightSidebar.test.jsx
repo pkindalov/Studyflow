@@ -169,10 +169,10 @@ describe('TasksProgressSection', () => {
     expect(container.querySelector('section')).not.toBeNull()
   })
 
-  it('shows "Active Projects" heading when recurringTasks are present', () => {
+  it('shows "Recurring Tasks" heading when recurringTasks are present', () => {
     const recurring = [{ id: 'r1', text: 'Project Alpha', priority: false }]
     wrap(<TasksProgressSection tasks={{}} recurringTasks={recurring} tasksForDay={[]} />)
-    expect(screen.getByText('Active Projects')).toBeTruthy()
+    expect(screen.getByText('Recurring Tasks')).toBeTruthy()
   })
 
   it('renders a progress row for each recurring task', () => {
@@ -199,6 +199,25 @@ describe('TasksProgressSection', () => {
     const tasks = [{ id: 't1', text: 'Study math', done: false, priority: false }]
     wrap(<TasksProgressSection tasks={{}} recurringTasks={[]} tasksForDay={tasks} />)
     expect(screen.getAllByText("Today's Tasks").length).toBeGreaterThan(0)
+  })
+
+  it('ignores an expired recurring task and falls back to "Today\'s Tasks" for the daily list', () => {
+    const expiredRecurring = [{ id: 'r1', text: 'Old Project', priority: false, endDate: '2000-01-01' }]
+    const tasks = [{ id: 't1', text: 'Study math', done: false, priority: false }]
+    wrap(<TasksProgressSection tasks={{}} recurringTasks={expiredRecurring} tasksForDay={tasks} />)
+    expect(screen.queryByText('Recurring Tasks')).toBeNull()
+    expect(screen.getAllByText("Today's Tasks").length).toBeGreaterThan(0)
+    expect(screen.getByText('Study math')).toBeTruthy()
+  })
+
+  it('shows both an active recurring task and today\'s one-off tasks together instead of hiding one', () => {
+    const recurring = [{ id: 'r1', text: 'Project Alpha', priority: false }]
+    const tasks = [{ id: 't1', text: 'Study math', done: false, priority: false }]
+    wrap(<TasksProgressSection tasks={{}} recurringTasks={recurring} tasksForDay={tasks} />)
+    expect(screen.getByText('Recurring Tasks')).toBeTruthy()
+    expect(screen.getByText('Project Alpha')).toBeTruthy()
+    expect(screen.getAllByText("Today's Tasks").length).toBeGreaterThan(0)
+    expect(screen.getByText('Study math')).toBeTruthy()
   })
 
   it('renders a progress bar at 100% width for a done task', () => {

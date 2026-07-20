@@ -131,7 +131,7 @@ export const bg = {
   totalStudyTime: "Общо учебно време",
   hoursUnit: "часа",
   priorityTimeLimit: "Лимит за приоритет",
-  activeProjects: "Активни проекти",
+  activeProjects: "Повтарящи се задачи",
   todaysTasks: "Задачи за днес",
   nTotal: (n) => `${n} общо`,
 
