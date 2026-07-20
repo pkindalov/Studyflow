@@ -10,6 +10,7 @@ import { generateId } from "./shared/utils/id";
 import { useTaskBank } from "./features/tasks/hooks/useTaskBank";
 import { exportData } from "./shared/utils/dataPortability";
 import { useLang } from "./shared/i18n/LangContext";
+import { useTheme } from "./shared/theme/ThemeContext";
 import { useColumnLayout } from "./features/dashboard/hooks/useColumnLayout";
 import { useTimer } from "./features/schedule/hooks/useTimer";
 import { useSchedule } from "./features/schedule/hooks/useSchedule";
@@ -35,7 +36,7 @@ runMigrations();
 
 function App() {
   const { lang, setLang, t } = useLang();
-  const [theme, setTheme] = useState(() => localStorage.getItem("studyflow_theme") || "dark");
+  const { themeChoice, setThemeChoice, activeSeason } = useTheme();
   const [showBackgroundArt, setShowBackgroundArt] = useState(
     () => localStorage.getItem("studyflow_background_art") !== "false"
   );
@@ -142,11 +143,6 @@ function App() {
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("studyflow_theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
     localStorage.setItem("studyflow_background_art", String(showBackgroundArt));
   }, [showBackgroundArt]);
 
@@ -243,7 +239,7 @@ function App() {
           {notification}
         </div>
       )}
-      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
+      <TopBar onShowHelp={() => setShowHelp(true)} lang={lang} setLang={setLang} themeChoice={themeChoice} setThemeChoice={setThemeChoice} activeSeason={activeSeason} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
       <DndContext sensors={sectionSensors} collisionDetection={closestCenter} onDragStart={handleSectionDragStart} onDragOver={handleSectionDragOver} onDragEnd={handleSectionDragEnd}>
         <div className={gridClass}>
           <div className={sideColClass}>

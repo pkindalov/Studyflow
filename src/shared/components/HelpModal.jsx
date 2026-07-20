@@ -111,8 +111,9 @@ const HelpModal = function({ onClose }) {
             <Tip>{t.helpDataTip4(b)}</Tip>
           </Section>
 
-          <Section icon="light_mode" title={t.helpTheme}>
+          <Section icon="palette" title={t.helpTheme}>
             <Tip>{t.helpThemeTip1(b)}</Tip>
+            <Tip>{t.helpThemeTip2(b)}</Tip>
           </Section>
 
         </div>

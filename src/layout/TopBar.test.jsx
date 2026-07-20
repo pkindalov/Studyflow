@@ -5,25 +5,42 @@ import TopBar from './TopBar'
 const t = {
   appSettingsToolbar: 'App settings',
   howStudyflowWorks: 'How Studyflow works',
-  switchToLight: 'Switch to light mode',
-  switchToDark: 'Switch to dark mode',
-  lightMode: 'Light',
-  darkMode: 'Dark',
+  themePickerAria: 'Choose season theme',
+  themeAuto: 'Auto',
+  themeSpring: 'Spring',
+  themeSummer: 'Summer',
+  themeAutumn: 'Autumn',
+  themeWinter: 'Winter',
+  themeAutoHint: (season) => `Auto — currently ${season}`,
 }
 
-let onShowHelp, setLang, setTheme
+let onShowHelp, setLang, setThemeChoice
 
 beforeEach(() => {
   onShowHelp = vi.fn()
   setLang = vi.fn()
-  setTheme = vi.fn()
+  setThemeChoice = vi.fn()
 })
+
+const renderTopBar = (props = {}) =>
+  render(
+    <TopBar
+      onShowHelp={onShowHelp}
+      lang="en"
+      setLang={setLang}
+      themeChoice="auto"
+      setThemeChoice={setThemeChoice}
+      activeSeason="summer"
+      t={t}
+      {...props}
+    />
+  )
 
 // ── help button ───────────────────────────────────────────────────────────────
 
 describe('help button', () => {
   it('calls onShowHelp when clicked', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
+    renderTopBar()
     fireEvent.click(screen.getAllByRole('button', { name: 'How Studyflow works' })[0])
     expect(onShowHelp).toHaveBeenCalled()
   })
@@ -33,62 +50,45 @@ describe('help button', () => {
 
 describe('language switcher', () => {
   it('calls setLang("en") when EN button is clicked', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="bg" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
+    renderTopBar({ lang: 'bg' })
     fireEvent.click(screen.getAllByRole('button', { name: 'Switch to English' })[0])
     expect(setLang).toHaveBeenCalledWith('en')
   })
 
   it('calls setLang("bg") when БГ button is clicked', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
+    renderTopBar({ lang: 'en' })
     fireEvent.click(screen.getAllByRole('button', { name: 'Switch to Bulgarian' })[0])
     expect(setLang).toHaveBeenCalledWith('bg')
   })
 
   it('EN button has active class when lang is "en"', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
+    renderTopBar({ lang: 'en' })
     expect(screen.getAllByRole('button', { name: 'Switch to English' })[0].className).toContain('bg-primary')
   })
 
   it('БГ button has active class when lang is "bg"', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="bg" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
+    renderTopBar({ lang: 'bg' })
     expect(screen.getAllByRole('button', { name: 'Switch to Bulgarian' })[0].className).toContain('bg-primary')
   })
 })
 
-// ── theme toggle ──────────────────────────────────────────────────────────────
+// ── season theme picker ───────────────────────────────────────────────────────
 
-describe('theme toggle', () => {
-  it('calls setTheme when theme button is clicked', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    fireEvent.click(screen.getAllByText('Light')[0])
-    expect(setTheme).toHaveBeenCalled()
+describe('season theme picker', () => {
+  it('shows the Auto label with the resolved season when themeChoice is auto', () => {
+    renderTopBar({ themeChoice: 'auto', activeSeason: 'winter' })
+    expect(screen.getAllByRole('button', { name: /auto — currently winter/i }).length).toBeGreaterThan(0)
   })
 
-  it('shows "Light" label when theme is dark', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    expect(screen.getAllByText('Light').length).toBeGreaterThan(0)
+  it('shows the season label when a specific season is chosen', () => {
+    renderTopBar({ themeChoice: 'autumn', activeSeason: 'autumn' })
+    expect(screen.getAllByRole('button', { name: 'Autumn' }).length).toBeGreaterThan(0)
   })
 
-  it('shows "Dark" label when theme is light', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="light" setTheme={setTheme} t={t} />)
-    expect(screen.getAllByText('Dark').length).toBeGreaterThan(0)
-  })
-
-  it('passes a toggle function: dark switches to light', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    fireEvent.click(screen.getAllByText('Light')[0])
-    const updater = setTheme.mock.calls[0][0]
-    expect(updater('dark')).toBe('light')
-    expect(updater('light')).toBe('dark')
-  })
-
-  it('theme button title is "Switch to light mode" when theme is dark', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="dark" setTheme={setTheme} t={t} />)
-    expect(screen.getAllByTitle('Switch to light mode').length).toBeGreaterThan(0)
-  })
-
-  it('theme button title is "Switch to dark mode" when theme is light', () => {
-    render(<TopBar onShowHelp={onShowHelp} lang="en" setLang={setLang} theme="light" setTheme={setTheme} t={t} />)
-    expect(screen.getAllByTitle('Switch to dark mode').length).toBeGreaterThan(0)
+  it('calls setThemeChoice with the picked season when a menu option is clicked', () => {
+    renderTopBar()
+    fireEvent.click(screen.getAllByRole('button', { name: /auto — currently summer/i })[0])
+    fireEvent.click(screen.getAllByRole('menuitem', { name: /^spring$/i })[0])
+    expect(setThemeChoice).toHaveBeenCalledWith('spring')
   })
 })

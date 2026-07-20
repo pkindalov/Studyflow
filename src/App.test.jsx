@@ -13,6 +13,7 @@ import { useTimerActions } from './features/schedule/hooks/useTimerActions'
 import { useTaskActions } from './features/tasks/hooks/useTaskActions'
 import { buildSidebarSections } from './layout/sidebarSections'
 import { useLang } from './shared/i18n/LangContext'
+import { useTheme } from './shared/theme/ThemeContext'
 import { useMusicPlayer } from './features/music/hooks/useMusicPlayer'
 import { markDateWithTasks } from './features/calendar/utils/markDateWithTasks'
 import { exportData } from './shared/utils/dataPortability'
@@ -64,6 +65,13 @@ vi.mock('./shared/i18n/LangContext', () => ({
     lang: 'en',
     setLang: vi.fn(),
     t: { allDoneNothing: 'All done — nothing left!' },
+  })),
+}))
+vi.mock('./shared/theme/ThemeContext', () => ({
+  useTheme: vi.fn(() => ({
+    themeChoice: 'auto',
+    setThemeChoice: vi.fn(),
+    activeSeason: 'winter',
   })),
 }))
 vi.mock('./features/tasks/hooks/useTasks', () => ({ useTasks: vi.fn() }))
@@ -145,6 +153,7 @@ beforeEach(() => {
   lastBottomBarProps = {}
   localStorage.clear()
   useLang.mockReturnValue({ lang: 'en', setLang: vi.fn(), t: { allDoneNothing: 'All done — nothing left!' } })
+  useTheme.mockReturnValue({ themeChoice: 'auto', setThemeChoice: vi.fn(), activeSeason: 'winter' })
   useMusicPlayer.mockReturnValue({})
 
   useTasks.mockReturnValue(mkTasks())
@@ -170,27 +179,6 @@ beforeEach(() => {
     handleSaveToBank: vi.fn(), handleOpenSavedList: vi.fn(), handleReorder: vi.fn(),
   })
   appliesToDate.mockReturnValue(true)
-})
-
-// ── theme persistence ──────────────────────────────────────────────────────────
-
-describe('theme persistence', () => {
-  it('reads theme from localStorage on mount', () => {
-    localStorage.setItem('studyflow_theme', 'light')
-    render(<App />)
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
-  })
-
-  it('defaults to dark when localStorage has no stored theme', () => {
-    render(<App />)
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
-  })
-
-  it('writes theme back to localStorage on mount', () => {
-    localStorage.setItem('studyflow_theme', 'light')
-    render(<App />)
-    expect(localStorage.getItem('studyflow_theme')).toBe('light')
-  })
 })
 
 // ── confetti trigger ───────────────────────────────────────────────────────────
@@ -865,26 +853,6 @@ describe('savedListTexts forwarded to MainContent', () => {
     })
     render(<App />)
     expect(lastMainContentProps.savedListTexts.size).toBe(1)
-  })
-})
-
-// ── root background class ──────────────────────────────────────────────────────
-
-describe('root background class', () => {
-  it('sets the dark data-theme attribute by default, driving the dark CSS background', () => {
-    render(<App />)
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
-  })
-
-  it('sets the light data-theme attribute when theme is light, driving the light CSS background', () => {
-    localStorage.setItem('studyflow_theme', 'light')
-    render(<App />)
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
-  })
-
-  it('does not set the light data-theme attribute when theme is dark', () => {
-    render(<App />)
-    expect(document.documentElement.getAttribute('data-theme')).not.toBe('light')
   })
 })
 
@@ -1815,22 +1783,23 @@ describe('TopBar props wired from App', () => {
     expect(lastTopBarProps.setLang).toBe(setLang)
   })
 
-  it('forwards the current theme', () => {
-    localStorage.setItem('studyflow_theme', 'light')
+  it('forwards themeChoice from useTheme', () => {
+    useTheme.mockReturnValue({ themeChoice: 'autumn', setThemeChoice: vi.fn(), activeSeason: 'autumn' })
     render(<App />)
-    expect(lastTopBarProps.theme).toBe('light')
+    expect(lastTopBarProps.themeChoice).toBe('autumn')
   })
 
-  it('forwards setTheme — calling it updates the data-theme attribute', () => {
+  it('forwards activeSeason from useTheme', () => {
+    useTheme.mockReturnValue({ themeChoice: 'auto', setThemeChoice: vi.fn(), activeSeason: 'spring' })
     render(<App />)
-    act(() => lastTopBarProps.setTheme('light'))
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light')
+    expect(lastTopBarProps.activeSeason).toBe('spring')
   })
 
-  it('setTheme also writes the new theme to localStorage', () => {
+  it('forwards setThemeChoice from useTheme', () => {
+    const setThemeChoice = vi.fn()
+    useTheme.mockReturnValue({ themeChoice: 'auto', setThemeChoice, activeSeason: 'winter' })
     render(<App />)
-    act(() => lastTopBarProps.setTheme('light'))
-    expect(localStorage.getItem('studyflow_theme')).toBe('light')
+    expect(lastTopBarProps.setThemeChoice).toBe(setThemeChoice)
   })
 
   it('forwards t from useLang', () => {

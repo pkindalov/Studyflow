@@ -28,7 +28,7 @@ describe('section headings', () => {
     expect(screen.getByText('Focus music')).toBeTruthy()
     expect(screen.getByText('Drag & drop')).toBeTruthy()
     expect(screen.getByText('Your data & privacy')).toBeTruthy()
-    expect(screen.getByText('Light & dark theme')).toBeTruthy()
+    expect(screen.getByText('Season themes')).toBeTruthy()
   })
 })
 

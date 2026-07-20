@@ -56,53 +56,131 @@
   --color-error: #f87171;
 }
 
-/* ─── Light theme overrides ─────────────────────────────────────────────── */
-[data-theme="light"] {
-  /* Primary — richer violet for light bg contrast */
-  --color-primary: #5b46df;
+/* ─── Bulgarian season themes ────────────────────────────────────────────── */
+/* Winter (Зима) uses the default :root/body palette above — it's the
+   dark navy-indigo look the app already shipped with. Spring, Summer, and
+   Autumn override it below with their own light, season-flavored palettes. */
+
+/* Spring (Пролет) — fresh leaf green + cherry-blossom pink */
+[data-theme="spring"] {
+  --color-primary: #3f9556;
   --color-on-primary: #ffffff;
-  --color-primary-container: #ede9ff;
+  --color-primary-container: #d7f2dc;
 
-  /* Secondary — deeper teal */
-  --color-secondary: #0e9670;
+  --color-secondary: #d1548a;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #c8f5e4;
-  --color-secondary-dim: #96e8cc;
+  --color-secondary-container: #ffe1ee;
+  --color-secondary-dim: #f8b8d4;
 
-  /* Tertiary — darker amber */
-  --color-tertiary: #a86200;
+  --color-tertiary: #a8790b;
   --color-on-tertiary: #ffffff;
 
-  /* Surfaces — warm lavender-white scale */
-  --color-surface: #f5f2ff;
+  --color-surface: #f3faf1;
   --color-surface-bright: #ffffff;
-  --color-surface-container-lowest: #eee9ff;
-  --color-surface-container-low: #e8e2fe;
-  --color-surface-container: #dfd8fb;
-  --color-surface-container-high: #d4ccf7;
-  --color-surface-container-highest: #c9c0f2;
+  --color-surface-container-lowest: #eaf7e7;
+  --color-surface-container-low: #e2f3dd;
+  --color-surface-container: #d7edd0;
+  --color-surface-container-high: #cae5c1;
+  --color-surface-container-highest: #bcdcb1;
 
-  /* Text */
-  --color-on-surface: #1c1830;
-  --color-on-surface-variant: #5c5285;
+  --color-on-surface: #17301b;
+  --color-on-surface-variant: #4c6b4f;
 
-  /* Borders */
   --color-outline: rgba(0, 0, 0, 0.15);
   --color-outline-variant: rgba(0, 0, 0, 0.08);
 
-  /* Error */
   --color-error: #c5221f;
 }
 
-[data-theme="light"] body {
-  background-color: #f0eeff;
+[data-theme="spring"] body {
+  background-color: #eef8ec;
   background-image:
-    radial-gradient(ellipse 70% 55% at 15% -10%, rgba(91, 70, 223, 0.16), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(14, 150, 112, 0.14), transparent 60%),
-    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(168, 98, 0, 0.09), transparent 60%);
+    radial-gradient(ellipse 70% 55% at 15% -10%, rgba(63, 149, 86, 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(209, 84, 138, 0.16), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(168, 121, 11, 0.1), transparent 60%);
 }
 
-[data-theme="light"] body::before {
+/* Summer (Лято) — sky blue + sunflower gold */
+[data-theme="summer"] {
+  --color-primary: #0f8fd1;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #d7eefc;
+
+  --color-secondary: #e2a300;
+  --color-on-secondary: #241900;
+  --color-secondary-container: #fff1cc;
+  --color-secondary-dim: #ffdd8a;
+
+  --color-tertiary: #d1451f;
+  --color-on-tertiary: #ffffff;
+
+  --color-surface: #f5fbff;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #eaf6ff;
+  --color-surface-container-low: #dcf0ff;
+  --color-surface-container: #cde8fc;
+  --color-surface-container-high: #bcdff8;
+  --color-surface-container-highest: #a9d5f3;
+
+  --color-on-surface: #0d2436;
+  --color-on-surface-variant: #3f6485;
+
+  --color-outline: rgba(0, 0, 0, 0.15);
+  --color-outline-variant: rgba(0, 0, 0, 0.08);
+
+  --color-error: #c5221f;
+}
+
+[data-theme="summer"] body {
+  background-color: #eaf7ff;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% -10%, rgba(15, 143, 209, 0.2), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(226, 163, 0, 0.18), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(209, 69, 31, 0.1), transparent 60%);
+}
+
+/* Autumn (Есен) — rust orange, walnut brown, maple red on warm cream */
+[data-theme="autumn"] {
+  --color-primary: #bd5b16;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #fbe0c2;
+
+  --color-secondary: #7a4a22;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #ecd7bd;
+  --color-secondary-dim: #d3b98f;
+
+  --color-tertiary: #a3311f;
+  --color-on-tertiary: #ffffff;
+
+  --color-surface: #fbf4e9;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #f6ecdb;
+  --color-surface-container-low: #f0e3ca;
+  --color-surface-container: #e8d6b6;
+  --color-surface-container-high: #ddc7a0;
+  --color-surface-container-highest: #d0b78c;
+
+  --color-on-surface: #2e1d0f;
+  --color-on-surface-variant: #6b5233;
+
+  --color-outline: rgba(0, 0, 0, 0.15);
+  --color-outline-variant: rgba(0, 0, 0, 0.08);
+
+  --color-error: #b3261e;
+}
+
+[data-theme="autumn"] body {
+  background-color: #f7ecda;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 15% -10%, rgba(189, 91, 22, 0.2), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, rgba(122, 74, 34, 0.16), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(163, 49, 31, 0.12), transparent 60%);
+}
+
+[data-theme="spring"] body::before,
+[data-theme="summer"] body::before,
+[data-theme="autumn"] body::before {
   opacity: 0.15;
 }
 
@@ -113,9 +191,9 @@ select {
   color-scheme: dark;
 }
 
-[data-theme="light"] input,
-[data-theme="light"] textarea,
-[data-theme="light"] select {
+[data-theme="spring"] input, [data-theme="spring"] textarea, [data-theme="spring"] select,
+[data-theme="summer"] input, [data-theme="summer"] textarea, [data-theme="summer"] select,
+[data-theme="autumn"] input, [data-theme="autumn"] textarea, [data-theme="autumn"] select {
   color-scheme: light;
 }
 

@@ -1,4 +1,6 @@
-const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, showBackgroundArt, setShowBackgroundArt, t }) {
+import SeasonThemePicker from "./SeasonThemePicker";
+
+const ToolbarButtons = function({ onShowHelp, lang, setLang, themeChoice, setThemeChoice, activeSeason, showBackgroundArt, setShowBackgroundArt, t }) {
   return (
     <>
       <button
@@ -34,22 +36,12 @@ const ToolbarButtons = function({ onShowHelp, lang, setLang, theme, setTheme, sh
           {showBackgroundArt ? "landscape" : "hide_image"}
         </span>
       </button>
-      <button
-        onClick={() => setTheme((prev) => prev === "dark" ? "light" : "dark")}
-        className="flex items-center gap-1.5 px-3 py-2 bg-surface-container border border-outline-variant/50 text-on-surface-variant rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-all"
-        title={theme === "dark" ? t.switchToLight : t.switchToDark}
-        aria-label={theme === "dark" ? t.switchToLight : t.switchToDark}
-      >
-        <span className="material-symbols-outlined text-base icon-filled">
-          {theme === "dark" ? "light_mode" : "dark_mode"}
-        </span>
-        {theme === "dark" ? t.lightMode : t.darkMode}
-      </button>
+      <SeasonThemePicker themeChoice={themeChoice} setThemeChoice={setThemeChoice} activeSeason={activeSeason} t={t} />
     </>
   );
 }
 
-export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, showBackgroundArt, setShowBackgroundArt, t }) {
+export default function TopBar({ onShowHelp, lang, setLang, themeChoice, setThemeChoice, activeSeason, showBackgroundArt, setShowBackgroundArt, t }) {
   return (
     <>
       {/* Mobile toolbar */}
@@ -58,7 +50,7 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, sho
           <span className="font-headline font-bold text-base text-on-surface">{t.appName}</span>
         </div>
         <div role="toolbar" aria-label={t.appSettingsToolbar} className="flex items-center gap-1.5">
-          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
+          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} themeChoice={themeChoice} setThemeChoice={setThemeChoice} activeSeason={activeSeason} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
         </div>
       </div>
 
@@ -75,7 +67,7 @@ export default function TopBar({ onShowHelp, lang, setLang, theme, setTheme, sho
         </div>
 
         <div role="toolbar" aria-label={t.appSettingsToolbar} className="flex items-center gap-2">
-          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
+          <ToolbarButtons onShowHelp={onShowHelp} lang={lang} setLang={setLang} themeChoice={themeChoice} setThemeChoice={setThemeChoice} activeSeason={activeSeason} showBackgroundArt={showBackgroundArt} setShowBackgroundArt={setShowBackgroundArt} t={t} />
         </div>
       </header>
     </>

@@ -219,12 +219,15 @@ export const en = {
   resetLayoutBtn: "Reset layout",
   dragToMoveHint: "Drag to move to other column",
 
-  // ── Theme toggle ──────────────────────────────────────────────────────────────
+  // ── Theme picker ──────────────────────────────────────────────────────────────
   appSettingsToolbar: "App settings",
-  lightMode: "Light",
-  darkMode: "Dark",
-  switchToLight: "Switch to light mode",
-  switchToDark: "Switch to dark mode",
+  themePickerAria: "Choose season theme",
+  themeAuto: "Auto",
+  themeSpring: "Spring",
+  themeSummer: "Summer",
+  themeAutumn: "Autumn",
+  themeWinter: "Winter",
+  themeAutoHint: (season) => `Auto — currently ${season}`,
   showBackgroundArt: "Show background art",
   hideBackgroundArt: "Hide background art",
 
@@ -305,6 +308,7 @@ export const en = {
   helpDataTip3: () => <>Clearing browser data or site storage will erase everything.</>,
   helpDataTip4: (b) => <>Use {b("Clear all data")} (bottom-left button) if you want to reset the app completely — this action cannot be undone.</>,
 
-  helpTheme: "Light & dark theme",
-  helpThemeTip1: (b) => <>Toggle between dark and light mode with the {b("sun/moon button")} in the top-right corner. Your preference is remembered.</>,
+  helpTheme: "Season themes",
+  helpThemeTip1: () => <>Studyflow has a theme for every Bulgarian season — Spring, Summer, Autumn, and Winter. By default it follows the current month automatically.</>,
+  helpThemeTip2: (b) => <>Pick a season yourself from the {b("theme button")} in the top-right corner to lock it in — your choice is remembered even after a refresh. Choose {b("Auto")} again to go back to following the calendar.</>,
 };
