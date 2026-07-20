@@ -99,7 +99,7 @@ export default function SeasonThemePicker({ themeChoice, setThemeChoice, activeS
         aria-expanded={isOpen}
       >
         <span className="material-symbols-outlined text-base icon-filled" aria-hidden="true">{activeSeasonIcon}</span>
-        {buttonLabel}
+        <span className="hidden sm:inline">{buttonLabel}</span>
       </button>
       {isOpen && (
         <div
