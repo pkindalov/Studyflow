@@ -23,6 +23,7 @@ export const ThemeProvider = function({ children }) {
   });
 
   const setThemeChoice = useCallback((newChoice) => {
+    if (!VALID_CHOICES.has(newChoice)) return;
     setThemeChoiceState(newChoice);
     try {
       localStorage.setItem(STORAGE_KEY, newChoice);

@@ -40,12 +40,8 @@ export default function SeasonThemePicker({ themeChoice, setThemeChoice, activeS
     const close = (e) => {
       if (!wrapRef.current?.contains(e.target)) setIsOpen(false);
     };
-    const handleKey = (e) => {
-      if (e.key === "Escape") closeMenu(true);
-    };
     document.addEventListener("mousedown", close);
     document.addEventListener("touchstart", close);
-    document.addEventListener("keydown", handleKey);
 
     const firstItem = menuRef.current?.querySelector('[role="menuitem"]');
     firstItem?.focus();
@@ -53,12 +49,18 @@ export default function SeasonThemePicker({ themeChoice, setThemeChoice, activeS
     return () => {
       document.removeEventListener("mousedown", close);
       document.removeEventListener("touchstart", close);
-      document.removeEventListener("keydown", handleKey);
     };
   }, [isOpen]);
 
   const handleMenuBlur = (event) => {
     if (!wrapRef.current?.contains(event.relatedTarget)) setIsOpen(false);
+  };
+
+  // Scoped to this instance via bubbling — unlike a document-level listener,
+  // Escape pressed anywhere else on the page (or inside another picker
+  // instance) never reaches this handler.
+  const handleWrapKeyDown = (event) => {
+    if (isOpen && event.key === "Escape") closeMenu(true);
   };
 
   // Roving focus across menu items: Up/Down cycle, Home/End jump to ends.
@@ -86,7 +88,7 @@ export default function SeasonThemePicker({ themeChoice, setThemeChoice, activeS
   };
 
   return (
-    <div ref={wrapRef} className="relative" onBlur={handleMenuBlur}>
+    <div ref={wrapRef} className="relative" onBlur={handleMenuBlur} onKeyDown={handleWrapKeyDown}>
       <button
         ref={buttonRef}
         onClick={() => { setIsOpen((prev) => !prev); setActiveMenuIndex(0); }}

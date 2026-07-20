@@ -118,4 +118,12 @@ describe('setThemeChoice', () => {
     expect(result.current.themeChoice).toBe('auto')
     expect(localStorage.getItem('studyflow_theme')).toBe('auto')
   })
+
+  it('ignores an unrecognized theme id — state and localStorage are left untouched', () => {
+    localStorage.setItem('studyflow_theme', 'spring')
+    const { result } = renderHook(() => useTheme(), { wrapper })
+    act(() => result.current.setThemeChoice('garbage'))
+    expect(result.current.themeChoice).toBe('spring')
+    expect(localStorage.getItem('studyflow_theme')).toBe('spring')
+  })
 })

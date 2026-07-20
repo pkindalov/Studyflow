@@ -95,10 +95,10 @@ describe('menu', () => {
     expect(setThemeChoice).toHaveBeenCalledWith('auto')
   })
 
-  it('closes when Escape is pressed', () => {
+  it('closes when Escape is pressed inside the menu', () => {
     renderPicker()
     fireEvent.click(screen.getByRole('button'))
-    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
@@ -107,5 +107,20 @@ describe('menu', () => {
     fireEvent.click(screen.getByRole('button'))
     fireEvent.mouseDown(document.body)
     expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('does not close via Escape pressed in a different picker instance', () => {
+    render(
+      <>
+        <SeasonThemePicker themeChoice="auto" setThemeChoice={vi.fn()} activeSeason="summer" t={t} />
+        <SeasonThemePicker themeChoice="auto" setThemeChoice={vi.fn()} activeSeason="summer" t={t} />
+      </>
+    )
+    const [buttonA, buttonB] = screen.getAllByRole('button')
+    fireEvent.click(buttonA)
+    expect(screen.getAllByRole('menu')).toHaveLength(1)
+
+    fireEvent.keyDown(buttonB, { key: 'Escape' })
+    expect(screen.getAllByRole('menu')).toHaveLength(1)
   })
 })
