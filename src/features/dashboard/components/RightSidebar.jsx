@@ -207,7 +207,7 @@ export function QuoteSection() {
     <section className="bg-primary/10 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="relative z-10 flex flex-col gap-4">
-        <span className="material-symbols-outlined text-3xl text-primary/60">format_quote</span>
+        <span aria-hidden="true" className="font-headline text-5xl leading-none text-primary/40 select-none">&rdquo;</span>
         <p className="font-headline font-medium text-base leading-relaxed italic text-on-surface">
           {quote.text}
         </p>

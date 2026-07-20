@@ -266,14 +266,16 @@ const TaskCard = function({ task, onToggle, onDelete, onEdit, onStopRecurring, s
 
       <div className="flex-grow flex flex-col gap-1 min-w-0">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowDetail(true)}
-            className={`min-w-0 flex-1 truncate text-left font-semibold text-on-surface group-hover:text-primary hover:underline transition-colors ${isDone ? "line-through" : ""}`}
-            title={task.text}
-          >
-            {task.text}
-          </button>
+          <h4 className="min-w-0 flex-1">
+            <button
+              type="button"
+              onClick={() => setShowDetail(true)}
+              className={`w-full truncate text-left font-semibold text-on-surface group-hover:text-primary hover:underline transition-colors ${isDone ? "line-through" : ""}`}
+              title={task.text}
+            >
+              {task.text}
+            </button>
+          </h4>
           {task.recurringId && (
             <span
               className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 border border-secondary/20 rounded-full px-2 py-0.5 flex-shrink-0"
